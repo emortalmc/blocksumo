@@ -1,7 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
-import dev.emortal.minestom.blocksumo.utils.coord.CoordUtils;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
@@ -26,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
 
-    private final @NotNull Set<Pos> usedSpawns = new HashSet<>();
     private List<Pos> availableSpawns;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -45,7 +42,7 @@ public class BlockSumoGame extends Game {
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull CompletableFuture<BlockSumoInstance> instanceFuture;
 
-    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> parentEventNode,
+    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode,
                          @NotNull CompletableFuture<BlockSumoInstance> instanceFuture) {
         super(creationInfo);
 
@@ -54,20 +51,20 @@ public class BlockSumoGame extends Game {
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
-                if (!this.players.contains(playerEvent.getPlayer())) return false;
+                if (!this.getGameCreationInfo().playerIds().contains(playerEvent.getPlayer().getUuid())) return false;
             }
             if (event instanceof InstanceEvent instanceEvent) {
                 // we don't have to worry about instance events if the instance isn't loaded yet
                 if (instanceFuture.isDone()) {
                     BlockSumoInstance instance = instanceFuture.join();
-                    if (instanceEvent.getInstance() != instance) return false;
+                    return instanceEvent.getInstance() == instance;
                 }
             }
             return true;
         });
-        parentEventNode.addChild(this.eventNode);
+        gameEventNode.addChild(this.eventNode);
 
-        parentEventNode.addListener(PlayerLoginEvent.class, event -> {
+        eventNode.addListener(PlayerLoginEvent.class, event -> {
             // TODO remove
             event.getPlayer().setGameMode(GameMode.CREATIVE);
             event.getPlayer().setFlying(true);
@@ -133,43 +130,33 @@ public class BlockSumoGame extends Game {
     private synchronized @NotNull Pos getSpawnPos() {
         BlockSumoInstance instance = this.instanceFuture.join();
 
-        Pos spawnPos;
-        if (this.usedSpawns.size() == 0) {
-            spawnPos = this.availableSpawns.get(0);
-        } else {
-            Pos meanPos = CoordUtils.meanPos(this.usedSpawns);
-            Pos furthestPos = null;
-            double furthestDistance = 0;
-            for (Pos pos : this.availableSpawns) {
-                if (this.usedSpawns.contains(pos)) continue;
-                double distance = meanPos.distanceSquared(pos);
-                if (furthestPos == null || distance > furthestDistance) {
-                    furthestPos = pos;
-                    furthestDistance = distance;
+        Pos bestPos = null;
+        double bestWorstDistance = 0; // The best of the worst distances
+        for (Pos pos : this.availableSpawns) {
+            // Measure a worst-case scenario for each point
+            double closestDistance = Double.MAX_VALUE;
+            for (final Player player : getPlayers()) {
+                final Pos playerPos = player.getPosition();
+                double distance = playerPos.distanceSquared(pos);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
                 }
             }
-
-            if (furthestPos == null) {
-                LOGGER.warn("No available spawns left for instance {}", instance.getUniqueId());
-                spawnPos = this.availableSpawns.get(0);
-            } else {
-                spawnPos = furthestPos;
+            if (closestDistance > bestWorstDistance) {
+                bestPos = pos;
+                bestWorstDistance = closestDistance;
             }
         }
 
-        this.usedSpawns.add(spawnPos);
+        final Pos spawnPos;
+        if (bestPos == null) {
+            LOGGER.warn("No available spawns left for instance {}", instance.getUniqueId());
+            spawnPos = this.availableSpawns.get(0);
+        } else {
+            spawnPos = bestPos;
+        }
+
         this.prepareSpawn(spawnPos, 10);
-        return spawnPos;
-    }
-
-    private synchronized @NotNull Pos getRespawnPos() {
-        Pos meanPos = CoordUtils.meanPos(this.players.stream().map(Player::getPosition).toList());
-
-        Pos spawnPos = this.availableSpawns.stream()
-                .min(Comparator.comparingDouble(meanPos::distanceSquared))
-                .orElseThrow();
-
-        this.prepareSpawn(spawnPos, 5);
         return spawnPos;
     }
 

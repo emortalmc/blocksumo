@@ -8,7 +8,6 @@ import dev.emortal.minestom.core.module.ModuleData;
 import dev.emortal.minestom.core.module.ModuleEnvironment;
 import dev.emortal.minestom.core.module.permissions.PermissionModule;
 import dev.emortal.minestom.gamesdk.GameSdkModule;
-import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.config.GameSdkConfig;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.extras.MojangAuth;
@@ -20,13 +19,15 @@ public class BlockSumoModule extends Module {
 
     protected BlockSumoModule(@NotNull ModuleEnvironment environment) {
         super(environment);
-
         this.mapManager = new MapManager();
 
-        GameSdkModule.init(new GameSdkConfig.Builder()
-                .minPlayers(1)
-                .gameSupplier(this::createGame)
-                .maxGames(5).build());
+        GameSdkModule.init(
+                new GameSdkConfig.Builder()
+                        .minPlayers(1)
+                        .gameSupplier((info, eventNode) -> new BlockSumoGame(info, eventNode, this.mapManager.getRandomMap()))
+                        .maxGames(5)
+                        .build()
+        );
 
         MojangAuth.init();
 
@@ -43,10 +44,6 @@ public class BlockSumoModule extends Module {
     @Override
     public boolean onLoad() {
         return false;
-    }
-
-    private @NotNull BlockSumoGame createGame(@NotNull GameCreationInfo creationInfo) {
-        return new BlockSumoGame(creationInfo, super.getEventNode(), this.mapManager.getRandomMap());
     }
 
     @Override
