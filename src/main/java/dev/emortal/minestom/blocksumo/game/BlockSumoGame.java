@@ -6,15 +6,20 @@ import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.metadata.other.AreaEffectCloudMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.event.player.PlayerMoveEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.particle.Particle;
@@ -83,7 +88,14 @@ public class BlockSumoGame extends Game {
             this.players.add(player);
 
             player.setAutoViewable(true);
-        }).addListener(PlayerMoveEvent.class, event -> {
+        });
+
+        eventNode.addListener(PlayerSpawnEvent.class, event -> {
+            final Player player = event.getPlayer();
+            this.prepareSpawn(player, player.getRespawnPoint());
+        });
+
+        eventNode.addListener(PlayerMoveEvent.class, event -> {
             Player player = event.getPlayer();
             Pos oldPos = player.getPosition();
             if (oldPos.x() != event.getNewPosition().x() || oldPos.z() != event.getNewPosition().z()) {
@@ -155,12 +167,10 @@ public class BlockSumoGame extends Game {
         } else {
             spawnPos = bestPos;
         }
-
-        this.prepareSpawn(spawnPos, 10);
         return spawnPos;
     }
 
-    private void prepareSpawn(@NotNull Pos pos, int restoreDelay) {
+    private void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
         BlockSumoInstance instance = this.instanceFuture.join();
 
         Pos bedrockPos = pos.add(0, -1, 0);
@@ -169,9 +179,20 @@ public class BlockSumoGame extends Game {
         instance.setBlock(pos.add(0, 1, 0), Block.AIR);
         instance.setBlock(pos.add(0, 2, 0), Block.AIR);
 
-        MinecraftServer.getSchedulerManager().buildTask(() -> {
-            instance.setBlock(bedrockPos, Block.WHITE_WOOL);
-        }).delay(restoreDelay, ChronoUnit.SECONDS).schedule();
+        final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
+        ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
+        entity.setNoGravity(true);
+        entity.setInstance(instance, pos).thenRun(() -> entity.addPassenger(player));
+    }
+
+    private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
+        this.prepareSpawn(player, pos);
+
+        final BlockSumoInstance instance = this.instanceFuture.join();
+        MinecraftServer.getSchedulerManager()
+                .buildTask(() -> instance.setBlock(pos.sub(1), Block.WHITE_WOOL))
+                .delay(restoreDelay, ChronoUnit.SECONDS)
+                .schedule();
     }
 
     @Override
