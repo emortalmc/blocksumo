@@ -4,6 +4,21 @@ import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -21,21 +36,16 @@ import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.particle.ParticleCreator;
+import net.minestom.server.sound.SoundEvent;
+import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
@@ -202,7 +212,54 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void start() {
+        audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
+        final BlockSumoInstance instance = instanceFuture.join();
+        instance.scheduler().submitTask(new Supplier<>() {
+            int i = 3;
+
+            @Override
+            public TaskSchedule get() {
+                if (i == 0) {
+                    removeLockingEntities(instance);
+                    getPlayers().forEach(player -> {
+                        giveWoolAndShears(player);
+                        setSpawnBlockToWool(player);
+                    });
+                    return TaskSchedule.stop();
+                }
+
+                showCountdown(i);
+                i--;
+                return TaskSchedule.seconds(1);
+            }
+        });
+    }
+
+    private void showCountdown(final int countdown) {
+        audience.playSound(Sound.sound(Key.key("battle.countdown.begin"), Sound.Source.MASTER, 1F, 1F), Sound.Emitter.self());
+        audience.showTitle(Title.title(
+                Component.empty(),
+                Component.text(countdown, NamedTextColor.LIGHT_PURPLE),
+                Title.Times.times(Duration.ZERO, Duration.ofMillis(1500), Duration.ofMillis(500))
+        ));
+    }
+
+    private void removeLockingEntities(@NotNull Instance instance) {
+        instance.getEntities().forEach(entity -> {
+            if (entity.getEntityType() == EntityType.AREA_EFFECT_CLOUD) entity.remove();
+        });
+    }
+
+    private void giveWoolAndShears(@NotNull Player player) {
+        player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
+        player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
+    }
+
+    private void setSpawnBlockToWool(@NotNull Player player) {
+        final BlockSumoInstance instance = instanceFuture.join();
+        final Pos pos = player.getPosition();
+        instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
 
     @Override
