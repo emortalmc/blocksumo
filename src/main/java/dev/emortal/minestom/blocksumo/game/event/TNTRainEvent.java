@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game.event;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import dev.emortal.minestom.blocksumo.map.MapData;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -37,7 +38,8 @@ public final class TNTRainEvent extends BlockSumoEvent {
     private void spawnTnt() {
         BlockSumoInstance instance = this.game.getInstanceFuture().join();
         for (Player player : this.game.getPlayers()) {
-            Pos tntPos = player.getPosition().add(0, 10, 0);
+            final Pos pos = player.getPosition();
+            final Pos tntPos = new Pos(pos.x(), MapData.CENTER.y() + 10, pos.z());
 
             Entity tntEntity = new Entity(EntityType.TNT);
             PrimedTntMeta meta = (PrimedTntMeta) tntEntity.getEntityMeta();
