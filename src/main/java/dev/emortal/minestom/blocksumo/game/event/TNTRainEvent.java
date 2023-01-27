@@ -28,7 +28,7 @@ public final class TNTRainEvent extends BlockSumoEvent {
 
     @Override
     public void start() {
-        final BlockSumoInstance instance = game.getInstanceFuture().join();
+        final BlockSumoInstance instance = game.getInstance();
         instance.scheduler().submitTask(new Supplier<>() {
             int i = 0;
 

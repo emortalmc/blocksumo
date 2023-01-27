@@ -88,7 +88,7 @@ public class BlockSumoGame extends Game {
             event.getPlayer().setGameMode(GameMode.CREATIVE);
             event.getPlayer().setFlying(true);
 
-            BlockSumoInstance instance = this.instanceFuture.join();
+            final BlockSumoInstance instance = getInstance();
 
             Player player = event.getPlayer();
             if (!creationInfo.playerIds().contains(player.getUuid())) {
@@ -129,7 +129,7 @@ public class BlockSumoGame extends Game {
 
     private Set<SendablePacket> createSpawnPackets() {
         Set<SendablePacket> packets = new HashSet<>();
-        for (Pos spawn : this.instanceFuture.join().getMapData().spawns()) {
+        for (final Pos spawn : getInstance().getMapData().spawns()) {
             packets.add(ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
                     0, 0, 0, 0f, 1,
@@ -154,7 +154,7 @@ public class BlockSumoGame extends Game {
      * @return the spawn position
      */
     private synchronized @NotNull Pos getSpawnPos() {
-        BlockSumoInstance instance = this.instanceFuture.join();
+        final BlockSumoInstance instance = getInstance();
 
         Pos bestPos = null;
         double bestWorstDistance = 0; // The best of the worst distances
@@ -185,7 +185,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
-        BlockSumoInstance instance = this.instanceFuture.join();
+        BlockSumoInstance instance = getInstance();
 
         Pos bedrockPos = pos.add(0, -1, 0);
 
@@ -202,7 +202,7 @@ public class BlockSumoGame extends Game {
     private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
         this.prepareSpawn(player, pos);
 
-        final BlockSumoInstance instance = this.instanceFuture.join();
+        final BlockSumoInstance instance = getInstance();
         MinecraftServer.getSchedulerManager()
                 .buildTask(() -> instance.setBlock(pos.sub(1), Block.WHITE_WOOL))
                 .delay(restoreDelay, ChronoUnit.SECONDS)
@@ -218,7 +218,7 @@ public class BlockSumoGame extends Game {
     public void start() {
         audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
-        final BlockSumoInstance instance = instanceFuture.join();
+        final BlockSumoInstance instance = getInstance();
         instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
 
@@ -261,7 +261,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void setSpawnBlockToWool(@NotNull Player player) {
-        final BlockSumoInstance instance = instanceFuture.join();
+        final BlockSumoInstance instance = getInstance();
         final Pos pos = player.getPosition();
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
@@ -271,8 +271,8 @@ public class BlockSumoGame extends Game {
 
     }
 
-    public @NotNull CompletableFuture<BlockSumoInstance> getInstanceFuture() {
-        return instanceFuture;
+    public @NotNull BlockSumoInstance getInstance() {
+        return instanceFuture.join();
     }
 
     public @NotNull EventManager getEventManager() {
