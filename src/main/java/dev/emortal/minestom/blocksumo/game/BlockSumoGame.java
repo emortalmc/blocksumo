@@ -22,16 +22,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.metadata.other.AreaEffectCloudMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerLoginEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
@@ -82,8 +79,7 @@ public class BlockSumoGame extends Game {
             return true;
         });
         gameEventNode.addChild(this.eventNode);
-        registerInitialJoinListeners(eventNode);
-        playerTracker.registerListeners(eventNode);
+        registerAllListeners(eventNode);
 
         this.instanceFuture.thenAccept(instance -> {
             MinecraftServer.getSchedulerManager()
@@ -98,7 +94,7 @@ public class BlockSumoGame extends Game {
         return getGameCreationInfo().playerIds().contains(player.getUuid());
     }
 
-    private void registerInitialJoinListeners(@NotNull EventNode<Event> eventNode) {
+    private void registerAllListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerLoginEvent.class, event -> {
             // TODO: Remove when out of testing mode
             event.getPlayer().setGameMode(GameMode.CREATIVE);
@@ -120,11 +116,7 @@ public class BlockSumoGame extends Game {
             player.setAutoViewable(true);
             playerTracker.addInitialTags(player);
         });
-
-        eventNode.addListener(PlayerSpawnEvent.class, event -> {
-            final Player player = event.getPlayer();
-            this.prepareSpawn(player, player.getRespawnPoint());
-        });
+        playerTracker.registerPreGameListeners(eventNode);
     }
 
     private void sendSpawnPacketsToPlayers() {
@@ -191,31 +183,6 @@ public class BlockSumoGame extends Game {
         return spawnPos;
     }
 
-    private void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
-        BlockSumoInstance instance = getInstance();
-
-        Pos bedrockPos = pos.add(0, -1, 0);
-
-        instance.setBlock(bedrockPos, Block.BEDROCK);
-        instance.setBlock(pos.add(0, 1, 0), Block.AIR);
-        instance.setBlock(pos.add(0, 2, 0), Block.AIR);
-
-        final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
-        ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
-        entity.setNoGravity(true);
-        entity.setInstance(instance, pos).thenRun(() -> entity.addPassenger(player));
-    }
-
-    private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
-        this.prepareSpawn(player, pos);
-
-        final BlockSumoInstance instance = getInstance();
-        MinecraftServer.getSchedulerManager()
-                .buildTask(() -> instance.setBlock(pos.sub(1), Block.WHITE_WOOL))
-                .delay(restoreDelay, ChronoUnit.SECONDS)
-                .schedule();
-    }
-
     @Override
     public void load() {
         this.instanceFuture.join();
@@ -232,11 +199,7 @@ public class BlockSumoGame extends Game {
             @Override
             public TaskSchedule get() {
                 if (i == 0) {
-                    removeLockingEntities(instance);
-                    getPlayers().forEach(player -> {
-                        giveWoolAndShears(player);
-                        setSpawnBlockToWool(player);
-                    });
+                    startGame(instance);
                     return TaskSchedule.stop();
                 }
 
@@ -244,6 +207,15 @@ public class BlockSumoGame extends Game {
                 i--;
                 return TaskSchedule.seconds(1);
             }
+        });
+    }
+
+    private void startGame(@NotNull Instance instance) {
+        playerTracker.registerGameListeners(eventNode);
+        removeLockingEntities(instance);
+        getPlayers().forEach(player -> {
+            giveWoolAndShears(player);
+            setSpawnBlockToWool(player);
         });
     }
 
