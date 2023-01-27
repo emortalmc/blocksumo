@@ -21,10 +21,12 @@ import java.util.UUID;
 
 public final class PlayerDeathHandler {
 
+    private final PlayerTracker playerTracker;
     private final Set<UUID> deadPlayers = new HashSet<>();
     private final int minAllowedHeight;
 
-    public PlayerDeathHandler(final int minAllowedHeight) {
+    public PlayerDeathHandler(final PlayerTracker playerTracker, final int minAllowedHeight) {
+        this.playerTracker = playerTracker;
         this.minAllowedHeight = minAllowedHeight;
     }
 
@@ -79,6 +81,8 @@ public final class PlayerDeathHandler {
         player.setCanPickupItem(false);
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
+
+        playerTracker.getRespawnHandler().scheduleRespawn(player);
     }
 
     private void makeSpectator(final @NotNull Player player) {

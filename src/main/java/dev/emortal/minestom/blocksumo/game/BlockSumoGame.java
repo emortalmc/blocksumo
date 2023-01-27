@@ -109,7 +109,7 @@ public class BlockSumoGame extends Game {
                 return;
             }
 
-            player.setRespawnPoint(this.getSpawnPos());
+            player.setRespawnPoint(this.getBestSpawnPos());
             event.setSpawningInstance(instance);
             this.players.add(player);
 
@@ -152,7 +152,7 @@ public class BlockSumoGame extends Game {
      *
      * @return the spawn position
      */
-    private synchronized @NotNull Pos getSpawnPos() {
+    public synchronized @NotNull Pos getBestSpawnPos() {
         final BlockSumoInstance instance = getInstance();
 
         Pos bestPos = null;
