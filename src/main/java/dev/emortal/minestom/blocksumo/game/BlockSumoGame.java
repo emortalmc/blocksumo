@@ -52,7 +52,7 @@ public class BlockSumoGame extends Game {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private final PlayerTracker playerTracker;
+    private final PlayerManager playerManager;
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull CompletableFuture<BlockSumoInstance> instanceFuture;
 
@@ -62,7 +62,7 @@ public class BlockSumoGame extends Game {
         this.eventManager = new EventManager(this);
         eventManager.registerDefaultEvents();
 
-        this.playerTracker = new PlayerTracker(this, 49);
+        this.playerManager = new PlayerManager(this, 49);
 
         this.instanceFuture = instanceFuture;
         this.instanceFuture.thenAccept(instance -> this.availableSpawns = new ArrayList<>(instance.getMapData().spawns()));
@@ -114,9 +114,9 @@ public class BlockSumoGame extends Game {
             this.players.add(player);
 
             player.setAutoViewable(true);
-            playerTracker.addInitialTags(player);
+            playerManager.addInitialTags(player);
         });
-        playerTracker.registerPreGameListeners(eventNode);
+        playerManager.registerPreGameListeners(eventNode);
     }
 
     private void sendSpawnPacketsToPlayers() {
@@ -211,7 +211,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void startGame(@NotNull Instance instance) {
-        playerTracker.registerGameListeners(eventNode);
+        playerManager.registerGameListeners(eventNode);
         removeLockingEntities(instance);
         getPlayers().forEach(player -> {
             giveWoolAndShears(player);

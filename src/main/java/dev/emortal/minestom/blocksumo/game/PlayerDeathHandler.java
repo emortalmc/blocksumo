@@ -27,12 +27,12 @@ import java.util.UUID;
 
 public final class PlayerDeathHandler {
 
-    private final PlayerTracker playerTracker;
+    private final PlayerManager playerManager;
     private final Set<UUID> deadPlayers = new HashSet<>();
     private final int minAllowedHeight;
 
-    public PlayerDeathHandler(final PlayerTracker playerTracker, final int minAllowedHeight) {
-        this.playerTracker = playerTracker;
+    public PlayerDeathHandler(final PlayerManager playerManager, final int minAllowedHeight) {
+        this.playerManager = playerManager;
         this.minAllowedHeight = minAllowedHeight;
     }
 
@@ -91,7 +91,7 @@ public final class PlayerDeathHandler {
         sendKillMessage(player, killer);
         sendVictimTitle(player, killer);
 
-        playerTracker.getRespawnHandler().scheduleRespawn(player, () -> deadPlayers.remove(player.getUuid()));
+        playerManager.getRespawnHandler().scheduleRespawn(player, () -> deadPlayers.remove(player.getUuid()));
     }
 
     private void makeSpectator(final @NotNull Player player) {
@@ -118,7 +118,7 @@ public final class PlayerDeathHandler {
             message.append(Component.text(" died", NamedTextColor.GRAY));
         }
 
-        playerTracker.broadcastMessage(message.build());
+        playerManager.broadcastMessage(message.build());
     }
 
     private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer) {

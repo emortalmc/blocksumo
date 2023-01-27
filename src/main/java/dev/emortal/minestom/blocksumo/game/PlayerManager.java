@@ -12,13 +12,13 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import org.jetbrains.annotations.NotNull;
 
-public final class PlayerTracker {
+public final class PlayerManager {
 
     private final BlockSumoGame game;
     private final PlayerDeathHandler deathHandler;
     private final PlayerRespawnHandler respawnHandler;
 
-    public PlayerTracker(@NotNull BlockSumoGame game, int minAllowedHeight) {
+    public PlayerManager(@NotNull BlockSumoGame game, int minAllowedHeight) {
         this.game = game;
         this.deathHandler = new PlayerDeathHandler(this, minAllowedHeight);
         this.respawnHandler = new PlayerRespawnHandler(game, this);

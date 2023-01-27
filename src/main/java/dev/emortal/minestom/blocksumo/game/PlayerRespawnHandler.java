@@ -31,12 +31,12 @@ import java.util.function.Supplier;
 public final class PlayerRespawnHandler {
 
     private final BlockSumoGame game;
-    private final PlayerTracker playerTracker;
+    private final PlayerManager playerManager;
     private final Map<UUID, Task> respawnTasks = new ConcurrentHashMap<>();
 
-    public PlayerRespawnHandler(@NotNull BlockSumoGame game, @NotNull PlayerTracker playerTracker) {
+    public PlayerRespawnHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager) {
         this.game = game;
-        this.playerTracker = playerTracker;
+        this.playerManager = playerManager;
     }
 
     public void scheduleRespawn(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
