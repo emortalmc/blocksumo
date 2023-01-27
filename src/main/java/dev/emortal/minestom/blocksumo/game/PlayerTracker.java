@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -54,5 +55,9 @@ public final class PlayerTracker {
 
     public @NotNull PlayerRespawnHandler getRespawnHandler() {
         return respawnHandler;
+    }
+
+    public void broadcastMessage(@NotNull Component message) {
+        game.getAudience().sendMessage(message);
     }
 }

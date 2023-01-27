@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
@@ -87,6 +88,7 @@ public final class PlayerDeathHandler {
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
 
+        sendKillMessage(player, killer);
         sendVictimTitle(player, killer);
 
         playerTracker.getRespawnHandler().scheduleRespawn(player, () -> deadPlayers.remove(player.getUuid()));
@@ -101,6 +103,22 @@ public final class PlayerDeathHandler {
 
     private void playDeathSound(final @NotNull Player player) {
         player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
+    }
+
+    private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer) {
+        final TextComponent.Builder message = Component.text()
+                .append(Component.text("☠", NamedTextColor.RED))
+                .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+                .append(Component.text(victim.getUsername(), NamedTextColor.WHITE));
+
+        if (killer instanceof Player playerKiller) {
+            message.append(Component.text(" was killed by ", NamedTextColor.GRAY));
+            message.append(Component.text(playerKiller.getUsername(), NamedTextColor.WHITE));
+        } else {
+            message.append(Component.text(" died", NamedTextColor.GRAY));
+        }
+
+        playerTracker.broadcastMessage(message.build());
     }
 
     private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer) {
