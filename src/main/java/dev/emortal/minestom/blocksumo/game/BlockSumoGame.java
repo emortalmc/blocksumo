@@ -31,7 +31,6 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerLoginEvent;
-import net.minestom.server.event.player.PlayerMoveEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.PlayerEvent;
@@ -107,14 +106,6 @@ public class BlockSumoGame extends Game {
         eventNode.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
             this.prepareSpawn(player, player.getRespawnPoint());
-        });
-
-        eventNode.addListener(PlayerMoveEvent.class, event -> {
-            Player player = event.getPlayer();
-            Pos oldPos = player.getPosition();
-            if (oldPos.x() != event.getNewPosition().x() || oldPos.z() != event.getNewPosition().z()) {
-//                event.setCancelled(true); TODO uncomment
-            }
         });
 
         this.instanceFuture.thenAccept(instance -> {
