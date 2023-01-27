@@ -82,7 +82,7 @@ public final class PlayerDeathHandler {
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
 
-        playerTracker.getRespawnHandler().scheduleRespawn(player);
+        playerTracker.getRespawnHandler().scheduleRespawn(player, () -> deadPlayers.remove(player.getUuid()));
     }
 
     private void makeSpectator(final @NotNull Player player) {

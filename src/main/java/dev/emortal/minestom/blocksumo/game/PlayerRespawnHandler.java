@@ -14,6 +14,8 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -37,7 +39,7 @@ public final class PlayerRespawnHandler {
         this.playerTracker = playerTracker;
     }
 
-    public void scheduleRespawn(@NotNull Player player) {
+    public void scheduleRespawn(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
         final Task task = player.scheduler().submitTask(new Supplier<>() {
             int i = 4;
 
@@ -51,6 +53,7 @@ public final class PlayerRespawnHandler {
 
                 if (i == 0) {
                     respawn(player);
+                    afterRespawnAction.run();
                     return TaskSchedule.stop();
                 }
 
@@ -93,6 +96,7 @@ public final class PlayerRespawnHandler {
         player.setCanPickupItem(true);
 
         prepareRespawn(player, respawnPos, 5);
+        giveWoolAndShears(player);
     }
 
     private void reset(@NotNull Player player) {
@@ -161,5 +165,10 @@ public final class PlayerRespawnHandler {
                 .schedule();
 
         // TODO: Spawn protection
+    }
+
+    private void giveWoolAndShears(@NotNull Player player) {
+        player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
+        player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
     }
 }
