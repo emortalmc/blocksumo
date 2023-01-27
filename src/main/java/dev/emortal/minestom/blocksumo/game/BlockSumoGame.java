@@ -69,28 +69,41 @@ public class BlockSumoGame extends Game {
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
-                if (!this.getGameCreationInfo().playerIds().contains(playerEvent.getPlayer().getUuid())) return false;
+                if (!isValidPlayerForGame(playerEvent.getPlayer())) return false;
             }
             if (event instanceof InstanceEvent instanceEvent) {
                 // we don't have to worry about instance events if the instance isn't loaded yet
-                if (instanceFuture.isDone()) {
-                    BlockSumoInstance instance = instanceFuture.join();
-                    return instanceEvent.getInstance() == instance;
-                }
+                if (!instanceFuture.isDone()) return false;
+                return instanceEvent.getInstance() == instanceFuture.join();
             }
             return true;
         });
         gameEventNode.addChild(this.eventNode);
+        registerInitialJoinListeners(eventNode);
 
+        this.instanceFuture.thenAccept(instance -> {
+            MinecraftServer.getSchedulerManager()
+                    .buildTask(this::sendSpawnPacketsToPlayers)
+                    .delay(3, ChronoUnit.SECONDS)
+                    .repeat(1, ChronoUnit.SECONDS)
+                    .schedule();
+        });
+    }
+
+    private boolean isValidPlayerForGame(@NotNull Player player) {
+        return getGameCreationInfo().playerIds().contains(player.getUuid());
+    }
+
+    private void registerInitialJoinListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerLoginEvent.class, event -> {
-            // TODO remove
+            // TODO: Remove when out of testing mode
             event.getPlayer().setGameMode(GameMode.CREATIVE);
             event.getPlayer().setFlying(true);
 
             final BlockSumoInstance instance = getInstance();
 
             Player player = event.getPlayer();
-            if (!creationInfo.playerIds().contains(player.getUuid())) {
+            if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
                 player.kick("Unexpected join (" + Environment.getHostname() + ")");
                 LOGGER.info("Unexpected join for player {}", player.getUuid());
                 return;
@@ -107,15 +120,13 @@ public class BlockSumoGame extends Game {
             final Player player = event.getPlayer();
             this.prepareSpawn(player, player.getRespawnPoint());
         });
+    }
 
-        this.instanceFuture.thenAccept(instance -> {
-            MinecraftServer.getSchedulerManager().buildTask(() -> {
-                Set<SendablePacket> packets = this.createSpawnPackets();
-                for (Player player : this.players) {
-                    packets.forEach(player::sendPacket);
-                }
-            }).delay(3, ChronoUnit.SECONDS).repeat(1, ChronoUnit.SECONDS).schedule();
-        });
+    private void sendSpawnPacketsToPlayers() {
+        final Set<SendablePacket> packets = this.createSpawnPackets();
+        for (final Player player : players) {
+            packets.forEach(player::sendPacket);
+        }
     }
 
     private Set<SendablePacket> createSpawnPackets() {
