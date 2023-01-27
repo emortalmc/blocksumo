@@ -29,7 +29,7 @@ public final class MapClearEvent extends BlockSumoEvent {
     }
 
     @Override
-    protected void run() {
+    public void start() {
         final BlockSumoInstance instance = game.getInstanceFuture().join();
         instance.scheduler().submitTask(new Supplier<>() {
             final int iterations = MAX_CLEAR_HEIGHT - DIAMOND_BLOCK_HEIGHT;

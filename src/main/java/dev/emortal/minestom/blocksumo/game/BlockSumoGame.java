@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.minestom.blocksumo.game.event.EventManager;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
 
+    private final EventManager eventManager;
     private List<Pos> availableSpawns;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -60,6 +62,8 @@ public class BlockSumoGame extends Game {
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode,
                          @NotNull CompletableFuture<BlockSumoInstance> instanceFuture) {
         super(creationInfo);
+        this.eventManager = new EventManager(this);
+        eventManager.registerDefaultEvents();
 
         this.instanceFuture = instanceFuture;
         this.instanceFuture.thenAccept(instance -> this.availableSpawns = new ArrayList<>(instance.getMapData().spawns()));
@@ -269,5 +273,9 @@ public class BlockSumoGame extends Game {
 
     public @NotNull CompletableFuture<BlockSumoInstance> getInstanceFuture() {
         return instanceFuture;
+    }
+
+    public @NotNull EventManager getEventManager() {
+        return eventManager;
     }
 }
