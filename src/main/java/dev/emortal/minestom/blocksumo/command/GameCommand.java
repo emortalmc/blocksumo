@@ -1,8 +1,8 @@
 package dev.emortal.minestom.blocksumo.command;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import dev.emortal.minestom.blocksumo.game.event.BlockSumoEvent;
-import dev.emortal.minestom.blocksumo.game.event.EventManager;
+import dev.emortal.minestom.blocksumo.event.BlockSumoEvent;
+import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.gamesdk.GameSdkModule;
 import dev.emortal.minestom.gamesdk.game.Game;
 import net.kyori.adventure.text.Component;

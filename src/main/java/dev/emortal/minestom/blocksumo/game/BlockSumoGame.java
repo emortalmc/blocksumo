@@ -1,6 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.minestom.blocksumo.game.event.EventManager;
+import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;

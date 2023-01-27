@@ -1,4 +1,4 @@
-package dev.emortal.minestom.blocksumo.game.event;
+package dev.emortal.minestom.blocksumo.event;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

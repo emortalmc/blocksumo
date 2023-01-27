@@ -1,8 +1,8 @@
-package dev.emortal.minestom.blocksumo.game.event;
+package dev.emortal.minestom.blocksumo.event;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
-import dev.emortal.minestom.blocksumo.map.MapData;
+
 import java.util.function.Supplier;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;

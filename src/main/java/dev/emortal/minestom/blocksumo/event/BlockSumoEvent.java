@@ -1,4 +1,4 @@
-package dev.emortal.minestom.blocksumo.game.event;
+package dev.emortal.minestom.blocksumo.event;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.Component;
