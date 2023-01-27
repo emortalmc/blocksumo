@@ -46,9 +46,13 @@ public class GameCommand extends Command {
 
         BlockSumoGame game = (BlockSumoGame) optionalGame.get();
         BlockSumoEvent event;
-        if (eventName == null) event = EventRegistry.randomEvent().apply(game);
-        else event = EventRegistry.EVENTS.get(eventName).apply(game);
+        if (eventName == null) {
+            event = EventRegistry.randomEvent().apply(game);
+        } else {
+            event = EventRegistry.EVENTS.get(eventName).apply(game);
+        }
 
+        event.start();
         sender.sendMessage("Started event " + event.getClass().getSimpleName() + "...");
         // TODO: Set current event in game
     }
