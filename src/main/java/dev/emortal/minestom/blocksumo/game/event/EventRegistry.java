@@ -9,7 +9,8 @@ import java.util.function.Function;
 
 public class EventRegistry {
     public static final Map<String, Function<BlockSumoGame, BlockSumoEvent>> EVENTS = Map.of(
-            "TNT_RAIN", TNTRainEvent::new
+            "TNT_RAIN", TNTRainEvent::new,
+            "MAP_CLEAR", MapClearEvent::new
     );
 
     public static @NotNull Function<BlockSumoGame, BlockSumoEvent> randomEvent() {

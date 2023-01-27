@@ -7,7 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 
-public abstract sealed class BlockSumoEvent permits TNTRainEvent {
+public abstract sealed class BlockSumoEvent permits TNTRainEvent, MapClearEvent {
     protected final @NotNull BlockSumoGame game;
     private final @NotNull Component startMessage;
 
