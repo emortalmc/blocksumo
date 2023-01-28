@@ -8,17 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class PowerUpRegistry {
-    private final Map<String, PowerUpConstructor> registry = new HashMap<>();
+    private final Map<String, PowerUp> registry = new HashMap<>();
 
-    public @Nullable PowerUpConstructor findById(final @NotNull String id) {
+    public @Nullable PowerUp findById(final @NotNull String id) {
         return registry.get(id);
     }
 
-    public void registerPowerUp(final @NotNull String id, final @NotNull PowerUpConstructor constructor) {
+    public void registerPowerUp(final @NotNull String id, final @NotNull PowerUp powerUp) {
         if (registry.containsKey(id)) {
-            throw new IllegalArgumentException("PowerUp with id " + id + " already exists!");
+            throw new IllegalArgumentException("Power up with id " + id + " already exists!");
         }
-        registry.put(id, constructor);
+        registry.put(id, powerUp);
     }
 
     public @NotNull Collection<String> getPowerUpIds() {
