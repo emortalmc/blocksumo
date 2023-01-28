@@ -65,7 +65,7 @@ public class BlockSumoGame extends Game {
     private final @NotNull MapData mapData;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode, @NotNull LoadedMap map) {
-        super(creationInfo);
+        super(creationInfo, gameEventNode);
         this.playerManager = new PlayerManager(this, 49);
 
         this.eventManager = new EventManager(this);
