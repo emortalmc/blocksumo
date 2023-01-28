@@ -16,6 +16,7 @@ import net.minestom.server.entity.damage.EntityProjectileDamage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerTickEvent;
+import net.minestom.server.scoreboard.Sidebar;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,8 +100,17 @@ public final class PlayerDeathHandler {
             return;
         }
 
-        playerManager.getTeamManager().updateTeamLives(player, remainingLives);
+        updateScoreboardLives(player, remainingLives);
         playerManager.getRespawnHandler().scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
+    }
+
+    private void updateScoreboardLives(@NotNull Player player, int remainingLives) {
+        playerManager.getTeamManager().updateTeamLives(player, remainingLives);
+
+        final Sidebar scoreboard = playerManager.getScoreboard();
+        final String lineName = player.getUuid().toString();
+        scoreboard.updateLineContent(lineName, player.getDisplayName());
+        scoreboard.updateLineScore(lineName, remainingLives);
     }
 
     private void makeSpectator(final @NotNull Player player) {
