@@ -1,12 +1,12 @@
 package dev.emortal.minestom.blocksumo.event;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 
 import java.util.function.Supplier;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.batch.AbsoluteBlockBatch;
 import net.minestom.server.instance.batch.Batch;
 import net.minestom.server.instance.block.Block;
@@ -30,7 +30,7 @@ public final class MapClearEvent extends BlockSumoEvent {
 
     @Override
     public void start() {
-        final BlockSumoInstance instance = game.getInstance();
+        final Instance instance = game.getInstance();
         instance.scheduler().submitTask(new Supplier<>() {
             final int iterations = MAX_CLEAR_HEIGHT - DIAMOND_BLOCK_HEIGHT;
             int i = 0;

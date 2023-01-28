@@ -1,6 +1,5 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -15,6 +14,7 @@ import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -150,7 +150,7 @@ public final class PlayerRespawnHandler {
     }
 
     public void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
-        final BlockSumoInstance instance = game.getInstance();
+        final Instance instance = game.getInstance();
 
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.BEDROCK);
         instance.setBlock(pos.blockX(), pos.blockY() + 1, pos.blockZ(), Block.AIR);
@@ -160,7 +160,7 @@ public final class PlayerRespawnHandler {
     private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
         prepareSpawn(player, pos);
 
-        final BlockSumoInstance instance = game.getInstance();
+        final Instance instance = game.getInstance();
         MinecraftServer.getSchedulerManager()
                 .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL))
                 .delay(restoreDelay, ChronoUnit.SECONDS)

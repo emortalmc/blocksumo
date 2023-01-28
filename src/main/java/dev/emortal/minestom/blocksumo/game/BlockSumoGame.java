@@ -2,6 +2,8 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import dev.emortal.minestom.blocksumo.map.LoadedMap;
+import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.core.Environment;
@@ -58,15 +60,13 @@ public class BlockSumoGame extends Game {
     private final PlayerManager playerManager;
     private final EventManager eventManager;
     private final PowerUpManager powerUpManager;
-    private List<Pos> availableSpawns;
-
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final List<Pos> availableSpawns;
 
     private final @NotNull EventNode<Event> eventNode;
-    private final @NotNull CompletableFuture<BlockSumoInstance> instanceFuture;
+    private final @NotNull Instance instance;
+    private final @NotNull MapData mapData;
 
-    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode,
-                         @NotNull CompletableFuture<BlockSumoInstance> instanceFuture) {
+    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode, @NotNull LoadedMap map) {
         super(creationInfo);
         this.playerManager = new PlayerManager(this, 49);
 
@@ -76,17 +76,16 @@ public class BlockSumoGame extends Game {
         this.powerUpManager = new PowerUpManager(this);
         powerUpManager.registerDefaultPowerUps();
 
-        this.instanceFuture = instanceFuture;
-        this.instanceFuture.thenAccept(instance -> this.availableSpawns = new ArrayList<>(instance.getMapData().spawns()));
+        this.instance = map.instance();
+        this.mapData = map.mapData();
+        this.availableSpawns = new ArrayList<>(mapData.spawns());
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
                 if (!isValidPlayerForGame(playerEvent.getPlayer())) return false;
             }
             if (event instanceof InstanceEvent instanceEvent) {
-                // we don't have to worry about instance events if the instance isn't loaded yet
-                if (!instanceFuture.isDone()) return false;
-                return instanceEvent.getInstance() == instanceFuture.join();
+                return instanceEvent.getInstance() == instance;
             }
             return true;
         });
@@ -94,13 +93,11 @@ public class BlockSumoGame extends Game {
         playerManager.registerPreGameListeners(eventNode);
         playerManager.setupWaitingScoreboard();
 
-        this.instanceFuture.thenAccept(instance -> {
-            MinecraftServer.getSchedulerManager()
-                    .buildTask(this::sendSpawnPacketsToPlayers)
-                    .delay(3, ChronoUnit.SECONDS)
-                    .repeat(1, ChronoUnit.SECONDS)
-                    .schedule();
-        });
+        MinecraftServer.getSchedulerManager()
+                .buildTask(this::sendSpawnPacketsToPlayers)
+                .delay(3, ChronoUnit.SECONDS)
+                .repeat(1, ChronoUnit.SECONDS)
+                .schedule();
     }
 
     private boolean isValidPlayerForGame(@NotNull Player player) {
@@ -109,8 +106,6 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
-        final BlockSumoInstance instance = getInstance();
-
         Player player = event.getPlayer();
         if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
             player.kick("Unexpected join (" + Environment.getHostname() + ")");
@@ -135,7 +130,7 @@ public class BlockSumoGame extends Game {
 
     private Set<SendablePacket> createSpawnPackets() {
         Set<SendablePacket> packets = new HashSet<>();
-        for (final Pos spawn : getInstance().getMapData().spawns()) {
+        for (final Pos spawn : mapData.spawns()) {
             packets.add(ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
                     0, 0, 0, 0f, 1,
@@ -160,8 +155,6 @@ public class BlockSumoGame extends Game {
      * @return the spawn position
      */
     public synchronized @NotNull Pos getBestSpawnPos() {
-        final BlockSumoInstance instance = getInstance();
-
         Pos bestPos = null;
         double bestWorstDistance = 0; // The best of the worst distances
         for (Pos pos : this.availableSpawns) {
@@ -191,15 +184,9 @@ public class BlockSumoGame extends Game {
     }
 
     @Override
-    public void load() {
-        this.instanceFuture.join();
-    }
-
-    @Override
     public void start() {
         audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
-        final BlockSumoInstance instance = getInstance();
         playerManager.getScoreboard().removeLine("infoLine");
         instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
@@ -208,7 +195,7 @@ public class BlockSumoGame extends Game {
             public TaskSchedule get() {
                 if (i == 0) {
                     showGameStartTitle();
-                    startGame(instance);
+                    startGame();
                     return TaskSchedule.stop();
                 }
 
@@ -219,10 +206,10 @@ public class BlockSumoGame extends Game {
         });
     }
 
-    private void startGame(@NotNull Instance instance) {
+    private void startGame() {
         playerManager.registerGameListeners(eventNode);
         powerUpManager.registerListeners(eventNode);
-        removeLockingEntities(instance);
+        removeLockingEntities();
         for (final Player player : getPlayers()) {
             giveWoolAndShears(player);
             giveColoredChestplate(player);
@@ -248,7 +235,7 @@ public class BlockSumoGame extends Game {
         audience.showTitle(title);
     }
 
-    private void removeLockingEntities(@NotNull Instance instance) {
+    private void removeLockingEntities() {
         instance.getEntities().forEach(entity -> {
             if (entity.getEntityType() == EntityType.AREA_EFFECT_CLOUD) entity.remove();
         });
@@ -268,7 +255,6 @@ public class BlockSumoGame extends Game {
     }
 
     private void setSpawnBlockToWool(@NotNull Player player) {
-        final BlockSumoInstance instance = getInstance();
         final Pos pos = player.getPosition();
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
@@ -278,8 +264,8 @@ public class BlockSumoGame extends Game {
 
     }
 
-    public @NotNull BlockSumoInstance getInstance() {
-        return instanceFuture.join();
+    public @NotNull Instance getInstance() {
+        return instance;
     }
 
     public @NotNull EventManager getEventManager() {

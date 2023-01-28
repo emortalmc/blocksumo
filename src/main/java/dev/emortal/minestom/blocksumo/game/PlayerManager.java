@@ -2,7 +2,6 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.damage.PlayerDamageHandler;
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
-import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;
@@ -17,6 +16,7 @@ import net.minestom.server.entity.metadata.other.AreaEffectCloudMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.scoreboard.Sidebar;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +59,7 @@ public final class PlayerManager {
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
         respawnHandler.prepareSpawn(player, pos);
 
-        final BlockSumoInstance instance = game.getInstance();
+        final Instance instance = game.getInstance();
         final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
         ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
         entity.setNoGravity(true);

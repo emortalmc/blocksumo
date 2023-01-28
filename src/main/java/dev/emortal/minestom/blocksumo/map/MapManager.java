@@ -8,6 +8,7 @@ import dev.emortal.tnt.TNTLoader;
 import dev.emortal.tnt.source.FileTNTSource;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.instance.Instance;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MapManager {
@@ -35,24 +35,22 @@ public class MapManager {
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
-    public CompletableFuture<BlockSumoInstance> getRandomMap() {
-        return CompletableFuture.supplyAsync(() -> {
-            String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
+    public LoadedMap getRandomMap() {
+        final String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
-            Path mapPath = MAPS_PATH.resolve(randomMapName);
-            Path tntPath = mapPath.resolve("map.tnt");
-            Path dataPath = mapPath.resolve("map_data.json");
+        final Path mapPath = MAPS_PATH.resolve(randomMapName);
+        final Path tntPath = mapPath.resolve("map.tnt");
+        final Path dataPath = mapPath.resolve("map_data.json");
 
-            try {
-                MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
-                LOGGER.info("Loaded map data for map {}: [{}]", randomMapName, mapData);
+        try {
+            final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
+            LOGGER.info("Loaded map data for map {}: [{}]", randomMapName, mapData);
 
-                BlockSumoInstance instance = new BlockSumoInstance(mapData, new TNTLoader(new FileTNTSource(tntPath)));
-                MinecraftServer.getInstanceManager().registerInstance(instance);
-                return instance;
-            } catch (IOException | NBTException e) {
-                throw new RuntimeException(e);
-            }
-        });
+            final TNTLoader chunkLoader = new TNTLoader(new FileTNTSource(tntPath));
+            final Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(chunkLoader);
+            return new LoadedMap(instance, mapData);
+        } catch (IOException | NBTException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
