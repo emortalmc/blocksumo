@@ -15,6 +15,8 @@ import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.command.builder.suggestion.Suggestion;
 import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -36,38 +38,35 @@ public final class GameCommand extends Command {
         this.addSyntax(this::executeStartEvent, start, event, eventType);
     }
 
-    private void suggestEvents(final CommandSender sender, final Suggestion suggestion) {
+    private @Nullable BlockSumoGame getGame(final CommandSender sender) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("You must be a player to use this command!");
-            return;
+            return null;
         }
 
-        final Optional<Game> optionalGame = GameSdkModule.getGameManager().findGame(player);
-        if (optionalGame.isEmpty()) {
+        final Optional<Game> game = GameSdkModule.getGameManager().findGame(player);
+        if (game.isEmpty()) {
             sender.sendMessage("You are not in a game!");
-            return;
+            return null;
         }
 
-        final BlockSumoGame game = (BlockSumoGame) optionalGame.get();
+        return (BlockSumoGame) game.get();
+    }
+
+    private void suggestEvents(final CommandSender sender, final Suggestion suggestion) {
+        final BlockSumoGame game = getGame(sender);
+        if (game == null) return;
+
         for (final String eventName : game.getEventManager().getEventNames()) {
             suggestion.addEntry(new SuggestionEntry(eventName));
         }
     }
 
     private void executeStartEvent(CommandSender sender, CommandContext context) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("You must be a player to use this command!");
-            return;
-        }
-        String eventName = context.has("eventType") ? context.get("eventType") : null;
+        final BlockSumoGame game = getGame(sender);
+        if (game == null) return;
 
-        Optional<Game> optionalGame = GameSdkModule.getGameManager().findGame(player);
-        if (optionalGame.isEmpty()) {
-            sender.sendMessage("You are not in a game!");
-            return;
-        }
-
-        final BlockSumoGame game = (BlockSumoGame) optionalGame.get();
+        final String eventName = context.has("eventType") ? context.get("eventType") : null;
         final EventManager eventManager = game.getEventManager();
 
         final BlockSumoEvent event;
