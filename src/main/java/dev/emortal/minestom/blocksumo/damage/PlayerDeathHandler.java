@@ -1,5 +1,7 @@
-package dev.emortal.minestom.blocksumo.game;
+package dev.emortal.minestom.blocksumo.damage;
 
+import dev.emortal.minestom.blocksumo.game.PlayerManager;
+import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -33,7 +35,7 @@ public final class PlayerDeathHandler {
         this.minAllowedHeight = minAllowedHeight;
     }
 
-    public void registerDeathListener(@NotNull EventNode<Event> eventNode) {
+    public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerTickEvent.class, event -> {
             final Player player = event.getPlayer();
             if (isDead(player)) return;
@@ -50,7 +52,7 @@ public final class PlayerDeathHandler {
     private @Nullable Entity determineKiller(@NotNull Player player) {
         Entity killer = null;
         final DamageType lastDamageSource = player.getLastDamageSource();
-        if (getLastDamageTime(player) + 8000 > System.currentTimeMillis() && lastDamageSource != null) {
+        if (isValidDamageTimestamp(player) && lastDamageSource != null) {
             if (lastDamageSource instanceof EntityDamage damage) {
                 killer = getKillerFromDamage(damage);
             } else if (lastDamageSource instanceof EntityProjectileDamage damage) {
@@ -60,6 +62,11 @@ public final class PlayerDeathHandler {
         return killer != player ? killer : null;
     }
 
+    private boolean isValidDamageTimestamp(@NotNull Player player) {
+        // Last damage time is only valid for 8 seconds after the damage.
+        return getLastDamageTime(player) + 8000 > System.currentTimeMillis();
+    }
+
     private @Nullable Entity getKillerFromDamage(@NotNull EntityDamage damage) {
         final Entity source = damage.getSource();
         if (source instanceof Player player) return player;
@@ -67,7 +74,7 @@ public final class PlayerDeathHandler {
         return null;
     }
 
-    private static long getLastDamageTime(@NotNull Player player) {
+    private long getLastDamageTime(@NotNull Player player) {
         return player.getTag(PlayerTags.LAST_DAMAGE_TIME);
     }
 

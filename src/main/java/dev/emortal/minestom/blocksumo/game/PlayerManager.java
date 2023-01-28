@@ -1,11 +1,12 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.minestom.blocksumo.damage.PlayerDamageHandler;
+import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.attribute.Attribute;
 import net.minestom.server.coordinate.Pos;
@@ -25,6 +26,7 @@ public final class PlayerManager {
     private final PlayerDeathHandler deathHandler;
     private final PlayerRespawnHandler respawnHandler;
     private final PlayerTeamManager teamManager;
+    private final PlayerDamageHandler damageHandler;
 
     private final Sidebar scoreboard;
 
@@ -33,6 +35,7 @@ public final class PlayerManager {
         this.deathHandler = new PlayerDeathHandler(this, minAllowedHeight);
         this.respawnHandler = new PlayerRespawnHandler(game, this);
         this.teamManager = new PlayerTeamManager();
+        this.damageHandler = new PlayerDamageHandler();
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 
@@ -64,7 +67,8 @@ public final class PlayerManager {
     }
 
     public void registerGameListeners(@NotNull EventNode<Event> eventNode) {
-        deathHandler.registerDeathListener(eventNode);
+        deathHandler.registerListeners(eventNode);
+        damageHandler.registerListeners(eventNode);
     }
 
     public void addInitialTags(@NotNull Player player) {
