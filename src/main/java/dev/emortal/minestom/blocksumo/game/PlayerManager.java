@@ -5,6 +5,7 @@ import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -60,6 +61,7 @@ public final class PlayerManager {
     public void addInitialTags(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
         player.setTag(PlayerTags.DEAD, false);
+        player.setTag(PlayerTags.LIVES, (byte) 5);
     }
 
     public void setupWaitingScoreboard() {
@@ -91,6 +93,14 @@ public final class PlayerManager {
 
     public @NotNull PlayerRespawnHandler getRespawnHandler() {
         return respawnHandler;
+    }
+
+    public @NotNull PlayerTeamManager getTeamManager() {
+        return teamManager;
+    }
+
+    public @NotNull Sidebar getScoreboard() {
+        return scoreboard;
     }
 
     public void broadcastMessage(@NotNull Component message) {

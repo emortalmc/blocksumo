@@ -83,10 +83,23 @@ public final class PlayerDeathHandler {
         player.setCanPickupItem(false);
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
+        final int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
+        player.setTag(PlayerTags.LIVES, (byte) remainingLives);
 
-        sendKillMessage(player, killer);
-        sendVictimTitle(player, killer);
+        sendKillMessage(player, killer, remainingLives);
+        sendVictimTitle(player, killer, remainingLives);
 
+        if (remainingLives <= 0) {
+            playerManager.getScoreboard().removeLine(player.getUuid().toString());
+            player.setTeam(null);
+
+            // TODO: Check for winner
+
+            playerManager.getTeamManager().resetTeam(player);
+            return;
+        }
+
+        playerManager.getTeamManager().updateTeamLives(player, remainingLives);
         playerManager.getRespawnHandler().scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
     }
 
@@ -101,7 +114,7 @@ public final class PlayerDeathHandler {
         player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
     }
 
-    private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer) {
+    private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
         final TextComponent.Builder message = Component.text()
                 .append(Component.text("☠", NamedTextColor.RED))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
@@ -114,25 +127,31 @@ public final class PlayerDeathHandler {
             message.append(Component.text(" died", NamedTextColor.GRAY));
         }
 
+        if (remainingLives <= 0) {
+            message.append(Component.text(" FINAL KILL", NamedTextColor.AQUA, TextDecoration.BOLD));
+        }
+
         playerManager.broadcastMessage(message.build());
     }
 
-    private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer) {
+    private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
         final Component subtitle;
         if (killer instanceof Player playerKiller) {
             subtitle = Component.text()
                     .append(Component.text("Killed by ", NamedTextColor.GRAY))
                     .append(Component.text(playerKiller.getUsername(), NamedTextColor.WHITE))
                     .build();
-
+        } else if (remainingLives <= 0) {
+            subtitle = Component.text("(Final kill)", NamedTextColor.DARK_GRAY);
         } else {
             subtitle = Component.empty();
         }
 
+        final Duration stay = Duration.ofSeconds(remainingLives <= 0 ? 2 : 1);
         final Title title = Title.title(
                 Component.text("YOU DIED", NamedTextColor.RED, TextDecoration.BOLD),
                 subtitle,
-                Title.Times.times(Duration.ZERO, Duration.ofSeconds(1), Duration.ofSeconds(1))
+                Title.Times.times(Duration.ZERO, stay, Duration.ofSeconds(1))
         );
         victim.showTitle(title);
     }

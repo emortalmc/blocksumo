@@ -5,12 +5,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
+import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 public final class PlayerTeamManager {
@@ -18,30 +23,50 @@ public final class PlayerTeamManager {
     private static final Random RANDOM = new Random();
 
     private final List<TeamColor> remainingColors = new ArrayList<>(COLORS);
-    private final List<SumoTeam> teams = new ArrayList<>();
+    private final Map<TeamColor, SumoTeam> teams = new HashMap<>();
 
     public void allocateTeam(@NotNull Player player) {
         final TeamColor allocatedColor = allocateTeamColor();
         final SumoTeam team = new SumoTeam(allocatedColor.toString().toLowerCase(Locale.ROOT), allocatedColor);
-        teams.add(team);
+        teams.put(allocatedColor, team);
 
-        updateTeamSuffix(team);
-        addTeamColorToName(player, allocatedColor);
+        updateTeamLives(team, allocatedColor, player, 5);
         player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
     }
 
-    private void updateTeamSuffix(@NotNull SumoTeam team) {
-        team.setSuffix(Component.text()
-                .append(Component.text(" - ", NamedTextColor.GRAY))
-                .append(Component.text(0, NamedTextColor.GREEN, TextDecoration.BOLD))
-                .build());
+    public void resetTeam(@NotNull Player player) {
+        final Team team = MinecraftServer.getTeamManager().createBuilder(player.getUsername() + "default")
+                .collisionRule(TeamsPacket.CollisionRule.NEVER)
+                .build();
+        player.setTeam(team);
     }
 
-    private void addTeamColorToName(@NotNull Player player, @NotNull TeamColor color) {
-        final Component displayName = Component.text()
-                .append(Component.text(player.getUsername(), TextColor.color(color.getColor())))
+    public void updateTeamLives(@NotNull Player player, int lives) {
+        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        final SumoTeam team = teams.get(color);
+        if (team == null) {
+            throw new IllegalStateException("Team for player " + player.getUsername() + " is null!");
+        }
+        updateTeamLives(team, color, player, lives);
+    }
+
+    private void updateTeamLives(@NotNull SumoTeam team, @NotNull TeamColor teamColor, @NotNull Player player, int lives) {
+        final TextColor livesColor;
+        if (lives == 5) {
+            livesColor = NamedTextColor.GREEN;
+        } else {
+            livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
+        }
+
+        team.setSuffix(Component.text()
                 .append(Component.text(" - ", NamedTextColor.GRAY))
-                .append(Component.text("5", NamedTextColor.GREEN, TextDecoration.BOLD))
+                .append(Component.text(lives, livesColor, TextDecoration.BOLD))
+                .build());
+
+        final Component displayName = Component.text()
+                .append(Component.text(player.getUsername(), TextColor.color(teamColor.getColor())))
+                .append(Component.text(" - ", NamedTextColor.GRAY))
+                .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build();
         player.setDisplayName(displayName);
     }

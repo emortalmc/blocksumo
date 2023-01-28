@@ -39,6 +39,10 @@ public final class SumoTeam implements PacketGroupingAudience {
                 .build();
     }
 
+    public @NotNull TeamColor getColor() {
+        return color;
+    }
+
     public void setSuffix(@NotNull Component suffix) {
         scoreboardTeam.updateSuffix(suffix);
     }
