@@ -59,6 +59,7 @@ public final class PlayerManager {
 
     public void addInitialTags(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
+        player.setTag(PlayerTags.DEAD, false);
     }
 
     public void setupWaitingScoreboard() {

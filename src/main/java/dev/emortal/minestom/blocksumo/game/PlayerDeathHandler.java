@@ -21,14 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 public final class PlayerDeathHandler {
 
     private final PlayerManager playerManager;
-    private final Set<UUID> deadPlayers = new HashSet<>();
     private final int minAllowedHeight;
 
     public PlayerDeathHandler(final PlayerManager playerManager, final int minAllowedHeight) {
@@ -75,11 +71,11 @@ public final class PlayerDeathHandler {
     }
 
     public boolean isDead(@NotNull Player player) {
-        return deadPlayers.contains(player.getUuid());
+        return player.getTag(PlayerTags.DEAD);
     }
 
     public void kill(@NotNull Player player, @Nullable Entity killer) {
-        deadPlayers.add(player.getUuid());
+        player.setTag(PlayerTags.DEAD, true);
 
         makeSpectator(player);
         playDeathSound(player);
@@ -91,7 +87,7 @@ public final class PlayerDeathHandler {
         sendKillMessage(player, killer);
         sendVictimTitle(player, killer);
 
-        playerManager.getRespawnHandler().scheduleRespawn(player, () -> deadPlayers.remove(player.getUuid()));
+        playerManager.getRespawnHandler().scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
     }
 
     private void makeSpectator(final @NotNull Player player) {
