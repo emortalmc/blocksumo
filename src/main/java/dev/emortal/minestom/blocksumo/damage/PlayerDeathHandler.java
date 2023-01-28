@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.damage;
 
+import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.kyori.adventure.sound.Sound;
@@ -24,13 +25,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class PlayerDeathHandler {
 
+    private final BlockSumoGame game;
     private final PlayerManager playerManager;
     private final int minAllowedHeight;
 
-    public PlayerDeathHandler(final PlayerManager playerManager, final int minAllowedHeight) {
+    public PlayerDeathHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager, int minAllowedHeight) {
+        this.game = game;
         this.playerManager = playerManager;
         this.minAllowedHeight = minAllowedHeight;
     }
@@ -100,15 +105,27 @@ public final class PlayerDeathHandler {
         if (remainingLives <= 0) {
             playerManager.getScoreboard().removeLine(player.getUuid().toString());
             player.setTeam(null);
-
-            // TODO: Check for winner
-
+            checkForWinner();
             playerManager.getTeamManager().resetTeam(player);
             return;
         }
 
         updateScoreboardLives(player, remainingLives);
         playerManager.getRespawnHandler().scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
+    }
+
+    private void checkForWinner() {
+        final Set<Player> alivePlayers = new HashSet<>();
+        for (final Player player : game.getPlayers()) {
+            if (player.getTag(PlayerTags.LIVES) > 0) alivePlayers.add(player);
+        }
+        if (alivePlayers.isEmpty()) return;
+
+        final Player firstPlayer = alivePlayers.iterator().next();
+        for (final Player alive : alivePlayers) {
+            if (alive.getTag(PlayerTags.TEAM_COLOR) != firstPlayer.getTag(PlayerTags.TEAM_COLOR)) return;
+        }
+        game.victory(alivePlayers);
     }
 
     private void updateScoreboardLives(@NotNull Player player, int remainingLives) {

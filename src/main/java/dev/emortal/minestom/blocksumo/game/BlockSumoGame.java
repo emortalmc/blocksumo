@@ -257,6 +257,29 @@ public class BlockSumoGame extends Game {
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
 
+    public void victory(final @NotNull Set<Player> winners) {
+        final Title victoryTitle = Title.title(
+                MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY!</bold></gradient>"),
+                Component.empty(),
+                Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
+        );
+        final Title defeatTitle = Title.title(
+                MiniMessage.miniMessage().deserialize("<gradient:#ff474e:#ff0d0d><bold>DEFEAT!</bold></gradient>"),
+                Component.empty(),
+                Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
+        );
+
+        for (final Player player : players) {
+            if (winners.contains(player)) {
+                player.showTitle(victoryTitle);
+            } else {
+                player.showTitle(defeatTitle);
+            }
+        }
+
+        instance.scheduler().buildTask(this::sendBackToLobby).delay(TaskSchedule.seconds(6)).schedule();
+    }
+
     @Override
     public void cancel() {
         LOGGER.warn("Game cancelled early. Sending players back to lobby.");

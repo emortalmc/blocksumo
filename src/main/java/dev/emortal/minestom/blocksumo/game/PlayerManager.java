@@ -32,7 +32,7 @@ public final class PlayerManager {
 
     public PlayerManager(@NotNull BlockSumoGame game, int minAllowedHeight) {
         this.game = game;
-        this.deathHandler = new PlayerDeathHandler(this, minAllowedHeight);
+        this.deathHandler = new PlayerDeathHandler(game, this, minAllowedHeight);
         this.respawnHandler = new PlayerRespawnHandler(game, this);
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
