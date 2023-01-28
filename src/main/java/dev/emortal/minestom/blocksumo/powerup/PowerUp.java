@@ -1,6 +1,9 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minestom.server.entity.Player;
+import net.minestom.server.event.player.PlayerUseItemEvent;
+import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
@@ -20,6 +23,18 @@ public abstract class PowerUp {
     }
 
     public void addExtraMetadata(@NotNull ItemMeta.Builder builder) {
+        // Do nothing by default
+    }
+
+    public void onUse(@NotNull Player player, @NotNull Player.Hand hand) {
+        // Do nothing by default
+    }
+
+    public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
+        // Do nothing by default
+    }
+
+    public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
         // Do nothing by default
     }
 

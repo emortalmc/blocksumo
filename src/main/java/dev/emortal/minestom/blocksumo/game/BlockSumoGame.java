@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
@@ -54,22 +55,25 @@ public class BlockSumoGame extends Game {
     public static final @NotNull Component TITLE =
             MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
 
+    private final PlayerManager playerManager;
     private final EventManager eventManager;
+    private final PowerUpManager powerUpManager;
     private List<Pos> availableSpawns;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private final PlayerManager playerManager;
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull CompletableFuture<BlockSumoInstance> instanceFuture;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode,
                          @NotNull CompletableFuture<BlockSumoInstance> instanceFuture) {
         super(creationInfo);
+        this.playerManager = new PlayerManager(this, 49);
+
         this.eventManager = new EventManager(this);
         eventManager.registerDefaultEvents();
 
-        this.playerManager = new PlayerManager(this, 49);
+        this.powerUpManager = new PowerUpManager(this);
 
         this.instanceFuture = instanceFuture;
         this.instanceFuture.thenAccept(instance -> this.availableSpawns = new ArrayList<>(instance.getMapData().spawns()));
@@ -218,6 +222,7 @@ public class BlockSumoGame extends Game {
 
     private void startGame(@NotNull Instance instance) {
         playerManager.registerGameListeners(eventNode);
+        powerUpManager.registerListeners(eventNode);
         removeLockingEntities(instance);
         for (final Player player : getPlayers()) {
             giveWoolAndShears(player);
@@ -280,5 +285,9 @@ public class BlockSumoGame extends Game {
 
     public @NotNull EventManager getEventManager() {
         return eventManager;
+    }
+
+    public @NotNull PowerUpManager getPowerUpManager() {
+        return powerUpManager;
     }
 }

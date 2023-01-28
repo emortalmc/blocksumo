@@ -1,6 +1,8 @@
 package dev.emortal.minestom.blocksumo.damage;
 
+import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.blocksumo.utils.KnockbackUtil;
 import net.minestom.server.entity.Entity;
@@ -15,6 +17,12 @@ import net.minestom.server.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class PlayerDamageHandler {
+
+    private final BlockSumoGame game;
+
+    public PlayerDamageHandler(@NotNull BlockSumoGame game) {
+        this.game = game;
+    }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(EntityAttackEvent.class, event -> {
@@ -32,6 +40,8 @@ public final class PlayerDamageHandler {
             victim.damage(DamageType.fromPlayer(attacker), 0);
             KnockbackUtil.takeKnockback(attacker, victim); // TODO: Check for anti-KB tag when anti-KB command exists
 
+            final PowerUp heldPowerUp = game.getPowerUpManager().getHeldPowerUp(attacker, Player.Hand.MAIN);
+            if (heldPowerUp != null) heldPowerUp.onAttack(attacker, victim);
             // TODO: Handle power-ups
         });
 
