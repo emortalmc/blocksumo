@@ -5,12 +5,16 @@ import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
 import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
 import dev.emortal.minestom.blocksumo.powerup.item.Slimeball;
 import dev.emortal.minestom.blocksumo.powerup.item.Snowball;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
+import net.minestom.server.event.entity.projectile.ProjectileCollideWithBlockEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.tag.TagReadable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +47,18 @@ public final class PowerUpManager {
             final PowerUp heldPowerUp = getHeldPowerUp(player, hand);
             if (heldPowerUp != null) heldPowerUp.onUseOnBlock(player, hand);
         });
+
+        eventNode.addListener(ProjectileCollideWithBlockEvent.class, event -> {
+            if (!(event.getEntity() instanceof EntityProjectile entity)) return;
+            if (!(entity.getShooter() instanceof Player shooter)) return;
+
+            final String powerUpName = getPowerUpName(entity);
+            final PowerUp powerUp = findNamedPowerUp(powerUpName);
+            if (powerUp == null) return;
+
+            powerUp.onCollide(shooter, event.getCollisionPosition());
+            entity.remove(); // TODO: Don't remove grappling hook's fishing bobber entity
+        });
     }
 
     public void registerDefaultPowerUps() {
@@ -66,8 +82,8 @@ public final class PowerUpManager {
         return registry.findByName(powerUpId);
     }
 
-    private @NotNull String getPowerUpName(@NotNull ItemStack powerUpItem) {
-        return powerUpItem.getTag(PowerUp.NAME);
+    private @NotNull String getPowerUpName(@NotNull TagReadable powerUp) {
+        return powerUp.getTag(PowerUp.NAME);
     }
 
     public void givePowerUp(@NotNull Player player, @NotNull PowerUp powerUp) {
