@@ -90,8 +90,8 @@ public final class PlayerRespawnHandler {
 
         player.teleport(respawnPos).thenRun(() -> {
             reset(player);
-            // TODO: Set to lives left when we track lives
-            player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(20);
+            final int lives = player.getTag(PlayerTags.LIVES);
+            player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(lives * 2F);
             player.setHealth(player.getMaxHealth());
         });
 
