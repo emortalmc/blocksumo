@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
+import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemMeta;
@@ -10,11 +11,13 @@ import org.jetbrains.annotations.NotNull;
 public abstract class PowerUp {
     public static final Tag<String> NAME = Tag.String("power_up");
 
+    protected final BlockSumoGame game;
     private final String name;
     private final PowerUpItemInfo itemInfo;
     private final SpawnLocation spawnLocation;
 
-    public PowerUp(@NotNull String name, @NotNull PowerUpItemInfo itemInfo, @NotNull SpawnLocation spawnLocation) {
+    public PowerUp(@NotNull BlockSumoGame game, @NotNull String name, @NotNull PowerUpItemInfo itemInfo, @NotNull SpawnLocation spawnLocation) {
+        this.game = game;
         this.name = name;
         this.itemInfo = itemInfo;
         this.spawnLocation = spawnLocation;

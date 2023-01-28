@@ -20,7 +20,8 @@ public final class PowerUpRegistry {
         return values[ThreadLocalRandom.current().nextInt(values.length)];
     }
 
-    public void registerPowerUp(final @NotNull String name, final @NotNull PowerUp powerUp) {
+    public void registerPowerUp(final @NotNull PowerUp powerUp) {
+        final String name = powerUp.getName();
         if (registry.containsKey(name)) {
             throw new IllegalArgumentException("Power up with name " + name + " already exists!");
         }

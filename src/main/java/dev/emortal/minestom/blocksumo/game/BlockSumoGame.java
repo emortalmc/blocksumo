@@ -74,6 +74,7 @@ public class BlockSumoGame extends Game {
         eventManager.registerDefaultEvents();
 
         this.powerUpManager = new PowerUpManager(this);
+        powerUpManager.registerDefaultPowerUps();
 
         this.instanceFuture = instanceFuture;
         this.instanceFuture.thenAccept(instance -> this.availableSpawns = new ArrayList<>(instance.getMapData().spawns()));

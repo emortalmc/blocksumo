@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -39,6 +40,10 @@ public final class PowerUpManager {
             final PowerUp heldPowerUp = getHeldPowerUp(player, hand);
             if (heldPowerUp != null) heldPowerUp.onUseOnBlock(player, hand);
         });
+    }
+
+    public void registerDefaultPowerUps() {
+        registry.registerPowerUp(new Puncher(game));
     }
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {
