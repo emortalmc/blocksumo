@@ -20,6 +20,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
@@ -196,12 +197,14 @@ public class BlockSumoGame extends Game {
         audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
         final BlockSumoInstance instance = getInstance();
+        playerManager.getScoreboard().removeLine("infoLine");
         instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
 
             @Override
             public TaskSchedule get() {
                 if (i == 0) {
+                    showGameStartTitle();
                     startGame(instance);
                     return TaskSchedule.stop();
                 }
@@ -226,10 +229,19 @@ public class BlockSumoGame extends Game {
     private void showCountdown(final int countdown) {
         audience.playSound(Sound.sound(Key.key("battle.countdown.begin"), Sound.Source.MASTER, 1F, 1F), Sound.Emitter.self());
         audience.showTitle(Title.title(
+                Component.text(countdown, NamedTextColor.GREEN, TextDecoration.BOLD),
                 Component.empty(),
-                Component.text(countdown, NamedTextColor.LIGHT_PURPLE),
                 Title.Times.times(Duration.ZERO, Duration.ofMillis(1500), Duration.ofMillis(500))
         ));
+    }
+
+    private void showGameStartTitle() {
+        final Title title = Title.title(
+                Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
+                Component.empty(),
+                Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ZERO)
+        );
+        audience.showTitle(title);
     }
 
     private void removeLockingEntities(@NotNull Instance instance) {
