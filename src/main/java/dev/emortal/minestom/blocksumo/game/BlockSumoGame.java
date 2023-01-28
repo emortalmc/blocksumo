@@ -19,6 +19,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -46,6 +47,8 @@ import org.slf4j.LoggerFactory;
 
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
+    public static final @NotNull Component TITLE =
+            MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
 
     private final EventManager eventManager;
     private List<Pos> availableSpawns;
