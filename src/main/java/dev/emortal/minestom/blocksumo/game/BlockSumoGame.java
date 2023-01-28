@@ -83,6 +83,7 @@ public class BlockSumoGame extends Game {
         });
         gameEventNode.addChild(this.eventNode);
         registerAllListeners(eventNode);
+        playerManager.setupWaitingScoreboard();
 
         this.instanceFuture.thenAccept(instance -> {
             MinecraftServer.getSchedulerManager()
@@ -216,10 +217,10 @@ public class BlockSumoGame extends Game {
     private void startGame(@NotNull Instance instance) {
         playerManager.registerGameListeners(eventNode);
         removeLockingEntities(instance);
-        getPlayers().forEach(player -> {
+        for (final Player player : getPlayers()) {
             giveWoolAndShears(player);
             setSpawnBlockToWool(player);
-        });
+        }
     }
 
     private void showCountdown(final int countdown) {

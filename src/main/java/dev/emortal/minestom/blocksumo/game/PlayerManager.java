@@ -2,8 +2,10 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
-import dev.emortal.minestom.blocksumo.team.TeamColor;
+import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -37,6 +39,7 @@ public final class PlayerManager {
             final Player player = event.getPlayer();
             prepareInitialSpawn(player, player.getRespawnPoint());
             selectTeam(player);
+            scoreboard.addViewer(player);
         });
     }
 
@@ -56,6 +59,24 @@ public final class PlayerManager {
 
     public void addInitialTags(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
+    }
+
+    public void setupWaitingScoreboard() {
+        scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
+        scoreboard.createLine(new Sidebar.ScoreboardLine(
+                "infoLine",
+                Component.text().append(Component.text("Waiting for players...", NamedTextColor.GRAY)).build(),
+                0
+        ));
+        scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
+        scoreboard.createLine(new Sidebar.ScoreboardLine(
+                "ipLine",
+                Component.text()
+                        .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
+                        .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
+                        .build(),
+                -9
+        ));
     }
 
     private void selectTeam(@NotNull Player player) {
