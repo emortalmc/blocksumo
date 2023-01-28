@@ -90,9 +90,7 @@ public final class PlayerRespawnHandler {
 
         player.teleport(respawnPos).thenRun(() -> {
             reset(player);
-            final int lives = player.getTag(PlayerTags.LIVES);
-            player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(lives * 2F);
-            player.setHealth(player.getMaxHealth());
+            playerManager.updateLivesInHealth(player);
         });
 
         playRespawnSound(player);

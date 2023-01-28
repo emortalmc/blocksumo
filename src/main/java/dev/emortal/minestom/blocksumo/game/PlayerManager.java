@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minestom.server.attribute.Attribute;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -41,7 +42,15 @@ public final class PlayerManager {
             prepareInitialSpawn(player, player.getRespawnPoint());
             selectTeam(player);
             scoreboard.addViewer(player);
+            updateLivesInHealth(player);
         });
+    }
+
+    public void updateLivesInHealth(@NotNull Player player) {
+        final int lives = player.getTag(PlayerTags.LIVES);
+        final float health = lives * 2;
+        player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+        player.setHealth(player.getMaxHealth());
     }
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {

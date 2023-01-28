@@ -103,10 +103,6 @@ public class BlockSumoGame extends Game {
 
     private void registerAllListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerLoginEvent.class, event -> {
-            // TODO: Remove when out of testing mode
-            event.getPlayer().setGameMode(GameMode.CREATIVE);
-            event.getPlayer().setFlying(true);
-
             final BlockSumoInstance instance = getInstance();
 
             Player player = event.getPlayer();
