@@ -1,12 +1,13 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.api.kurushimi.KurushimiUtils;
 import dev.emortal.minestom.blocksumo.event.EventManager;
-import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.core.Environment;
+import dev.emortal.minestom.gamesdk.GameSdkModule;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
 import java.time.Duration;
@@ -16,8 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -30,7 +29,6 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
@@ -261,7 +259,25 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void cancel() {
+        LOGGER.warn("Game cancelled early. Sending players back to lobby.");
+        sendBackToLobby();
+    }
 
+    private void sendBackToLobby() {
+        KurushimiUtils.sendToLobby(players, this::removeGame, this::removeGame);
+    }
+
+    private void removeGame() {
+        GameSdkModule.getGameManager().removeGame(this);
+        cleanUp();
+    }
+
+    private void cleanUp() {
+        for (final Player player : players) {
+            player.kick(Component.text("The game ended but we weren't able to connect you to a lobby. Please reconnect.", NamedTextColor.RED));
+        }
+        MinecraftServer.getInstanceManager().unregisterInstance(instance);
+        playerManager.cleanUp();
     }
 
     public @NotNull Instance getInstance() {

@@ -100,6 +100,22 @@ public final class PlayerManager {
         scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), player.getDisplayName(), 5));
     }
 
+    public void cleanUp() {
+        teamManager.removeAllTeams();
+        respawnHandler.stopAllScheduledRespawns();
+        for (final Player player : game.getPlayers()) {
+            cleanUpPlayer(player);
+        }
+    }
+
+    private void cleanUpPlayer(@NotNull Player player) {
+        player.removeTag(PlayerTags.TEAM_COLOR);
+        player.removeTag(PlayerTags.LIVES);
+        player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
+        player.removeTag(PlayerTags.DEAD);
+        scoreboard.removeViewer(player);
+    }
+
     public @NotNull PlayerDeathHandler getDeathHandler() {
         return deathHandler;
     }

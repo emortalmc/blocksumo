@@ -181,4 +181,11 @@ public final class PlayerRespawnHandler {
                 .build();
         player.getInventory().setChestplate(chestplate);
     }
+
+    public void stopAllScheduledRespawns() {
+        for (final Task task : respawnTasks.values()) {
+            task.cancel();
+        }
+        respawnTasks.clear();
+    }
 }

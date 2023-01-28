@@ -85,4 +85,10 @@ public final class PlayerTeamManager {
         final int randomIndex = RANDOM.nextInt(COLORS.size());
         return COLORS.get(randomIndex);
     }
+
+    public void removeAllTeams() {
+        for (final SumoTeam team : teams.values()) {
+            MinecraftServer.getTeamManager().deleteTeam(team.getScoreboardTeam());
+        }
+    }
 }
