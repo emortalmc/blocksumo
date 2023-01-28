@@ -2,22 +2,20 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.player.PlayerUseItemEvent;
-import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class PowerUp {
-    public static final Tag<String> ID = Tag.String("power_up_id");
+    public static final Tag<String> NAME = Tag.String("power_up");
 
-    private final String id;
+    private final String name;
     private final PowerUpItemInfo itemInfo;
     private final SpawnLocation spawnLocation;
 
-    public PowerUp(@NotNull String id, @NotNull PowerUpItemInfo itemInfo, @NotNull SpawnLocation spawnLocation) {
-        this.id = id;
+    public PowerUp(@NotNull String name, @NotNull PowerUpItemInfo itemInfo, @NotNull SpawnLocation spawnLocation) {
+        this.name = name;
         this.itemInfo = itemInfo;
         this.spawnLocation = spawnLocation;
     }
@@ -45,8 +43,12 @@ public abstract class PowerUp {
                     builder.displayName(itemInfo.name().decoration(TextDecoration.ITALIC, false));
                     builder.lore(itemInfo.rarity().getName().decoration(TextDecoration.ITALIC, false));
                     addExtraMetadata(builder);
-                    builder.setTag(ID, id);
+                    builder.setTag(NAME, name);
                 })
                 .build();
+    }
+
+    public @NotNull String getName() {
+        return name;
     }
 }

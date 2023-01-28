@@ -3,6 +3,8 @@ package dev.emortal.minestom.blocksumo.command;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.event.BlockSumoEvent;
 import dev.emortal.minestom.blocksumo.event.EventManager;
+import dev.emortal.minestom.blocksumo.powerup.PowerUp;
+import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.gamesdk.GameSdkModule;
 import dev.emortal.minestom.gamesdk.game.Game;
 import net.kyori.adventure.text.Component;
@@ -15,7 +17,6 @@ import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.command.builder.suggestion.Suggestion;
 import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -36,6 +37,14 @@ public final class GameCommand extends Command {
 
         this.addSyntax(this::executeStartEvent, start, event);
         this.addSyntax(this::executeStartEvent, start, event, eventType);
+
+        final ArgumentLiteral give = new ArgumentLiteral("give");
+        final ArgumentLiteral powerup = new ArgumentLiteral("powerup");
+        final ArgumentWord powerUpType = new ArgumentWord("powerUpType");
+        powerUpType.setSuggestionCallback((sender, context, suggestion) -> suggestPowerUps(sender, suggestion));
+
+        this.addSyntax(this::executeGivePowerUp, give, powerup);
+        this.addSyntax(this::executeGivePowerUp, give, powerup, powerUpType);
     }
 
     private @Nullable BlockSumoGame getGame(final CommandSender sender) {
@@ -83,5 +92,37 @@ public final class GameCommand extends Command {
         eventManager.startEvent(event);
         sender.sendMessage(Component.text("Started event " + event.getClass().getSimpleName() + "!", NamedTextColor.GREEN));
         // TODO: Set current event in game
+    }
+
+    private void suggestPowerUps(final CommandSender sender, final Suggestion suggestion) {
+        final BlockSumoGame game = getGame(sender);
+        if (game == null) return;
+
+        for (final String powerUpName : game.getPowerUpManager().getPowerUpIds()) {
+            suggestion.addEntry(new SuggestionEntry(powerUpName));
+        }
+    }
+
+    private void executeGivePowerUp(final CommandSender sender, final CommandContext context) {
+        final Player player = (Player) sender;
+        final BlockSumoGame game = getGame(sender);
+        if (game == null) return;
+
+        final String powerUpName = context.has("powerUpType") ? context.get("powerUpType") : null;
+        final PowerUpManager powerUpManager = game.getPowerUpManager();
+
+        final PowerUp powerUp;
+        if (powerUpName != null) {
+            powerUp = powerUpManager.findNamedPowerUp(powerUpName);
+            if (powerUp == null) {
+                sender.sendMessage(Component.text("Could not find power up with name " + powerUpName + "!", NamedTextColor.RED));
+                return;
+            }
+        } else {
+            powerUp = powerUpManager.findRandomPowerUp();
+        }
+
+        powerUpManager.givePowerUp(player, powerUp);
+        sender.sendMessage(Component.text("Give power up " + powerUp.getName() + "!", NamedTextColor.GREEN));
     }
 }

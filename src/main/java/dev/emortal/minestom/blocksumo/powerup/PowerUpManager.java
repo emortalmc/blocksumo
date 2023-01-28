@@ -10,6 +10,8 @@ import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 public final class PowerUpManager {
     private final PowerUpRegistry registry;
     private final BlockSumoGame game;
@@ -39,13 +41,30 @@ public final class PowerUpManager {
         });
     }
 
-    public @Nullable PowerUp getHeldPowerUp(@NotNull Player player, @NotNull Player.Hand hand) {
-        final ItemStack heldItem = player.getItemInHand(hand);
-        final String powerUpId = getPowerUpId(heldItem);
-        return registry.findById(powerUpId);
+    public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {
+        return registry.findByName(id);
     }
 
-    private @NotNull String getPowerUpId(@NotNull ItemStack powerUpItem) {
-        return powerUpItem.getTag(PowerUp.ID);
+    public @NotNull PowerUp findRandomPowerUp() {
+        return registry.findRandom();
+    }
+
+    public @Nullable PowerUp getHeldPowerUp(@NotNull Player player, @NotNull Player.Hand hand) {
+        final ItemStack heldItem = player.getItemInHand(hand);
+        final String powerUpId = getPowerUpName(heldItem);
+        return registry.findByName(powerUpId);
+    }
+
+    private @NotNull String getPowerUpName(@NotNull ItemStack powerUpItem) {
+        return powerUpItem.getTag(PowerUp.NAME);
+    }
+
+    public void givePowerUp(@NotNull Player player, @NotNull PowerUp powerUp) {
+        final ItemStack item = powerUp.createItemStack();
+        player.getInventory().addItemStack(item);
+    }
+
+    public @NotNull Collection<String> getPowerUpIds() {
+        return registry.getPowerUpNames();
     }
 }

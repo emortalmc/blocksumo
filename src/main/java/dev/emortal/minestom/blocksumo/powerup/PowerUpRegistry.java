@@ -6,22 +6,28 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class PowerUpRegistry {
     private final Map<String, PowerUp> registry = new HashMap<>();
 
-    public @Nullable PowerUp findById(final @NotNull String id) {
-        return registry.get(id);
+    public @Nullable PowerUp findByName(final @NotNull String name) {
+        return registry.get(name);
     }
 
-    public void registerPowerUp(final @NotNull String id, final @NotNull PowerUp powerUp) {
-        if (registry.containsKey(id)) {
-            throw new IllegalArgumentException("Power up with id " + id + " already exists!");
+    public @NotNull PowerUp findRandom() {
+        final PowerUp[] values = registry.values().toArray(new PowerUp[0]);
+        return values[ThreadLocalRandom.current().nextInt(values.length)];
+    }
+
+    public void registerPowerUp(final @NotNull String name, final @NotNull PowerUp powerUp) {
+        if (registry.containsKey(name)) {
+            throw new IllegalArgumentException("Power up with name " + name + " already exists!");
         }
-        registry.put(id, powerUp);
+        registry.put(name, powerUp);
     }
 
-    public @NotNull Collection<String> getPowerUpIds() {
+    public @NotNull Collection<String> getPowerUpNames() {
         return registry.keySet();
     }
 }
