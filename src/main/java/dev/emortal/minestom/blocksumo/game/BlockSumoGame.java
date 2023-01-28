@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
@@ -22,6 +23,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
@@ -36,6 +38,7 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.metadata.LeatherArmorMeta;
 import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.particle.ParticleCreator;
@@ -219,6 +222,7 @@ public class BlockSumoGame extends Game {
         removeLockingEntities(instance);
         for (final Player player : getPlayers()) {
             giveWoolAndShears(player);
+            giveColoredChestplate(player);
             setSpawnBlockToWool(player);
         }
     }
@@ -241,6 +245,14 @@ public class BlockSumoGame extends Game {
     private void giveWoolAndShears(@NotNull Player player) {
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
         player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
+    }
+
+    private void giveColoredChestplate(@NotNull Player player) {
+        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        final ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
+                .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
+                .build();
+        player.getInventory().setChestplate(chestplate);
     }
 
     private void setSpawnBlockToWool(@NotNull Player player) {

@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.BlockSumoInstance;
+import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
@@ -10,12 +11,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.attribute.Attribute;
+import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.metadata.LeatherArmorMeta;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -97,6 +100,7 @@ public final class PlayerRespawnHandler {
 
         prepareRespawn(player, respawnPos, 5);
         giveWoolAndShears(player);
+        giveColoredChestplate(player);
     }
 
     private void reset(@NotNull Player player) {
@@ -170,5 +174,13 @@ public final class PlayerRespawnHandler {
     private void giveWoolAndShears(@NotNull Player player) {
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
         player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
+    }
+
+    private void giveColoredChestplate(@NotNull Player player) {
+        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        final ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
+                .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
+                .build();
+        player.getInventory().setChestplate(chestplate);
     }
 }

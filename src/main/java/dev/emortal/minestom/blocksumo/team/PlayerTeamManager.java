@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.team;
 
+import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -26,6 +27,7 @@ public final class PlayerTeamManager {
 
         updateTeamSuffix(team);
         addTeamColorToName(player, allocatedColor);
+        player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
     }
 
     private void updateTeamSuffix(@NotNull SumoTeam team) {
