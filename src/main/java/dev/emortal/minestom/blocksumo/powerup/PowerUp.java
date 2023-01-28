@@ -12,7 +12,7 @@ public abstract class PowerUp {
     public static final Tag<String> NAME = Tag.String("power_up");
 
     protected final BlockSumoGame game;
-    private final String name;
+    protected final String name;
     private final PowerUpItemInfo itemInfo;
     private final SpawnLocation spawnLocation;
 
@@ -37,6 +37,18 @@ public abstract class PowerUp {
 
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
         // Do nothing by default
+    }
+
+    protected final void removeOneItemFromPlayer(@NotNull Player player, @NotNull Player.Hand hand) {
+        final ItemStack heldItem = player.getItemInHand(hand);
+
+        final ItemStack newHeldItem;
+        if (heldItem.amount() == 1) {
+            newHeldItem = ItemStack.AIR;
+        } else {
+            newHeldItem = heldItem.withAmount(heldItem.amount() - 1);
+        }
+        player.setItemInHand(hand, newHeldItem);
     }
 
     public final @NotNull ItemStack createItemStack() {
