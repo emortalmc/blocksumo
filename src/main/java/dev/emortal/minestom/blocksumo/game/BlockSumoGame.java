@@ -91,7 +91,7 @@ public class BlockSumoGame extends Game {
             return true;
         });
         gameEventNode.addChild(this.eventNode);
-        registerAllListeners(eventNode);
+        playerManager.registerPreGameListeners(eventNode);
         playerManager.setupWaitingScoreboard();
 
         this.instanceFuture.thenAccept(instance -> {
@@ -107,25 +107,23 @@ public class BlockSumoGame extends Game {
         return getGameCreationInfo().playerIds().contains(player.getUuid());
     }
 
-    private void registerAllListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerLoginEvent.class, event -> {
-            final BlockSumoInstance instance = getInstance();
+    @Override
+    public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
+        final BlockSumoInstance instance = getInstance();
 
-            Player player = event.getPlayer();
-            if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
-                player.kick("Unexpected join (" + Environment.getHostname() + ")");
-                LOGGER.info("Unexpected join for player {}", player.getUuid());
-                return;
-            }
+        Player player = event.getPlayer();
+        if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
+            player.kick("Unexpected join (" + Environment.getHostname() + ")");
+            LOGGER.info("Unexpected join for player {}", player.getUuid());
+            return;
+        }
 
-            player.setRespawnPoint(this.getBestSpawnPos());
-            event.setSpawningInstance(instance);
-            this.players.add(player);
+        player.setRespawnPoint(this.getBestSpawnPos());
+        event.setSpawningInstance(instance);
+        this.players.add(player);
 
-            player.setAutoViewable(true);
-            playerManager.addInitialTags(player);
-        });
-        playerManager.registerPreGameListeners(eventNode);
+        player.setAutoViewable(true);
+        playerManager.addInitialTags(player);
     }
 
     private void sendSpawnPacketsToPlayers() {
