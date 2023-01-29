@@ -27,6 +27,7 @@ public final class PlayerManager {
     private final PlayerRespawnHandler respawnHandler;
     private final PlayerTeamManager teamManager;
     private final PlayerDamageHandler damageHandler;
+    private final PlayerBlockHandler blockHandler;
 
     private final Sidebar scoreboard;
 
@@ -36,6 +37,7 @@ public final class PlayerManager {
         this.respawnHandler = new PlayerRespawnHandler(game, this);
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
+        this.blockHandler = new PlayerBlockHandler();
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 
@@ -69,6 +71,7 @@ public final class PlayerManager {
     public void registerGameListeners(@NotNull EventNode<Event> eventNode) {
         deathHandler.registerListeners(eventNode);
         damageHandler.registerListeners(eventNode);
+        blockHandler.registerListeners(eventNode);
     }
 
     public void addInitialTags(@NotNull Player player) {
