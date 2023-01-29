@@ -37,7 +37,7 @@ public final class PlayerManager {
         this.respawnHandler = new PlayerRespawnHandler(game, this);
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
-        this.blockHandler = new PlayerBlockHandler();
+        this.blockHandler = new PlayerBlockHandler(game);
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 

@@ -4,6 +4,7 @@ import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
@@ -41,6 +42,10 @@ public abstract class PowerUp {
     }
 
     public void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
+        // Do nothing by default
+    }
+
+    public void onBlockPlace(@NotNull PlayerBlockPlaceEvent event) {
         // Do nothing by default
     }
 

@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -11,6 +12,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Locale;
 
 public final class PlayerBlockHandler {
+
+    private final BlockSumoGame game;
+
+    public PlayerBlockHandler(@NotNull BlockSumoGame game) {
+        this.game = game;
+    }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerBlockPlaceEvent.class, event -> {
@@ -28,11 +35,18 @@ public final class PlayerBlockHandler {
                 event.setCancelled(true);
                 return;
             }
+
+            handlePowerUp(event);
         });
 
         eventNode.addListener(PlayerBlockBreakEvent.class, event -> {
             final String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
             if (!blockName.contains("wool")) event.setCancelled(true);
         });
+    }
+
+    private void handlePowerUp(@NotNull PlayerBlockPlaceEvent event) {
+        final PowerUp heldItem = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
+        if (heldItem != null) heldItem.onBlockPlace(event);
     }
 }
