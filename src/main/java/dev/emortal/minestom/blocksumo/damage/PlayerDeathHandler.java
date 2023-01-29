@@ -3,10 +3,12 @@ package dev.emortal.minestom.blocksumo.damage;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.coordinate.Vec;
@@ -149,14 +151,18 @@ public final class PlayerDeathHandler {
     }
 
     private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
+        final TeamColor victimTeam = victim.getTag(PlayerTags.TEAM_COLOR);
+
         final TextComponent.Builder message = Component.text()
                 .append(Component.text("☠", NamedTextColor.RED))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(victim.getUsername(), NamedTextColor.WHITE));
+                .append(Component.text(victim.getUsername(), TextColor.color(victimTeam.getColor())));
 
         if (killer instanceof Player playerKiller) {
+            final TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
+
             message.append(Component.text(" was killed by ", NamedTextColor.GRAY));
-            message.append(Component.text(playerKiller.getUsername(), NamedTextColor.WHITE));
+            message.append(Component.text(playerKiller.getUsername(), TextColor.color(killerTeam.getColor())));
         } else {
             message.append(Component.text(" died", NamedTextColor.GRAY));
         }
@@ -171,9 +177,11 @@ public final class PlayerDeathHandler {
     private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
         final Component subtitle;
         if (killer instanceof Player playerKiller) {
+            final TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
+
             subtitle = Component.text()
                     .append(Component.text("Killed by ", NamedTextColor.GRAY))
-                    .append(Component.text(playerKiller.getUsername(), NamedTextColor.WHITE))
+                    .append(Component.text(playerKiller.getUsername(), TextColor.color(killerTeam.getColor())))
                     .build();
         } else if (remainingLives <= 0) {
             subtitle = Component.text("(Final kill)", NamedTextColor.DARK_GRAY);

@@ -10,14 +10,6 @@ import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.GameSdkModule;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -49,6 +41,14 @@ import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
@@ -202,8 +202,10 @@ public class BlockSumoGame extends Game {
     }
 
     private void giveWoolAndShears(@NotNull Player player) {
+        TeamColor team = player.getTag(PlayerTags.TEAM_COLOR);
+
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-        player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
+        player.getInventory().setItemStack(1, team.getWoolItem());
     }
 
     private void giveColoredChestplate(@NotNull Player player) {
