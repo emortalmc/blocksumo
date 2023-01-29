@@ -51,7 +51,8 @@ public final class PlayerSpawnHandler {
             double totalDistance = 0.0;
 
             for (final Player player : game.getPlayers()) {
-                totalDistance += player.getRespawnPoint().distanceSquared(spawnPos);
+                if (player.getTag(PlayerTags.DEAD)) continue;
+                totalDistance += player.getPosition().distanceSquared(spawnPos);
             }
 
             if (totalDistance > distanceHighscore) {
