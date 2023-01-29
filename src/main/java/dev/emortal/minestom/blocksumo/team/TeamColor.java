@@ -3,6 +3,7 @@ package dev.emortal.minestom.blocksumo.team;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.RGBLike;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,12 +26,12 @@ public enum TeamColor {
 
     private final RGBLike color;
     private final Block woolBlock;
-    private final Material woolMaterial;
+    private final ItemStack woolItem;
 
-    TeamColor(RGBLike color, Block woolBlock, Material woolMaterial) {
+    TeamColor(RGBLike color, Block woolBlock, Material woolItem) {
         this.color = color;
         this.woolBlock = woolBlock;
-        this.woolMaterial = woolMaterial;
+        this.woolItem = ItemStack.of(woolItem, 64);
     }
 
     public @NotNull RGBLike getColor() {
@@ -41,7 +42,7 @@ public enum TeamColor {
         return woolBlock;
     }
 
-    public @NotNull Material getWoolMaterial() {
-        return woolMaterial;
+    public @NotNull ItemStack getWoolItem() {
+        return woolItem;
     }
 }
