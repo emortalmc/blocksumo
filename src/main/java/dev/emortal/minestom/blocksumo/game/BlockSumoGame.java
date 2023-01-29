@@ -58,7 +58,7 @@ public class BlockSumoGame extends Game {
     private final PlayerManager playerManager;
     private final EventManager eventManager;
     private final PowerUpManager powerUpManager;
-    private final List<Pos> availableSpawns;
+    private final PlayerSpawnHandler spawnHandler;
 
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull Instance instance;
@@ -76,7 +76,7 @@ public class BlockSumoGame extends Game {
 
         this.instance = map.instance();
         this.mapData = map.mapData();
-        this.availableSpawns = new ArrayList<>(mapData.spawns());
+        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
@@ -111,7 +111,7 @@ public class BlockSumoGame extends Game {
             return;
         }
 
-        player.setRespawnPoint(this.getBestSpawnPos());
+        player.setRespawnPoint(spawnHandler.getBestSpawn());
         event.setSpawningInstance(instance);
         this.players.add(player);
 
@@ -141,44 +141,6 @@ public class BlockSumoGame extends Game {
         }
 
         return packets;
-    }
-
-    /**
-     * Gets an available spawn position for when a player initially
-     * spawns at the start of the game.
-     * <p>
-     * Now this may seem like it functions very weirdly but here's the goal.
-     * Select the furthest away point from the mean position of all players to achieve a balanced spread.
-     *
-     * @return the spawn position
-     */
-    public synchronized @NotNull Pos getBestSpawnPos() {
-        Pos bestPos = null;
-        double bestWorstDistance = 0; // The best of the worst distances
-        for (Pos pos : this.availableSpawns) {
-            // Measure a worst-case scenario for each point
-            double closestDistance = Double.MAX_VALUE;
-            for (final Player player : getPlayers()) {
-                final Pos playerPos = player.getPosition();
-                double distance = playerPos.distanceSquared(pos);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                }
-            }
-            if (closestDistance > bestWorstDistance) {
-                bestPos = pos;
-                bestWorstDistance = closestDistance;
-            }
-        }
-
-        final Pos spawnPos;
-        if (bestPos == null) {
-            LOGGER.warn("No available spawns left for instance {}", instance.getUniqueId());
-            spawnPos = this.availableSpawns.get(0);
-        } else {
-            spawnPos = bestPos;
-        }
-        return spawnPos;
     }
 
     @Override
@@ -313,5 +275,9 @@ public class BlockSumoGame extends Game {
 
     public @NotNull PowerUpManager getPowerUpManager() {
         return powerUpManager;
+    }
+
+    public @NotNull PlayerSpawnHandler getSpawnHandler() {
+        return spawnHandler;
     }
 }

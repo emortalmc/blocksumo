@@ -86,7 +86,7 @@ public final class PlayerRespawnHandler {
     }
 
     private void respawn(@NotNull Player player) {
-        final Pos respawnPos = game.getBestSpawnPos();
+        final Pos respawnPos = game.getSpawnHandler().getBestRespawn();
 
         player.teleport(respawnPos).thenRun(() -> {
             reset(player);
