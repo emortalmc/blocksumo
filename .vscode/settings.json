@@ -1,9 +1,0 @@
-{
-    "java.configuration.runtimes": [
-      {
-        "name": "JavaSE-19",
-        "path": "/home/gitpod/.sdkman/candidates/java/19-tem/",
-        "default": true
-      }
-    ]
-}
