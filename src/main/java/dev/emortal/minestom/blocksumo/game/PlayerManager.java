@@ -75,6 +75,7 @@ public final class PlayerManager {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
         player.setTag(PlayerTags.DEAD, false);
         player.setTag(PlayerTags.LIVES, (byte) 5);
+        player.setTag(PlayerTags.CAN_BE_HIT, true);
     }
 
     public void setupWaitingScoreboard() {
@@ -113,6 +114,7 @@ public final class PlayerManager {
         player.removeTag(PlayerTags.LIVES);
         player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
         player.removeTag(PlayerTags.DEAD);
+        player.removeTag(PlayerTags.CAN_BE_HIT);
         scoreboard.removeViewer(player);
     }
 

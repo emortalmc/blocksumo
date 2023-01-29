@@ -14,6 +14,7 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.entity.EntityDamageEvent;
+import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
 public final class PlayerDamageHandler {
@@ -35,7 +36,9 @@ public final class PlayerDamageHandler {
 
             if (attacker.getGameMode() != GameMode.SURVIVAL) return;
             if (areOnSameTeam(attacker, victim)) return;
+            if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return;
             if (!withinLegalRange(attacker, victim)) return;
+            victim.setTag(PlayerTags.CAN_BE_HIT, false);
 
             victim.damage(DamageType.fromPlayer(attacker), 0);
             KnockbackUtil.takeKnockback(attacker, victim); // TODO: Check for anti-KB tag when anti-KB command exists
@@ -43,6 +46,8 @@ public final class PlayerDamageHandler {
             final PowerUp heldPowerUp = game.getPowerUpManager().getHeldPowerUp(attacker, Player.Hand.MAIN);
             if (heldPowerUp != null) heldPowerUp.onAttack(attacker, victim);
             // TODO: Handle power-ups
+
+            victim.scheduler().buildTask(() -> victim.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
         });
 
         eventNode.addListener(EntityDamageEvent.class, event -> {
