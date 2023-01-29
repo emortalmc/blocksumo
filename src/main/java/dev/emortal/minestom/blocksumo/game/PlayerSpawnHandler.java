@@ -11,23 +11,35 @@ import java.util.Set;
 public final class PlayerSpawnHandler {
     private final BlockSumoGame game;
     private final List<Pos> availableSpawns;
-    private final int playerCount;
-    private int playerIndex = 0;
+    private final Set<Pos> usedSpawns;
 
-    public PlayerSpawnHandler(@NotNull BlockSumoGame game, @NotNull List<Pos> availableSpawns, int playerCount) {
+    public PlayerSpawnHandler(@NotNull BlockSumoGame game, @NotNull List<Pos> availableSpawns) {
         this.game = game;
         this.availableSpawns = availableSpawns;
-        this.playerCount = playerCount;
+        this.usedSpawns = new HashSet<>();
     }
 
-    public @NotNull Pos getCircleSpawn() {
-        if (playerCount == 0) { // probably during testing
-            return availableSpawns.get(playerIndex++);
+    public @NotNull Pos getBestSpawn() {
+        Pos bestPos = this.availableSpawns.get(0);
+        double distanceHighscore = Double.MIN_VALUE; // min value so total distance is above highscore on first iteration
+
+        for (final Pos spawnPos : this.availableSpawns) {
+
+            double totalDistance = 0.0;
+
+            for (final Player player : game.getPlayers()) {
+                totalDistance += player.getRespawnPoint().distanceSquared(spawnPos);
+            }
+
+            if (totalDistance > distanceHighscore) {
+                if (usedSpawns.contains(spawnPos)) continue;
+                distanceHighscore = totalDistance;
+                bestPos = spawnPos;
+            }
         }
 
-        double spawnsPerIndex = (double) availableSpawns.size() / playerCount;
-
-        return availableSpawns.get((int) Math.floor(playerIndex++ * spawnsPerIndex));
+        usedSpawns.add(bestPos);
+        return bestPos;
     }
 
     public @NotNull Pos getBestRespawn() {

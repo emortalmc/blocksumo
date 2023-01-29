@@ -76,7 +76,7 @@ public class BlockSumoGame extends Game {
 
         this.instance = map.instance();
         this.mapData = map.mapData();
-        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()), creationInfo.playerIds().size());
+        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
@@ -111,7 +111,7 @@ public class BlockSumoGame extends Game {
             return;
         }
 
-        player.setRespawnPoint(spawnHandler.getCircleSpawn());
+        player.setRespawnPoint(spawnHandler.getBestSpawn());
         event.setSpawningInstance(instance);
         this.players.add(player);
 
