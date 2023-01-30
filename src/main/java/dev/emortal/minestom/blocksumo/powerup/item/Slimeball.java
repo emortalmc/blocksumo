@@ -55,4 +55,9 @@ public final class Slimeball extends PowerUp {
         final Pos source = thrower.getPosition();
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
     }
+
+    @Override
+    public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
+        // Slimeballs don't work when used on a block.
+    }
 }

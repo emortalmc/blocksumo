@@ -26,7 +26,7 @@ public final class EnderPearl extends PowerUp {
     }
 
     @Override
-    public void onUse(@NotNull Player player, Player.@NotNull Hand hand) {
+    public void onUse(@NotNull Player player, @NotNull Player.Hand hand) {
         removeOneItemFromPlayer(player, hand);
         shootProjectile(player);
         playThrowSound(player);
@@ -50,6 +50,11 @@ public final class EnderPearl extends PowerUp {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_ENDER_PEARL_THROW, Sound.Source.BLOCK, 1, 1);
         final Pos source = thrower.getPosition();
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+    }
+
+    @Override
+    public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
+        // Ender pearls don't work when used on a block.
     }
 
     @Override
