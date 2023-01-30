@@ -18,6 +18,8 @@ repositories {
 
 dependencies {
     implementation("com.github.EmortalMC:TNT:4ef1b53482")
+    implementation("com.github.EmortalMC:Rayfast:9e5accb")
+    implementation("com.github.emortaldev:Particable:f7212f39fb")
 
     implementation("dev.emortal.minestom:core:acb3ec4")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")

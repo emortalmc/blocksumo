@@ -9,6 +9,7 @@ import dev.emortal.minestom.blocksumo.powerup.item.KnockbackStick;
 import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
 import dev.emortal.minestom.blocksumo.powerup.item.Slimeball;
 import dev.emortal.minestom.blocksumo.powerup.item.Snowball;
+import dev.emortal.minestom.blocksumo.powerup.item.Switcheroo;
 import dev.emortal.minestom.blocksumo.powerup.item.TNT;
 import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
@@ -98,6 +99,7 @@ public final class PowerUpManager {
         registry.registerPowerUp(new AntiGravityTNT(game));
         registry.registerPowerUp(new KnockbackStick(game));
         registry.registerPowerUp(new Fireball(game));
+        registry.registerPowerUp(new Switcheroo(game));
     }
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {
