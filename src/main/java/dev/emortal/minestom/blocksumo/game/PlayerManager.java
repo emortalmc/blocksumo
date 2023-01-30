@@ -79,6 +79,7 @@ public final class PlayerManager {
         player.setTag(PlayerTags.DEAD, false);
         player.setTag(PlayerTags.LIVES, (byte) 5);
         player.setTag(PlayerTags.CAN_BE_HIT, true);
+        player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, 0L);
     }
 
     public void setupWaitingScoreboard() {

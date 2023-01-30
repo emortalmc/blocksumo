@@ -94,7 +94,11 @@ public final class PlayerRespawnHandler {
         });
 
         playRespawnSound(player);
+        player.setTag(PlayerTags.CAN_BE_HIT, true);
+        player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
         player.setCanPickupItem(true);
+
+        game.getSpawnProtectionManager().startProtection(player, 4000);
 
         prepareRespawn(player, respawnPos, 5);
         giveWoolAndShears(player);

@@ -36,6 +36,15 @@ public final class PlayerDamageHandler {
 
             if (attacker.getGameMode() != GameMode.SURVIVAL) return;
             if (areOnSameTeam(attacker, victim)) return;
+
+            if (game.getSpawnProtectionManager().isProtected(attacker)) {
+                game.getSpawnProtectionManager().endProtection(attacker);
+            }
+            if (game.getSpawnProtectionManager().isProtected(victim)) {
+                game.getSpawnProtectionManager().notifyProtected(attacker, victim);
+                return;
+            }
+
             if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return;
             if (!withinLegalRange(attacker, victim)) return;
             victim.setTag(PlayerTags.CAN_BE_HIT, false);
@@ -45,7 +54,6 @@ public final class PlayerDamageHandler {
 
             final PowerUp heldPowerUp = game.getPowerUpManager().getHeldPowerUp(attacker, Player.Hand.MAIN);
             if (heldPowerUp != null) heldPowerUp.onAttack(attacker, victim);
-            // TODO: Handle power-ups
 
             victim.scheduler().buildTask(() -> victim.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
         });

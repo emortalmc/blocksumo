@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.game.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.powerup.item.AntiGravityTNT;
 import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
 import dev.emortal.minestom.blocksumo.powerup.item.Fireball;
@@ -81,7 +82,10 @@ public final class PowerUpManager {
             if (!(entity.getShooter() instanceof Player shooter)) return;
             if (!(event.getTarget() instanceof Player target)) return;
 
-            // TODO: Check spawn protection
+            if (game.getSpawnProtectionManager().isProtected(target)) {
+                game.getSpawnProtectionManager().notifyProtected(shooter, target);
+                return;
+            }
 
             if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
             target.setTag(PlayerTags.CAN_BE_HIT, false);

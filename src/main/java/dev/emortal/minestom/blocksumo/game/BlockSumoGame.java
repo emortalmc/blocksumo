@@ -63,6 +63,7 @@ public class BlockSumoGame extends Game {
     private final PlayerSpawnHandler spawnHandler;
     private final ExplosionManager explosionManager;
     private final FishingBobberManager bobberManager;
+    private final SpawnProtectionManager spawnProtectionManager;
 
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull Instance instance;
@@ -83,6 +84,7 @@ public class BlockSumoGame extends Game {
         this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
         this.explosionManager = new ExplosionManager(this);
         this.bobberManager = new FishingBobberManager(this);
+        this.spawnProtectionManager = new SpawnProtectionManager();
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
@@ -295,5 +297,9 @@ public class BlockSumoGame extends Game {
 
     public @NotNull FishingBobberManager getBobberManager() {
         return bobberManager;
+    }
+
+    public @NotNull SpawnProtectionManager getSpawnProtectionManager() {
+        return spawnProtectionManager;
     }
 }

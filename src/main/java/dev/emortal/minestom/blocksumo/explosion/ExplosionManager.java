@@ -81,7 +81,7 @@ public final class ExplosionManager {
             if (player.getGameMode() != GameMode.SURVIVAL) continue;
 
             if (!player.getUuid().equals(sourceId)) {
-                // TODO: Check spawn protection
+                if (game.getSpawnProtectionManager().isProtected(player)) continue;
                 if (player.getTag(PlayerTags.TEAM_COLOR) == sourceColor) continue;
                 // TODO: Check for anti-knockback
             }
