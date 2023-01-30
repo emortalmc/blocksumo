@@ -59,6 +59,6 @@ public final class Slimeball extends PowerUp {
 
     @Override
     public void onCollideWithEntity(@NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
-        // TODO: Take knockback from collision pos
+        KnockbackUtil.takeKnockback(target, collisionPos, -1);
     }
 }
