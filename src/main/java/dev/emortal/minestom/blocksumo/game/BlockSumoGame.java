@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.api.kurushimi.KurushimiUtils;
 import dev.emortal.minestom.blocksumo.event.EventManager;
+import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;

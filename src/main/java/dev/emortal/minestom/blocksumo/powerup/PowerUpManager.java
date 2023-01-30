@@ -2,10 +2,12 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.powerup.item.AntiGravityTNT;
 import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
 import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
 import dev.emortal.minestom.blocksumo.powerup.item.Slimeball;
 import dev.emortal.minestom.blocksumo.powerup.item.Snowball;
+import dev.emortal.minestom.blocksumo.powerup.item.TNT;
 import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.DamageType;
@@ -90,6 +92,8 @@ public final class PowerUpManager {
         registry.registerPowerUp(new Slimeball(game));
         registry.registerPowerUp(new Snowball(game));
         registry.registerPowerUp(new EnderPearl(game));
+        registry.registerPowerUp(new TNT(game));
+        registry.registerPowerUp(new AntiGravityTNT(game));
     }
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {

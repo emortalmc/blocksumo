@@ -1,6 +1,8 @@
-package dev.emortal.minestom.blocksumo.game;
+package dev.emortal.minestom.blocksumo.explosion;
 
 import dev.emortal.minestom.blocksumo.explosion.ExplosionData;
+import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Point;
