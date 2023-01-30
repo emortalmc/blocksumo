@@ -5,6 +5,7 @@ import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.powerup.item.AntiGravityTNT;
 import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
 import dev.emortal.minestom.blocksumo.powerup.item.Fireball;
+import dev.emortal.minestom.blocksumo.powerup.item.GrapplingHook;
 import dev.emortal.minestom.blocksumo.powerup.item.KnockbackStick;
 import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
 import dev.emortal.minestom.blocksumo.powerup.item.Slimeball;
@@ -45,6 +46,13 @@ public final class PowerUpManager {
             final Player.Hand hand = event.getHand();
 
             final PowerUp heldPowerUp = getHeldPowerUp(player, hand);
+
+            if (heldPowerUp instanceof GrapplingHook) {
+                event.setCancelled(false);
+                game.getBobberManager().cast(player, hand);
+                return;
+            }
+
             if (heldPowerUp != null) heldPowerUp.onUse(player, hand);
         });
 
@@ -85,7 +93,7 @@ public final class PowerUpManager {
             final PowerUp powerUp = findNamedPowerUp(powerUpName);
             if (powerUp == null) return;
 
-            powerUp.onCollideWithEntity(shooter, target, event.getCollisionPosition());
+            powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
             if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
         });
     }
@@ -100,6 +108,7 @@ public final class PowerUpManager {
         registry.registerPowerUp(new KnockbackStick(game));
         registry.registerPowerUp(new Fireball(game));
         registry.registerPowerUp(new Switcheroo(game));
+        registry.registerPowerUp(new GrapplingHook(game));
     }
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {

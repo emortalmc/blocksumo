@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.api.kurushimi.KurushimiUtils;
+import dev.emortal.minestom.blocksumo.entity.FishingBobberManager;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
@@ -61,6 +62,7 @@ public class BlockSumoGame extends Game {
     private final PowerUpManager powerUpManager;
     private final PlayerSpawnHandler spawnHandler;
     private final ExplosionManager explosionManager;
+    private final FishingBobberManager bobberManager;
 
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull Instance instance;
@@ -80,6 +82,7 @@ public class BlockSumoGame extends Game {
         this.mapData = map.mapData();
         this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
         this.explosionManager = new ExplosionManager(this);
+        this.bobberManager = new FishingBobberManager(this);
 
         this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
             if (event instanceof PlayerEvent playerEvent) {
@@ -288,5 +291,9 @@ public class BlockSumoGame extends Game {
 
     public @NotNull ExplosionManager getExplosionManager() {
         return explosionManager;
+    }
+
+    public @NotNull FishingBobberManager getBobberManager() {
+        return bobberManager;
     }
 }
