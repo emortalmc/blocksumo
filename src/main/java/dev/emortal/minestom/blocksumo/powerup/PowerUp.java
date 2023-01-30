@@ -2,9 +2,9 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
@@ -46,7 +46,11 @@ public abstract class PowerUp {
         // Do nothing by default
     }
 
-    public void onBlockPlace(@NotNull PlayerBlockPlaceEvent event) {
+    public boolean shouldHandleBlockPlace() {
+        return false;
+    }
+
+    public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
         // Do nothing by default
     }
 

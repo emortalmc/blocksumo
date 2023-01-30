@@ -36,17 +36,19 @@ public final class PlayerBlockHandler {
                 return;
             }
 
-            handlePowerUp(event);
+            final PowerUp heldItem = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
+            if (heldItem == null) return;
+
+            if (heldItem.shouldHandleBlockPlace()) {
+                event.setCancelled(true);
+                heldItem.onBlockPlace(player, event.getHand(), event.getBlockPosition().add(0.5, 0.1, 0.5));
+                return;
+            }
         });
 
         eventNode.addListener(PlayerBlockBreakEvent.class, event -> {
             final String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
             if (!blockName.contains("wool")) event.setCancelled(true);
         });
-    }
-
-    private void handlePowerUp(@NotNull PlayerBlockPlaceEvent event) {
-        final PowerUp heldItem = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
-        if (heldItem != null) heldItem.onBlockPlace(event);
     }
 }
