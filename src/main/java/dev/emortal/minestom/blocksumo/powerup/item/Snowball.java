@@ -50,4 +50,9 @@ public final class Snowball extends PowerUp {
         final Pos source = thrower.getPosition();
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
     }
+
+    @Override
+    public void onCollideWithEntity(@NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
+        // TODO: Take knockback from collision pos
+    }
 }

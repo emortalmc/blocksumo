@@ -5,6 +5,7 @@ import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpItemInfo;
 import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
+import dev.emortal.minestom.blocksumo.utils.KnockbackUtil;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -54,5 +55,10 @@ public final class Slimeball extends PowerUp {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_SNOWBALL_THROW, Sound.Source.BLOCK, 1, 1);
         final Pos source = thrower.getPosition();
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+    }
+
+    @Override
+    public void onCollideWithEntity(@NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
+        // TODO: Take knockback from collision pos
     }
 }

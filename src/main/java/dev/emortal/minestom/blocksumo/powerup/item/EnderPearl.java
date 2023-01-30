@@ -53,7 +53,12 @@ public final class EnderPearl extends PowerUp {
     }
 
     @Override
-    public void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
+    public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
         shooter.teleport(collisionPosition);
+    }
+
+    @Override
+    public void onCollideWithEntity(@NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
+        onCollideWithBlock(shooter, collisionPos);
     }
 }

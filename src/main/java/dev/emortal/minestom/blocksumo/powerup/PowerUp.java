@@ -41,7 +41,15 @@ public abstract class PowerUp {
         // Do nothing by default
     }
 
-    public void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
+    public boolean shouldRemoveEntityOnCollision() {
+        return true;
+    }
+
+    public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
+        // Do nothing by default
+    }
+
+    public void onCollideWithEntity(@NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
         // Do nothing by default
     }
 
