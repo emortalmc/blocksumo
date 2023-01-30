@@ -53,11 +53,6 @@ public final class EnderPearl extends PowerUp {
     }
 
     @Override
-    public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
-        // Ender pearls don't work when used on a block.
-    }
-
-    @Override
     public void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
         shooter.teleport(collisionPosition);
     }

@@ -34,8 +34,7 @@ public abstract class PowerUp {
     }
 
     public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
-        // Delegate to onUse by default
-        onUse(player, hand);
+        // Do nothing by default
     }
 
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {

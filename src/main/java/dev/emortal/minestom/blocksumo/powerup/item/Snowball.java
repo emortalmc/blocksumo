@@ -50,9 +50,4 @@ public final class Snowball extends PowerUp {
         final Pos source = thrower.getPosition();
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
     }
-
-    @Override
-    public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
-        // Snowballs don't work when used on a block.
-    }
 }
