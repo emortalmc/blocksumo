@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -89,5 +90,17 @@ public abstract class PowerUp {
 
     public @NotNull String getName() {
         return name;
+    }
+
+    public @NotNull Component getItemName() {
+        return itemInfo.name();
+    }
+
+    public @NotNull ItemRarity getRarity() {
+        return itemInfo.rarity();
+    }
+
+    public @NotNull SpawnLocation getSpawnLocation() {
+        return spawnLocation;
     }
 }

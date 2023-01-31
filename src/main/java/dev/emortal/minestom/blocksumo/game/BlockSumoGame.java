@@ -187,6 +187,7 @@ public class BlockSumoGame extends Game {
             setSpawnBlockToWool(player);
         }
         eventManager.startRandomEventTask();
+        powerUpManager.startRandomPowerUpTasks();
     }
 
     private void showCountdown(final int countdown) {

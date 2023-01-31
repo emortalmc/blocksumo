@@ -2,7 +2,6 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
-import dev.emortal.minestom.blocksumo.game.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.powerup.item.AntiGravityTNT;
 import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
 import dev.emortal.minestom.blocksumo.powerup.item.Fireball;
@@ -29,14 +28,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class PowerUpManager {
+
     private final PowerUpRegistry registry;
     private final BlockSumoGame game;
+    private final RandomPowerUpHandler randomPowerUpHandler;
 
     public PowerUpManager(@NotNull BlockSumoGame game) {
         this.registry = new PowerUpRegistry();
         this.game = game;
+        this.randomPowerUpHandler = new RandomPowerUpHandler(game, this);
     }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
@@ -100,6 +104,12 @@ public final class PowerUpManager {
             powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
             if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
         });
+
+        randomPowerUpHandler.registerListeners(eventNode);
+    }
+
+    public void startRandomPowerUpTasks() {
+        randomPowerUpHandler.startRandomPowerUpTasks();
     }
 
     public void registerDefaultPowerUps() {
@@ -117,6 +127,29 @@ public final class PowerUpManager {
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {
         return registry.findByName(id);
+    }
+
+    public @NotNull PowerUp findRandomPowerUp(@NotNull SpawnLocation spawnLocation) {
+        final List<PowerUp> possiblePowerUps = registry.findAllBySpawnLocation(spawnLocation);
+        final int totalWeight = calculateTotalWeight(possiblePowerUps);
+
+        int index = 0;
+        int randomIndex = ThreadLocalRandom.current().nextInt(totalWeight + 1);
+        while (index < possiblePowerUps.size() - 1) {
+            randomIndex -= possiblePowerUps.get(index).getRarity().getWeight();
+            if (randomIndex <= 0) break;
+            ++index;
+        }
+
+        return possiblePowerUps.get(index);
+    }
+
+    private int calculateTotalWeight(@NotNull List<PowerUp> powerUps) {
+        int totalWeight = 0;
+        for (final PowerUp powerUp : powerUps) {
+            totalWeight += powerUp.getRarity().getWeight();
+        }
+        return totalWeight;
     }
 
     public @NotNull PowerUp findRandomPowerUp() {
