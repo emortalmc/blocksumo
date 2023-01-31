@@ -28,6 +28,7 @@ public final class PlayerManager {
     private final PlayerTeamManager teamManager;
     private final PlayerDamageHandler damageHandler;
     private final PlayerBlockHandler blockHandler;
+    private final PlayerDisconnectHandler disconnectHandler;
 
     private final Sidebar scoreboard;
 
@@ -38,6 +39,7 @@ public final class PlayerManager {
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
         this.blockHandler = new PlayerBlockHandler(game);
+        this.disconnectHandler = new PlayerDisconnectHandler(game, this);
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 
@@ -49,6 +51,7 @@ public final class PlayerManager {
             scoreboard.addViewer(player);
             updateLivesInHealth(player);
         });
+        disconnectHandler.registerListeners(eventNode);
     }
 
     public void updateLivesInHealth(@NotNull Player player) {
@@ -113,13 +116,17 @@ public final class PlayerManager {
         }
     }
 
-    private void cleanUpPlayer(@NotNull Player player) {
+    public void cleanUpPlayer(@NotNull Player player) {
         player.removeTag(PlayerTags.TEAM_COLOR);
         player.removeTag(PlayerTags.LIVES);
         player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
         player.removeTag(PlayerTags.DEAD);
         player.removeTag(PlayerTags.CAN_BE_HIT);
         scoreboard.removeViewer(player);
+    }
+
+    public void removeFromScoreboard(@NotNull Player player) {
+        scoreboard.removeLine(player.getUuid().toString());
     }
 
     public @NotNull PlayerDeathHandler getDeathHandler() {

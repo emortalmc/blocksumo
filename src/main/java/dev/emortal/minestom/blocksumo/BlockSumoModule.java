@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 @ModuleData(name = "blocksumo", softDependencies = {GameSdkModule.class, PermissionModule.class}, required = false)
 public class BlockSumoModule extends Module {
+    public static final int MIN_PLAYERS = 2;
+
     private final MapManager mapManager;
 
     protected BlockSumoModule(@NotNull ModuleEnvironment environment) {
@@ -23,7 +25,7 @@ public class BlockSumoModule extends Module {
 
         GameSdkModule.init(
                 new GameSdkConfig.Builder()
-                        .minPlayers(1)
+                        .minPlayers(MIN_PLAYERS)
                         .gameSupplier((info, eventNode) -> new BlockSumoGame(info, eventNode, this.mapManager.getRandomMap()))
                         .maxGames(5)
                         .build()

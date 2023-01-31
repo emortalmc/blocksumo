@@ -192,4 +192,9 @@ public final class PlayerRespawnHandler {
         }
         respawnTasks.clear();
     }
+
+    public void cleanUpPlayer(@NotNull Player player) {
+        final Task task = respawnTasks.remove(player.getUuid());
+        if (task != null) task.cancel();
+    }
 }

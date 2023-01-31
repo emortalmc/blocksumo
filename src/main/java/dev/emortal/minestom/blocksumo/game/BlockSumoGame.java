@@ -39,6 +39,7 @@ import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.particle.ParticleCreator;
 import net.minestom.server.sound.SoundEvent;
+import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -68,6 +69,8 @@ public class BlockSumoGame extends Game {
     private final @NotNull EventNode<Event> eventNode;
     private final @NotNull Instance instance;
     private final @NotNull MapData mapData;
+
+    private Task countdownTask;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode, @NotNull LoadedMap map) {
         super(creationInfo, gameEventNode);
@@ -156,7 +159,7 @@ public class BlockSumoGame extends Game {
         audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
         playerManager.getScoreboard().removeLine("infoLine");
-        instance.scheduler().submitTask(new Supplier<>() {
+        countdownTask = instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
 
             @Override
@@ -227,6 +230,10 @@ public class BlockSumoGame extends Game {
     private void setSpawnBlockToWool(@NotNull Player player) {
         final Pos pos = player.getPosition();
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
+    }
+
+    public void cancelCountdown() {
+        if (countdownTask != null) countdownTask.cancel();
     }
 
     public void victory(final @NotNull Set<Player> winners) {

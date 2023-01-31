@@ -64,4 +64,9 @@ public final class SpawnProtectionManager {
         final Sound sound = Sound.sound(SoundEvent.BLOCK_WOOD_BREAK, Sound.Source.MASTER, 0.75F, 1.5F);
         player.playSound(sound, source.x(), source.y(), source.z());
     }
+
+    public void cleanUpPlayer(@NotNull Player player) {
+        final Task task = protectionIndicatorTasks.remove(player.getUuid());
+        if (task != null) task.cancel();
+    }
 }
