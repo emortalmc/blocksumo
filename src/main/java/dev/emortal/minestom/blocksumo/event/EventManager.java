@@ -3,19 +3,29 @@ package dev.emortal.minestom.blocksumo.event;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.sound.Sound;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.sound.SoundEvent;
+import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.Collection;
 
 public final class EventManager {
+
     private final EventRegistry registry;
     private final BlockSumoGame game;
+    private final RandomEventHandler randomEventHandler;
 
     public EventManager(final @NotNull BlockSumoGame game) {
         this.registry = new EventRegistry();
         this.game = game;
+        this.randomEventHandler = new RandomEventHandler(game, this);
+    }
+
+    public void startRandomEventTask() {
+        randomEventHandler.startRandomEventTask();
     }
 
     public void registerDefaultEvents() {

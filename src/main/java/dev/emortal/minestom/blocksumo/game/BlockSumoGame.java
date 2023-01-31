@@ -186,6 +186,7 @@ public class BlockSumoGame extends Game {
             giveColoredChestplate(player);
             setSpawnBlockToWool(player);
         }
+        eventManager.startRandomEventTask();
     }
 
     private void showCountdown(final int countdown) {
