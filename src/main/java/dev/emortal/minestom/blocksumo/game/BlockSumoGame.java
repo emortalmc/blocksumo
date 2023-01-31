@@ -215,10 +215,9 @@ public class BlockSumoGame extends Game {
     }
 
     private void giveWoolAndShears(@NotNull Player player) {
-        TeamColor team = player.getTag(PlayerTags.TEAM_COLOR);
-
+        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-        player.getInventory().setItemStack(1, team.getWoolItem());
+        player.getInventory().setItemStack(1, color.getWoolItem());
     }
 
     private void giveColoredChestplate(@NotNull Player player) {

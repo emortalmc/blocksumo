@@ -174,8 +174,9 @@ public final class PlayerRespawnHandler {
     }
 
     private void giveWoolAndShears(@NotNull Player player) {
+        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-        player.getInventory().setItemStack(1, ItemStack.of(Material.WHITE_WOOL, 64));
+        player.getInventory().setItemStack(1, color.getWoolItem());
     }
 
     private void giveColoredChestplate(@NotNull Player player) {
