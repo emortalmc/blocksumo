@@ -44,22 +44,7 @@ public final class PowerUpManager {
     }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerUseItemEvent.class, event -> {
-            event.setCancelled(true);
-
-            final Player player = event.getPlayer();
-            final Player.Hand hand = event.getHand();
-
-            final PowerUp heldPowerUp = getHeldPowerUp(player, hand);
-
-            if (heldPowerUp instanceof GrapplingHook) {
-                event.setCancelled(false);
-                game.getBobberManager().cast(player, hand);
-                return;
-            }
-
-            if (heldPowerUp != null) heldPowerUp.onUse(player, hand);
-        });
+        eventNode.addListener(PlayerUseItemEvent.class, this::onItemUse);
 
         eventNode.addListener(PlayerUseItemOnBlockEvent.class, event -> {
             final Player player = event.getPlayer();
@@ -69,43 +54,62 @@ public final class PowerUpManager {
             if (heldPowerUp != null) heldPowerUp.onUseOnBlock(player, hand);
         });
 
-        eventNode.addListener(ProjectileCollideWithBlockEvent.class, event -> {
-            if (!(event.getEntity() instanceof EntityProjectile entity)) return;
-            if (!(entity.getShooter() instanceof Player shooter)) return;
-
-            final String powerUpName = getPowerUpName(entity);
-            final PowerUp powerUp = findNamedPowerUp(powerUpName);
-            if (powerUp == null) return;
-
-            powerUp.onCollideWithBlock(shooter, event.getCollisionPosition());
-            if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
-        });
-
-        eventNode.addListener(ProjectileCollideWithEntityEvent.class, event -> {
-            if (!(event.getEntity() instanceof EntityProjectile entity)) return;
-            if (!(entity.getShooter() instanceof Player shooter)) return;
-            if (!(event.getTarget() instanceof Player target)) return;
-
-            if (game.getSpawnProtectionManager().isProtected(target)) {
-                game.getSpawnProtectionManager().notifyProtected(shooter, target);
-                return;
-            }
-
-            if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
-            target.setTag(PlayerTags.CAN_BE_HIT, false);
-            target.scheduler().buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
-
-            target.damage(DamageType.fromPlayer(shooter), 0);
-
-            final String powerUpName = getPowerUpName(entity);
-            final PowerUp powerUp = findNamedPowerUp(powerUpName);
-            if (powerUp == null) return;
-
-            powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
-            if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
-        });
-
+        eventNode.addListener(ProjectileCollideWithBlockEvent.class, this::onCollideWithBlock);
+        eventNode.addListener(ProjectileCollideWithEntityEvent.class, this::onCollideWithEntity);
         randomPowerUpHandler.registerListeners(eventNode);
+    }
+
+    private void onItemUse(@NotNull PlayerUseItemEvent event) {
+        event.setCancelled(true);
+
+        final Player player = event.getPlayer();
+        final Player.Hand hand = event.getHand();
+
+        final PowerUp heldPowerUp = getHeldPowerUp(player, hand);
+
+        if (heldPowerUp instanceof GrapplingHook) {
+            event.setCancelled(false);
+            game.getBobberManager().cast(player, hand);
+            return;
+        }
+
+        if (heldPowerUp != null) heldPowerUp.onUse(player, hand);
+    }
+
+    private void onCollideWithBlock(@NotNull ProjectileCollideWithBlockEvent event) {
+        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
+        if (!(entity.getShooter() instanceof Player shooter)) return;
+
+        final String powerUpName = getPowerUpName(entity);
+        final PowerUp powerUp = findNamedPowerUp(powerUpName);
+        if (powerUp == null) return;
+
+        powerUp.onCollideWithBlock(shooter, event.getCollisionPosition());
+        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
+    }
+
+    private void onCollideWithEntity(@NotNull ProjectileCollideWithEntityEvent event) {
+        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
+        if (!(entity.getShooter() instanceof Player shooter)) return;
+        if (!(event.getTarget() instanceof Player target)) return;
+
+        if (game.getSpawnProtectionManager().isProtected(target)) {
+            game.getSpawnProtectionManager().notifyProtected(shooter, target);
+            return;
+        }
+
+        if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
+        target.setTag(PlayerTags.CAN_BE_HIT, false);
+        target.scheduler().buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
+
+        target.damage(DamageType.fromPlayer(shooter), 0);
+
+        final String powerUpName = getPowerUpName(entity);
+        final PowerUp powerUp = findNamedPowerUp(powerUpName);
+        if (powerUp == null) return;
+
+        powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
+        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
     }
 
     public void startRandomPowerUpTasks() {

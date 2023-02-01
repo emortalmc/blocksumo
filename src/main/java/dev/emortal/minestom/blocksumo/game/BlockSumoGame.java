@@ -22,6 +22,7 @@ import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -36,11 +37,14 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.metadata.LeatherArmorMeta;
 import net.minestom.server.network.packet.server.SendablePacket;
+import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.particle.ParticleCreator;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
+import net.minestom.server.utils.PacketUtils;
+import net.minestom.server.utils.binary.BinaryWriter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
@@ -74,6 +79,9 @@ public class BlockSumoGame extends Game {
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode, @NotNull LoadedMap map) {
         super(creationInfo, gameEventNode);
+        this.instance = map.instance();
+        this.mapData = map.mapData();
+
         this.playerManager = new PlayerManager(this, 49);
 
         this.eventManager = new EventManager(this);
@@ -81,9 +89,6 @@ public class BlockSumoGame extends Game {
 
         this.powerUpManager = new PowerUpManager(this);
         powerUpManager.registerDefaultPowerUps();
-
-        this.instance = map.instance();
-        this.mapData = map.mapData();
         this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
         this.explosionManager = new ExplosionManager(this);
         this.bobberManager = new FishingBobberManager(this);
@@ -115,7 +120,7 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
             player.kick("Unexpected join (" + Environment.getHostname() + ")");
             LOGGER.info("Unexpected join for player {}", player.getUuid());
@@ -124,31 +129,34 @@ public class BlockSumoGame extends Game {
 
         player.setRespawnPoint(spawnHandler.getBestSpawn());
         event.setSpawningInstance(instance);
-        this.players.add(player);
+        players.add(player);
 
         player.setAutoViewable(true);
         playerManager.addInitialTags(player);
     }
 
     private void sendSpawnPacketsToPlayers() {
-        final Set<SendablePacket> packets = this.createSpawnPackets();
-        for (final Player player : players) {
-            packets.forEach(player::sendPacket);
+        final Set<ServerPacket> packets = createSpawnPackets();
+        for (final ServerPacket packet : packets) {
+            PacketUtils.sendGroupedPacket(players, packet);
         }
     }
 
-    private Set<SendablePacket> createSpawnPackets() {
-        Set<SendablePacket> packets = new HashSet<>();
+    private Set<ServerPacket> createSpawnPackets() {
+        final Consumer<BinaryWriter> extraDataWriter = writer -> {
+            writer.writeFloat(1);
+            writer.writeFloat(0);
+            writer.writeFloat(0);
+            writer.writeFloat(1.5F);
+        };
+
+        final Set<ServerPacket> packets = new HashSet<>();
         for (final Pos spawn : mapData.spawns()) {
-            packets.add(ParticleCreator.createParticlePacket(Particle.DUST, true,
+            final ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
-                    0, 0, 0, 0f, 1,
-                    binaryWriter -> {
-                        binaryWriter.writeFloat(1);
-                        binaryWriter.writeFloat(0);
-                        binaryWriter.writeFloat(0);
-                        binaryWriter.writeFloat(1.5f);
-                    }));
+                    0, 0, 0,
+                    0, 1, extraDataWriter);
+            packets.add(packet);
         }
 
         return packets;
@@ -209,9 +217,9 @@ public class BlockSumoGame extends Game {
     }
 
     private void removeLockingEntities() {
-        instance.getEntities().forEach(entity -> {
+        for (final Entity entity : instance.getEntities()) {
             if (entity.getEntityType() == EntityType.AREA_EFFECT_CLOUD) entity.remove();
-        });
+        }
     }
 
     private void giveWoolAndShears(@NotNull Player player) {

@@ -26,26 +26,27 @@ public final class PlayerDisconnectHandler {
     }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerDisconnectEvent.class, event -> {
-            final Player player = event.getPlayer();
+        eventNode.addListener(PlayerDisconnectEvent.class, event -> onDisconnect(event.getPlayer()));
+    }
 
-            playerManager.cleanUpPlayer(player);
-            removePlayer(player);
+    private void onDisconnect(@NotNull Player player) {
+        playerManager.cleanUpPlayer(player);
+        removePlayer(player);
 
-            sendQuitMessage(player);
-            playQuitSound();
+        sendQuitMessage(player);
+        playQuitSound();
 
-            cancelCountdownIfNeeded();
-            final boolean singlePlayerWinner = checkForSinglePlayerWinner();
+        cancelCountdownIfNeeded();
+        final boolean singlePlayerWinner = hasSinglePlayerWinner();
+        if (singlePlayerWinner) endWithSinglePlayerWinner();
 
-            playerManager.getRespawnHandler().cleanUpPlayer(player);
-            game.getSpawnProtectionManager().cleanUpPlayer(player);
+        playerManager.getRespawnHandler().cleanUpPlayer(player);
+        game.getSpawnProtectionManager().cleanUpPlayer(player);
 
-            playerManager.cleanUpPlayer(player);
-            playerManager.removeFromScoreboard(player);
+        playerManager.cleanUpPlayer(player);
+        playerManager.removeFromScoreboard(player);
 
-            if (!singlePlayerWinner) checkForWinner();
-        });
+        if (!singlePlayerWinner) checkForWinner();
     }
 
     private void removePlayer(@NotNull Player left) {
@@ -72,13 +73,13 @@ public final class PlayerDisconnectHandler {
         game.cancelCountdown();
     }
 
-    private boolean checkForSinglePlayerWinner() {
-        if (game.getPlayers().size() == 1 && BlockSumoModule.MIN_PLAYERS > 1) {
-            final Player player = game.getPlayers().iterator().next();
-            game.victory(Set.of(player));
-            return true;
-        }
-        return false;
+    private boolean hasSinglePlayerWinner() {
+        return game.getPlayers().size() == 1;
+    }
+
+    private void endWithSinglePlayerWinner() {
+        final Player winner = game.getPlayers().iterator().next();
+        game.victory(Set.of(winner));
     }
 
     private void checkForWinner() {
