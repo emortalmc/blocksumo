@@ -27,11 +27,8 @@ public final class SpawnProtectionManager {
     }
 
     private void setProtectionTime(@NotNull Player player, long time) {
-        if (time == 0) {
-            player.removeTag(PlayerTags.SPAWN_PROTECTION_TIME);
-        } else {
-            player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, System.currentTimeMillis() + time);
-        }
+        final long protectionTime = time == 0 ? 0L : System.currentTimeMillis() + time;
+        player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, protectionTime);
     }
 
     public void startProtection(@NotNull Player player, long time) {
