@@ -21,11 +21,11 @@ dependencies {
     implementation("com.github.EmortalMC:Rayfast:9e5accb")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:core:acb3ec4")
+    implementation("dev.emortal.minestom:core:f951244")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
 
-    implementation("dev.emortal.minestom:game-sdk:e7427ae")
-    implementation("dev.emortal.api:kurushimi-sdk:2ae9dd3")
+    implementation("dev.emortal.minestom:game-sdk:6d748c3")
+    implementation("dev.emortal.api:kurushimi-sdk:ff3e2ae")
 }
 
 tasks {
