@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SpawnProtectionManager {
-
     private final Map<UUID, Task> protectionIndicatorTasks = new ConcurrentHashMap<>();
 
     public boolean isProtected(@NotNull Player player) {

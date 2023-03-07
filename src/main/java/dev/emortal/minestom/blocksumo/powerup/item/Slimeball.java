@@ -18,12 +18,17 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
+import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.time.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 public final class Slimeball extends PowerUp {
     private static final Component NAME = Component.text("Slimeball", NamedTextColor.GREEN);
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.SLIME_BALL, NAME, ItemRarity.COMMON, 8);
+
+    private static final Tag<Double> POSITION_X_TAG = Tag.Double("thrower_position_x");
+    private static final Tag<Double> POSITION_Y_TAG = Tag.Double("thrower_position_y");
+    private static final Tag<Double> POSITION_Z_TAG = Tag.Double("thrower_position_z");
 
     private static final ItemStack SLIME_ITEM = ItemStack.of(Material.SLIME_BALL);
 
@@ -43,6 +48,10 @@ public final class Slimeball extends PowerUp {
         ((SnowballMeta) snowball.getEntityMeta()).setItem(SLIME_ITEM);
 
         snowball.setTag(PowerUp.NAME, name);
+        snowball.setTag(POSITION_X_TAG, thrower.getPosition().x());
+        snowball.setTag(POSITION_Y_TAG, thrower.getPosition().y());
+        snowball.setTag(POSITION_Z_TAG, thrower.getPosition().z());
+
         snowball.setBoundingBox(0.1, 0.1, 0.1);
         snowball.setVelocity(thrower.getPosition().direction().mul(30.0));
 
@@ -60,6 +69,12 @@ public final class Slimeball extends PowerUp {
     @Override
     public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
                                     @NotNull Pos collisionPos) {
-        KnockbackUtil.takeKnockback(target, collisionPos, -1);
+        Pos throwerPos = new Pos(
+                entity.getTag(POSITION_X_TAG),
+                entity.getTag(POSITION_Y_TAG),
+                entity.getTag(POSITION_Z_TAG)
+        );
+
+        KnockbackUtil.takeKnockback(target, throwerPos, -1);
     }
 }

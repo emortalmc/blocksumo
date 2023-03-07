@@ -26,6 +26,8 @@ dependencies {
 
     implementation("dev.emortal.minestom:game-sdk:6d748c3")
     implementation("dev.emortal.api:kurushimi-sdk:ff3e2ae")
+
+    compileOnly("org.jetbrains:annotations:24.0.1")
 }
 
 tasks {

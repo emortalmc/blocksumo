@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 public final class AntiGravityTNT extends PowerUp {
     private static final Component NAME = Component.text("Anti-Gravity TNT", NamedTextColor.AQUA);
-    private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.TNT, NAME, ItemRarity.UNCOMMON);
+    private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.CYAN_CONCRETE_POWDER, NAME, ItemRarity.UNCOMMON);
 
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 35, 5.5, true);
 
