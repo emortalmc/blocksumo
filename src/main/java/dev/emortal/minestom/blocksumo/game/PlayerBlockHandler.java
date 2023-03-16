@@ -2,14 +2,14 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
-import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
+import net.kyori.adventure.text.Component;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
 import net.minestom.server.timer.Task;
@@ -19,11 +19,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class PlayerBlockHandler {
     private static final Point SPAWN = MapData.CENTER.sub(0.5, 0, 0.5);
+
+    // These values are trial-and-error. If they break, blame me. Don't complain, just fix it kekw
+    private static final float NON_SNEAKING_RANGE = 4.65f;
+    private static final float SNEAKING_RANGE = 4.9f;
 
     private final BlockSumoGame game;
     private final Map<Point, Task> centerBlockBreakTasks = new ConcurrentHashMap<>();
@@ -36,6 +39,9 @@ public final class PlayerBlockHandler {
         eventNode.addListener(PlayerBlockPlaceEvent.class, this::onBlockPlace);
 
         eventNode.addListener(PlayerBlockBreakEvent.class, event -> {
+            Task removedTask = this.centerBlockBreakTasks.remove(event.getBlockPosition());
+            if (removedTask != null) removedTask.cancel();
+
             final String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
             if (!blockName.contains("wool")) event.setCancelled(true);
         });
@@ -47,13 +53,24 @@ public final class PlayerBlockHandler {
         final Player player = event.getPlayer();
         final Point blockPosition = event.getBlockPosition();
 
-        if (!withinLegalRange(player, blockPosition) || !withinWorldLimits(blockPosition)) {
+        final PowerUp heldPowerup = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
+
+        if (!withinLegalRange(player, blockPosition)) {
             event.setCancelled(true);
             return;
         }
 
-        final PowerUp heldItem = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
-        if (handlePowerUp(heldItem, event)) return;
+        // Handle powerups before height limit check. It can be aggravating
+        if (heldPowerup != null) {
+            handlePowerUp(heldPowerup, event);
+            return;
+        }
+
+        // Exclude powerup usage from the height limit. It can be aggravating
+        if (!withinWorldLimits(blockPosition)) {
+            event.setCancelled(true);
+            return;
+        }
 
         if (isAroundCenter(blockPosition)) {
             scheduleCenterBlockBreak(blockPosition, event.getBlock());
@@ -61,7 +78,10 @@ public final class PlayerBlockHandler {
     }
 
     private boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
-        return blockPos.distanceSquared(player.getPosition().add(0, 1, 0)) <= 5 * 5;
+        float range = player.isSneaking() ? SNEAKING_RANGE : NON_SNEAKING_RANGE;
+
+        Audiences.all().sendMessage(Component.text("range : dist " + range + " : " + blockPos.distance(player.getPosition().add(0, 1, 0))));
+        return blockPos.distance(player.getPosition().add(0, 1, 0)) <= range;
     }
 
     private boolean withinWorldLimits(@NotNull Point blockPos) {
