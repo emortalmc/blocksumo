@@ -12,7 +12,6 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.Enchantment;
 import net.minestom.server.item.ItemMeta;
-import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +31,8 @@ public final class Puncher extends PowerUp {
 
     @Override
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
-        removeItemFromPlayer(attacker);
+        removeOneItemFromPlayer(attacker, Player.Hand.MAIN);
         playHitSound(attacker);
-    }
-
-    private void removeItemFromPlayer(@NotNull Player player) {
-        player.setItemInMainHand(ItemStack.AIR);
     }
 
     private void playHitSound(@NotNull Player player) {

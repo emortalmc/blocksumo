@@ -2,8 +2,6 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
-import net.kyori.adventure.text.Component;
-import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -80,7 +78,6 @@ public final class PlayerBlockHandler {
     private boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
         float range = player.isSneaking() ? SNEAKING_RANGE : NON_SNEAKING_RANGE;
 
-        Audiences.all().sendMessage(Component.text("range : dist " + range + " : " + blockPos.distance(player.getPosition().add(0, 1, 0))));
         return blockPos.distance(player.getPosition().add(0, 1, 0)) <= range;
     }
 
