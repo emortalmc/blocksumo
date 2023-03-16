@@ -52,14 +52,18 @@ public final class EnderPearl extends PowerUp {
         game.getAudience().playSound(sound, source.x(), source.y(), source.z());
     }
 
+    private void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
+        shooter.teleport(collisionPosition);
+    }
+
     @Override
     public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
-        shooter.teleport(collisionPosition);
+        onCollide(shooter, collisionPosition.add(0, 1, 0));
     }
 
     @Override
     public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
                                     @NotNull Pos collisionPos) {
-        onCollideWithBlock(shooter, collisionPos);
+        onCollide(shooter, collisionPos);
     }
 }
