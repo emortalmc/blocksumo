@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MapManager {
@@ -35,22 +37,36 @@ public class MapManager {
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
+    private final Map<String, PreLoadedMap> preLoadedMaps;
+
+    public MapManager() {
+        Map<String, PreLoadedMap> chunkLoaders = new HashMap<>();
+
+        for (String mapName : ENABLED_MAPS) {
+            final Path mapPath = MAPS_PATH.resolve(mapName);
+            final Path tntPath = mapPath.resolve("map.tnt");
+            final Path dataPath = mapPath.resolve("map_data.json");
+
+            try {
+                final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
+                LOGGER.info("Loaded map data for map {}: [{}]", mapName, mapData);
+
+                final TNTLoader chunkLoader = new TNTLoader(new FileTNTSource(tntPath));
+
+                chunkLoaders.put(mapName, new PreLoadedMap(chunkLoader, mapData));
+            } catch (IOException | NBTException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        this.preLoadedMaps = Map.copyOf(chunkLoaders);
+    }
+
     public LoadedMap getRandomMap() {
         final String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
-        final Path mapPath = MAPS_PATH.resolve(randomMapName);
-        final Path tntPath = mapPath.resolve("map.tnt");
-        final Path dataPath = mapPath.resolve("map_data.json");
-
-        try {
-            final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
-            LOGGER.info("Loaded map data for map {}: [{}]", randomMapName, mapData);
-
-            final TNTLoader chunkLoader = new TNTLoader(new FileTNTSource(tntPath));
-            final Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(chunkLoader);
-            return new LoadedMap(instance, mapData);
-        } catch (IOException | NBTException e) {
-            throw new RuntimeException(e);
-        }
+        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(randomMapName);
+        final Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(preLoadedMap.chunkLoader());
+        return new LoadedMap(instance, preLoadedMap.mapData());
     }
 }

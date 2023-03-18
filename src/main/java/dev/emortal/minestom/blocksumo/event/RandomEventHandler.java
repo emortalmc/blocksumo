@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.event;
 
+import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.timer.TaskSchedule;

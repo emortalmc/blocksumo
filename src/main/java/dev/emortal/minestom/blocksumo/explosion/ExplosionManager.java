@@ -1,6 +1,5 @@
 package dev.emortal.minestom.blocksumo.explosion;
 
-import dev.emortal.minestom.blocksumo.explosion.ExplosionData;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
@@ -17,6 +16,8 @@ import net.minestom.server.instance.batch.AbsoluteBlockBatch;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
 import net.minestom.server.network.packet.server.play.ExplosionPacket;
+import net.minestom.server.potion.Potion;
+import net.minestom.server.potion.PotionEffect;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
@@ -28,8 +29,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 public final class ExplosionManager {
-
-    private final BlockSumoGame game;
+    private final @NotNull BlockSumoGame game;
 
     public ExplosionManager(@NotNull BlockSumoGame game) {
         this.game = game;
@@ -69,6 +69,56 @@ public final class ExplosionManager {
 
         if (!explosion.breakBlocks()) return;
         explodeBlocks(position, explosion);
+    }
+
+    public void nuclearExplosion(@NotNull Point origin, @NotNull Entity originEntity, int totalRadius) {
+        int radiusSquared = totalRadius * totalRadius;
+        NuclearExplosionData dataSquared = NuclearExplosionData.fromRadius(radiusSquared);
+
+        // Apply per-player effects
+        for (final Player player : this.game.getPlayers()) {
+            if (player.getGameMode() != GameMode.SURVIVAL) continue;
+
+            final double distance = player.getPosition().distanceSquared(origin);
+            if (distance > radiusSquared) continue;
+
+            boolean knockbackApplied = false;
+            boolean effectApplied = false;
+
+            // Apply effects
+            if (distance <= dataSquared.completeRad()) {
+                player.damage(DamageType.fromEntity(originEntity), 0);
+            }
+            if (distance <= dataSquared.severeRad()) {
+                player.addEffect(new Potion(PotionEffect.DARKNESS, (byte) 0, 10));
+                effectApplied = true;
+
+                // todo apply knockback
+                knockbackApplied = true;
+            }
+            if (distance <= dataSquared.moderateRad()) {
+                if (!effectApplied) {
+                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 7));
+                    effectApplied = true;
+                }
+
+                if (!knockbackApplied) {
+                    // todo apply knockback
+                    knockbackApplied = true;
+                }
+            }
+            if (distance <= dataSquared.lightRad()) {
+                if (!effectApplied) {
+                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 4));
+                    effectApplied = true;
+                }
+
+                if (!knockbackApplied) {
+                    // todo apply knockback
+                    knockbackApplied = true;
+                }
+            }
+        }
     }
 
     private void doExplosionDamage(@NotNull Point position, @NotNull ExplosionData explosion, @Nullable Player source,
@@ -114,13 +164,14 @@ public final class ExplosionManager {
             batch.setBlock(blockPos, Block.AIR);
         }
 
-        batch.apply(game.getInstance(), () -> {});
+        batch.apply(game.getInstance(), () -> {
+        });
     }
 
     private static @NotNull List<Point> getBlocksInSphere(final int radius) {
         final List<Point> blocks = new ArrayList<>();
         for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <=radius; y++) {
+            for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
                     final int distance = x * x + y * y + z * z;
                     if (distance > radius * radius) continue;

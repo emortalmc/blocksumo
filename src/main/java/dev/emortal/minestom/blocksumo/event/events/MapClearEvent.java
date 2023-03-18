@@ -1,8 +1,6 @@
-package dev.emortal.minestom.blocksumo.event;
+package dev.emortal.minestom.blocksumo.event.events;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-
-import java.util.function.Supplier;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -14,6 +12,8 @@ import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Supplier;
+
 public final class MapClearEvent extends BlockSumoEvent {
     private static final Component START_MESSAGE = Component.text()
             .append(Component.text("Uh oh...", NamedTextColor.RED))
@@ -22,7 +22,7 @@ public final class MapClearEvent extends BlockSumoEvent {
             .build();
     private static final int MAP_SIZE = 19;
     private static final int MAX_CLEAR_HEIGHT = 80;
-    private static final int DIAMOND_BLOCK_HEIGHT = 63;
+    private static final int DIAMOND_BLOCK_HEIGHT = 64;
 
     public MapClearEvent(@NotNull BlockSumoGame game) {
         super(game, START_MESSAGE);
@@ -32,7 +32,8 @@ public final class MapClearEvent extends BlockSumoEvent {
     public void start() {
         final Instance instance = game.getInstance();
         instance.scheduler().submitTask(new Supplier<>() {
-            final int iterations = MAX_CLEAR_HEIGHT - DIAMOND_BLOCK_HEIGHT;
+            // We must do one more iteration than the diff :)
+            final int iterations = MAX_CLEAR_HEIGHT - DIAMOND_BLOCK_HEIGHT + 1;
             int i = 0;
 
             @Override

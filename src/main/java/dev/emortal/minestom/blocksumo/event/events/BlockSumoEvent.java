@@ -1,10 +1,10 @@
-package dev.emortal.minestom.blocksumo.event;
+package dev.emortal.minestom.blocksumo.event.events;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
-public abstract sealed class BlockSumoEvent permits TNTRainEvent, MapClearEvent {
+public abstract sealed class BlockSumoEvent permits MapClearEvent, MotherloadEvent, TNTRainEvent {
     protected final @NotNull BlockSumoGame game;
     private final @NotNull Component startMessage;
 

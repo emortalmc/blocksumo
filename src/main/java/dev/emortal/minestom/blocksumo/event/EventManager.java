@@ -1,15 +1,16 @@
 package dev.emortal.minestom.blocksumo.event;
 
+import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
+import dev.emortal.minestom.blocksumo.event.events.MapClearEvent;
+import dev.emortal.minestom.blocksumo.event.events.MotherloadEvent;
+import dev.emortal.minestom.blocksumo.event.events.TNTRainEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.sound.Sound;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.sound.SoundEvent;
-import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.Collection;
 
 public final class EventManager {
@@ -31,6 +32,7 @@ public final class EventManager {
     public void registerDefaultEvents() {
         registry.registerEvent("TNT_RAIN", TNTRainEvent::new);
         registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
+        registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
     }
 
     public void startEvent(final @NotNull BlockSumoEvent event) {
