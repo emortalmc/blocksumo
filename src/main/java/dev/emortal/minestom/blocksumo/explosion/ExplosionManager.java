@@ -90,7 +90,7 @@ public final class ExplosionManager {
                 player.damage(DamageType.fromEntity(originEntity), 0);
             }
             if (distance <= dataSquared.severeRad()) {
-                player.addEffect(new Potion(PotionEffect.DARKNESS, (byte) 0, 10));
+                player.addEffect(new Potion(PotionEffect.BLINDNESS, (byte) 0, 6 * 20));
                 effectApplied = true;
 
                 // todo apply knockback
@@ -98,7 +98,7 @@ public final class ExplosionManager {
             }
             if (distance <= dataSquared.moderateRad()) {
                 if (!effectApplied) {
-                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 7));
+                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 4 * 20));
                     effectApplied = true;
                 }
 
@@ -109,7 +109,7 @@ public final class ExplosionManager {
             }
             if (distance <= dataSquared.lightRad()) {
                 if (!effectApplied) {
-                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 4));
+                    player.addEffect(new Potion(PotionEffect.NAUSEA, (byte) 0, 4 * 20));
                     effectApplied = true;
                 }
 

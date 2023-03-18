@@ -9,6 +9,8 @@ import dev.emortal.tnt.source.FileTNTSource;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.utils.NamespaceID;
+import net.minestom.server.world.DimensionType;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,11 @@ public class MapManager {
             .registerTypeAdapter(Pos.class, new PosAdapter())
             .create();
 
+    private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
+            .skylightEnabled(true)
+            .ambientLight(1.0f)
+            .build();
+
     private static final List<String> ENABLED_MAPS = List.of(
             "blocksumo",
             "castle",
@@ -40,6 +47,8 @@ public class MapManager {
     private final Map<String, PreLoadedMap> preLoadedMaps;
 
     public MapManager() {
+        MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
+
         Map<String, PreLoadedMap> chunkLoaders = new HashMap<>();
 
         for (String mapName : ENABLED_MAPS) {
@@ -66,7 +75,9 @@ public class MapManager {
         final String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
         final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(randomMapName);
-        final Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(preLoadedMap.chunkLoader());
+        final Instance instance = MinecraftServer.getInstanceManager()
+                .createInstanceContainer(DIMENSION_TYPE, preLoadedMap.chunkLoader());
+
         return new LoadedMap(instance, preLoadedMap.mapData());
     }
 }
