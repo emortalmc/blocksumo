@@ -16,16 +16,15 @@ import org.jetbrains.annotations.NotNull;
 public class BlockSumoModule extends Module {
     public static final int MIN_PLAYERS = 2;
 
-    private final MapManager mapManager;
-
     protected BlockSumoModule(@NotNull ModuleEnvironment environment) {
         super(environment);
-        this.mapManager = new MapManager();
+
+        MapManager mapManager = new MapManager();
 
         GameSdkModule.init(
                 new GameSdkConfig.Builder()
                         .minPlayers(MIN_PLAYERS)
-                        .gameSupplier((info, eventNode) -> new BlockSumoGame(info, eventNode, this.mapManager.getRandomMap()))
+                        .gameSupplier((info, eventNode) -> new BlockSumoGame(info, eventNode, mapManager.getMap(info.mapId())))
                         .maxGames(5)
                         .build()
         );

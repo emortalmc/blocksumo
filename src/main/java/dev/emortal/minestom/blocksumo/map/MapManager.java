@@ -11,6 +11,8 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +71,23 @@ public class MapManager {
         }
 
         this.preLoadedMaps = Map.copyOf(chunkLoaders);
+    }
+
+    public @NotNull LoadedMap getMap(@Nullable String id) {
+        if (id == null) return this.getRandomMap();
+
+        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(id);
+        if (preLoadedMap == null) {
+            LOGGER.warn("Map {} not found, loading random map", id);
+            return this.getRandomMap();
+        }
+
+        final TNTLoader chunkLoader = preLoadedMap.chunkLoader();
+
+        LOGGER.info("Creating instance for map {}", id);
+
+        return new LoadedMap(MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, chunkLoader),
+                preLoadedMap.mapData());
     }
 
     public LoadedMap getRandomMap() {

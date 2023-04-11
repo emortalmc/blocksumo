@@ -1,6 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.api.kurushimi.KurushimiUtils;
+import dev.emortal.api.kurushimi.KurushimiMinestomUtils;
 import dev.emortal.minestom.blocksumo.entity.FishingBobberManager;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
@@ -36,7 +36,6 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.metadata.LeatherArmorMeta;
-import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.particle.ParticleCreator;
@@ -275,7 +274,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void sendBackToLobby() {
-        KurushimiUtils.sendToLobby(players, this::removeGame, this::removeGame);
+        KurushimiMinestomUtils.sendToLobby(players, this::removeGame, this::removeGame);
     }
 
     private void removeGame() {
