@@ -22,11 +22,13 @@ dependencies {
     implementation("com.github.EmortalMC:Rayfast:9e5accb")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:core:83d9a4d")
+    implementation("dev.emortal.minestom:core:c302f8f")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
 
-    implementation("dev.emortal.minestom:game-sdk:d028e7a")
-    implementation("dev.emortal.api:kurushimi-sdk:e4d7b15")
+    implementation("dev.emortal.minestom:game-sdk:818e2c2")
+    implementation("dev.emortal.api:kurushimi-sdk:848d117") {
+        exclude(group = "dev.emortal.api", module = "common-proto-sdk")
+    }
 
     compileOnly("org.jetbrains:annotations:24.0.1")
 }
