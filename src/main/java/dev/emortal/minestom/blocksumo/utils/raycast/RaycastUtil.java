@@ -65,7 +65,7 @@ public final class RaycastUtil {
             final Pos pos = new Pos(gridUnit.get(0), gridUnit.get(1), gridUnit.get(2));
 
             try {
-                final Block hitBlock = context.instance().getBlock(pos);
+                final Block hitBlock = context.instance().getBlock(pos, Block.Getter.Condition.TYPE);
                 if (hitBlock.isSolid()) return pos;
             } catch (final NullPointerException exception) {
                 // Catch if chunk is not loaded

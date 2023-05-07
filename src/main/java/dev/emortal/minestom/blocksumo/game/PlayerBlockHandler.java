@@ -23,8 +23,9 @@ public final class PlayerBlockHandler {
     private static final Point SPAWN = MapData.CENTER.sub(0.5, 0, 0.5);
 
     // These values are trial-and-error. If they break, blame me. Don't complain, just fix it kekw
-    private static final float NON_SNEAKING_RANGE = 4.65f;
-    private static final float SNEAKING_RANGE = 4.9f;
+    private static final float REACH_TOLERANCE = 1.0f;
+    private static final float NON_SNEAKING_RANGE = 4.65f + REACH_TOLERANCE;
+    private static final float SNEAKING_RANGE = 4.9f + REACH_TOLERANCE;
 
     private final BlockSumoGame game;
     private final Map<Point, Task> centerBlockBreakTasks = new ConcurrentHashMap<>();
@@ -35,6 +36,13 @@ public final class PlayerBlockHandler {
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerBlockPlaceEvent.class, this::onBlockPlace);
+
+        // Fixes replacement of non-solid blocks like stairs
+        eventNode.addListener(PlayerBlockPlaceEvent.class, event -> {
+            if (event.getInstance().getBlock(event.getBlockPosition(), Block.Getter.Condition.TYPE).isSolid()) {
+                event.setCancelled(true);
+            }
+        });
 
         eventNode.addListener(PlayerBlockBreakEvent.class, event -> {
             Task removedTask = this.centerBlockBreakTasks.remove(event.getBlockPosition());
@@ -78,7 +86,7 @@ public final class PlayerBlockHandler {
     private boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
         float range = player.isSneaking() ? SNEAKING_RANGE : NON_SNEAKING_RANGE;
 
-        return blockPos.distance(player.getPosition().add(0, 1, 0)) <= range;
+        return blockPos.distanceSquared(player.getPosition().add(0, 1, 0)) <= range * range;
     }
 
     private boolean withinWorldLimits(@NotNull Point blockPos) {

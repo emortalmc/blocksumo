@@ -155,7 +155,7 @@ public final class ExplosionManager {
 
         for (final Point pos : blocksToBreak) {
             final Point blockPos = position.add(pos);
-            final Block block = game.getInstance().getBlock(blockPos);
+            final Block block = game.getInstance().getBlock(blockPos, Block.Getter.Condition.TYPE);
             if (!block.name().toLowerCase(Locale.ROOT).contains("wool") && !block.isAir()) continue;
 
             // Send block break effect because Minestom won't send it for a batch break.

@@ -104,13 +104,14 @@ public class BlockSumoGame extends Game {
         });
         gameEventNode.addChild(this.eventNode);
         playerManager.registerPreGameListeners(eventNode);
-        playerManager.setupWaitingScoreboard();
 
-        MinecraftServer.getSchedulerManager()
-                .buildTask(this::sendSpawnPacketsToPlayers)
-                .delay(3, ChronoUnit.SECONDS)
-                .repeat(1, ChronoUnit.SECONDS)
-                .schedule();
+        if (GameSdkModule.TEST_MODE) {
+            MinecraftServer.getSchedulerManager()
+                    .buildTask(this::sendSpawnPacketsToPlayers)
+                    .delay(3, ChronoUnit.SECONDS)
+                    .repeat(1, ChronoUnit.SECONDS)
+                    .schedule();
+        }
     }
 
     private boolean isValidPlayerForGame(@NotNull Player player) {
@@ -165,7 +166,6 @@ public class BlockSumoGame extends Game {
     public void start() {
         audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
-        playerManager.getScoreboard().removeLine("infoLine");
         countdownTask = instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
 

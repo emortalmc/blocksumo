@@ -28,6 +28,7 @@ public final class PlayerManager {
     private final PlayerTeamManager teamManager;
     private final PlayerDamageHandler damageHandler;
     private final PlayerBlockHandler blockHandler;
+    private final PlayerDiamondBlockHandler diamondBlockHandler;
     private final PlayerDisconnectHandler disconnectHandler;
 
     private final Sidebar scoreboard;
@@ -39,8 +40,10 @@ public final class PlayerManager {
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
         this.blockHandler = new PlayerBlockHandler(game);
+        this.diamondBlockHandler = new PlayerDiamondBlockHandler(game);
         this.disconnectHandler = new PlayerDisconnectHandler(game, this);
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
+        setupWaitingScoreboard();
     }
 
     public void registerPreGameListeners(@NotNull EventNode<Event> eventNode) {
@@ -75,6 +78,7 @@ public final class PlayerManager {
         deathHandler.registerListeners(eventNode);
         damageHandler.registerListeners(eventNode);
         blockHandler.registerListeners(eventNode);
+        diamondBlockHandler.registerListeners(eventNode);
     }
 
     public void addInitialTags(@NotNull Player player) {
@@ -87,11 +91,6 @@ public final class PlayerManager {
 
     public void setupWaitingScoreboard() {
         scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
-        scoreboard.createLine(new Sidebar.ScoreboardLine(
-                "infoLine",
-                Component.text().append(Component.text("Waiting for players...", NamedTextColor.GRAY)).build(),
-                0
-        ));
         scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
         scoreboard.createLine(new Sidebar.ScoreboardLine(
                 "ipLine",
