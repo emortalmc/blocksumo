@@ -43,7 +43,6 @@ public final class PlayerManager {
         this.diamondBlockHandler = new PlayerDiamondBlockHandler(game);
         this.disconnectHandler = new PlayerDisconnectHandler(game, this);
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
-        setupWaitingScoreboard();
     }
 
     public void registerPreGameListeners(@NotNull EventNode<Event> eventNode) {

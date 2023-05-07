@@ -104,6 +104,7 @@ public class BlockSumoGame extends Game {
         });
         gameEventNode.addChild(this.eventNode);
         playerManager.registerPreGameListeners(eventNode);
+        playerManager.setupWaitingScoreboard();
 
         if (GameSdkModule.TEST_MODE) {
             MinecraftServer.getSchedulerManager()
