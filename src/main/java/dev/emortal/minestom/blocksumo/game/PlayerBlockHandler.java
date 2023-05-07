@@ -3,6 +3,7 @@ package dev.emortal.minestom.blocksumo.game;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -12,6 +13,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
+import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class PlayerBlockHandler {
     private static final Point SPAWN = MapData.CENTER.sub(0.5, 0, 0.5);
+
+    private static final Direction[] DIRECTIONS = Direction.values();
+
 
     // These values are trial-and-error. If they break, blame me. Don't complain, just fix it kekw
     private static final float REACH_TOLERANCE = 1.0f;
@@ -59,6 +64,14 @@ public final class PlayerBlockHandler {
         final Player player = event.getPlayer();
         final Point blockPosition = event.getBlockPosition();
 
+        if (nextToBarrier(blockPosition)) {
+            event.setCancelled(true);
+            // force player downwards when placing next to barriers - avoids clutching literally everything
+            player.teleport(player.getPosition().sub(0, 1, 0));
+            player.setVelocity(new Vec(0, -20, 0));
+            return;
+        }
+
         final PowerUp heldPowerup = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
 
         if (!withinLegalRange(player, blockPosition)) {
@@ -81,6 +94,16 @@ public final class PlayerBlockHandler {
         if (isAroundCenter(blockPosition)) {
             scheduleCenterBlockBreak(blockPosition, event.getBlock());
         }
+    }
+
+    private boolean nextToBarrier(@NotNull Point blockPos) {
+        for (Direction direction : DIRECTIONS) {
+            if (game.getInstance().getBlock(blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ()), Block.Getter.Condition.TYPE) == Block.BARRIER) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
