@@ -19,18 +19,20 @@ repositories {
 
 dependencies {
     implementation("com.github.EmortalMC:TNT:4ef1b53482")
-    implementation("com.github.EmortalMC:Rayfast:9e5accb")
+    implementation("dev.emortal:rayfast:d198fa1")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:core:c302f8f")
+    implementation("dev.emortal.minestom:core:06317cc")
+    implementation("dev.emortal.minestom:game-sdk:6502476")
+
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
-
-    implementation("dev.emortal.minestom:game-sdk:818e2c2")
-    implementation("dev.emortal.api:kurushimi-sdk:848d117") {
-        exclude(group = "dev.emortal.api", module = "common-proto-sdk")
-    }
-
     compileOnly("org.jetbrains:annotations:24.0.1")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 tasks {
