@@ -18,14 +18,17 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.EmortalMC:TNT:4ef1b53482")
+    implementation("dev.emortal.tnt:TNT:c343103") {
+        exclude(module = "minestom-ce")
+    }
+
     implementation("dev.emortal:rayfast:d198fa1")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:core:06317cc")
-    implementation("dev.emortal.minestom:game-sdk:6502476")
+    implementation("dev.emortal.minestom:core:2acaef1")
+    implementation("dev.emortal.minestom:game-sdk:4d22719")
 
-    implementation("net.kyori:adventure-text-minimessage:4.12.0")
+    implementation("net.kyori:adventure-text-minimessage:4.13.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
 }
 
