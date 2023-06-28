@@ -1,14 +1,14 @@
 package dev.emortal.minestom.blocksumo.map;
 
-import net.hollowcube.polar.AnvilPolar;
-import net.hollowcube.polar.ChunkSelector;
-import net.hollowcube.polar.PolarLoader;
-import net.hollowcube.polar.PolarReader;
-import net.hollowcube.polar.PolarWorld;
-import net.hollowcube.polar.PolarWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import dev.emortal.minestom.blocksumo.utils.gson.PosAdapter;
+import dev.emortal.tnt.TNTLoader;
+import dev.emortal.tnt.source.FileTNTSource;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
@@ -17,8 +17,8 @@ import org.jglrxavpok.hephaistos.nbt.NBTException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +27,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MapManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MapManager.class);
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(MapData.class, new MapData.Adapter())
+            .registerTypeAdapter(Pos.class, new PosAdapter())
+            .create();
 
     private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
             .skylightEnabled(true)
-//            .ambientLight(1.0f)
+            .ambientLight(1.0f)
             .build();
 
     private static final List<String> ENABLED_MAPS = List.of(
@@ -42,67 +46,57 @@ public class MapManager {
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
-    private static final int CHUNK_LOADING_RADIUS = 6;
-
-    private final Map<String, InstanceContainer> mapInstances;
+    private final Map<String, PreLoadedMap> preLoadedMaps;
 
     public MapManager() {
         MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
 
-        Map<String, InstanceContainer> instances = new HashMap<>();
+        Map<String, PreLoadedMap> chunkLoaders = new HashMap<>();
 
         for (String mapName : ENABLED_MAPS) {
-            final Path polarPath = MAPS_PATH.resolve(mapName + ".polar");
-            final Path anvilPath = MAPS_PATH.resolve(mapName);
+            final Path mapPath = MAPS_PATH.resolve(mapName);
+            final Path tntPath = mapPath.resolve("map.tnt");
+            final Path dataPath = mapPath.resolve("map_data.json");
 
             try {
-                PolarLoader polarLoader;
-                if (!Files.exists(polarPath)) { // File needs to be converted
-                    PolarWorld world = AnvilPolar.anvilToPolar(anvilPath, ChunkSelector.radius(CHUNK_LOADING_RADIUS));
-                    Files.write(polarPath, PolarWriter.write(world));
-                    polarLoader = new PolarLoader(world);
-                } else {
-                    polarLoader = new PolarLoader(polarPath);
-                }
+                final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
+                LOGGER.info("Loaded map data for map {}: [{}]", mapName, mapData);
 
-                InstanceContainer instance = MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, polarLoader);
-                instance.setTimeRate(0);
-                instance.setTimeUpdate(null);
+                final TNTLoader chunkLoader = new TNTLoader(new FileTNTSource(tntPath));
 
-                // Do some preloading!
-                for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
-                    for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-                        instance.loadChunk(x, z);
-                    }
-                }
-
-                instances.put(mapName, instance);
-            } catch (IOException e) {
+                chunkLoaders.put(mapName, new PreLoadedMap(chunkLoader, mapData));
+            } catch (IOException | NBTException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        this.mapInstances = Map.copyOf(instances);
+        this.preLoadedMaps = Map.copyOf(chunkLoaders);
     }
 
-    public @NotNull Instance getMap(@Nullable String id) {
+    public @NotNull LoadedMap getMap(@Nullable String id) {
         if (id == null) return this.getRandomMap();
 
-        final InstanceContainer instance = this.mapInstances.get(id);
-        if (instance == null) {
+        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(id);
+        if (preLoadedMap == null) {
             LOGGER.warn("Map {} not found, loading random map", id);
             return this.getRandomMap();
         }
 
+        final TNTLoader chunkLoader = preLoadedMap.chunkLoader();
+
         LOGGER.info("Creating instance for map {}", id);
 
-        return instance.copy();
+        return new LoadedMap(MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, chunkLoader),
+                preLoadedMap.mapData());
     }
 
-    public @NotNull Instance getRandomMap() {
-        final String randomMapId = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
-        final InstanceContainer instance = this.mapInstances.get(randomMapId);
+    public LoadedMap getRandomMap() {
+        final String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
-        return instance.copy();
+        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(randomMapName);
+        final Instance instance = MinecraftServer.getInstanceManager()
+                .createInstanceContainer(DIMENSION_TYPE, preLoadedMap.chunkLoader());
+
+        return new LoadedMap(instance, preLoadedMap.mapData());
     }
 }
