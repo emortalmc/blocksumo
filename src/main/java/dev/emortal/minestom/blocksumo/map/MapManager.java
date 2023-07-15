@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import dev.emortal.minestom.blocksumo.utils.gson.PosAdapter;
-import dev.emortal.tnt.TNTLoader;
-import dev.emortal.tnt.source.FileTNTSource;
+import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.Instance;
@@ -13,7 +12,6 @@ import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jglrxavpok.hephaistos.nbt.NBTException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,13 +38,16 @@ public class MapManager {
     private static final List<String> ENABLED_MAPS = List.of(
             "blocksumo",
             "castle",
-            "end",
+//            "end",
             "icebs",
             "ruinsbs"
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
+    private static final int CHUNK_LOADING_RADIUS = 8;
+
     private final Map<String, PreLoadedMap> preLoadedMaps;
+
 
     public MapManager() {
         MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
@@ -55,17 +56,24 @@ public class MapManager {
 
         for (String mapName : ENABLED_MAPS) {
             final Path mapPath = MAPS_PATH.resolve(mapName);
-            final Path tntPath = mapPath.resolve("map.tnt");
+            final Path polarPath = mapPath.resolve("map.polar");
             final Path dataPath = mapPath.resolve("map_data.json");
 
             try {
                 final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
                 LOGGER.info("Loaded map data for map {}: [{}]", mapName, mapData);
 
-                final TNTLoader chunkLoader = new TNTLoader(new FileTNTSource(tntPath));
+                PolarLoader polarLoader = new PolarLoader(polarPath);
+//                if (!Files.exists(polarPath)) { // File needs to be converted
+//                    PolarWorld world = AnvilPolar.anvilToPolar(mapPath, ChunkSelector.radius(CHUNK_LOADING_RADIUS));
+//                    Files.write(polarPath, PolarWriter.write(world));
+//                    polarLoader = new PolarLoader(world);
+//                } else {
+//                    polarLoader = new PolarLoader(polarPath);
+//                }
 
-                chunkLoaders.put(mapName, new PreLoadedMap(chunkLoader, mapData));
-            } catch (IOException | NBTException e) {
+                chunkLoaders.put(mapName, new PreLoadedMap(polarLoader, mapData));
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -82,7 +90,7 @@ public class MapManager {
             return this.getRandomMap();
         }
 
-        final TNTLoader chunkLoader = preLoadedMap.chunkLoader();
+        final PolarLoader chunkLoader = preLoadedMap.chunkLoader();
 
         LOGGER.info("Creating instance for map {}", id);
 

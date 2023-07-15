@@ -18,10 +18,6 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal.tnt:TNT:c343103") {
-        exclude(module = "minestom-ce")
-    }
-
     implementation("dev.emortal:rayfast:d198fa1")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
@@ -30,6 +26,8 @@ dependencies {
 
     implementation("net.kyori:adventure-text-minimessage:4.13.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
+
+    implementation("dev.hollowcube:polar:1.3.1")
 }
 
 java {

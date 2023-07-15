@@ -1,7 +1,7 @@
 package dev.emortal.minestom.blocksumo.map;
 
-import dev.emortal.tnt.TNTLoader;
+import net.hollowcube.polar.PolarLoader;
 import org.jetbrains.annotations.NotNull;
 
-public record PreLoadedMap(@NotNull TNTLoader chunkLoader, @NotNull MapData mapData) {
+public record PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
 }
