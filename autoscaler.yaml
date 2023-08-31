@@ -1,11 +1,11 @@
 apiVersion: autoscaling.agones.dev/v1
 kind: FleetAutoscaler
 metadata:
-  name: block-sumo
+  name: blocksumo
   namespace: emortalmc
 
 spec:
-  fleetName: block-sumo
+  fleetName: blocksumo
   policy:
     type: Buffer
     buffer:
