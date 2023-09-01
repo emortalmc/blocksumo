@@ -30,7 +30,7 @@ public final class MapClearEvent extends BlockSumoEvent {
 
     @Override
     public void start() {
-        final Instance instance = game.getInstance();
+        final Instance instance = game.getSpawningInstance();
         instance.scheduler().submitTask(new Supplier<>() {
             // We must do one more iteration than the diff :)
             final int iterations = MAX_CLEAR_HEIGHT - DIAMOND_BLOCK_HEIGHT + 1;
@@ -62,7 +62,7 @@ public final class MapClearEvent extends BlockSumoEvent {
     }
 
     private void playClearLayerSound() {
-        game.getAudience().playSound(
+        game.playSound(
                 Sound.sound(SoundEvent.ENTITY_EGG_THROW, Sound.Source.BLOCK, 1F, 0.5F),
                 Sound.Emitter.self()
         );

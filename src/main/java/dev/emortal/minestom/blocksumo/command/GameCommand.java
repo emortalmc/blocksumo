@@ -5,8 +5,8 @@ import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
-import dev.emortal.minestom.gamesdk.GameSdkModule;
 import dev.emortal.minestom.gamesdk.game.Game;
+import dev.emortal.minestom.gamesdk.game.GameProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.command.CommandSender;
@@ -17,14 +17,17 @@ import net.minestom.server.command.builder.arguments.ArgumentWord;
 import net.minestom.server.command.builder.suggestion.Suggestion;
 import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
 
 public final class GameCommand extends Command {
 
-    public GameCommand() {
+    private final @NotNull GameProvider gameProvider;
+
+    public GameCommand(GameProvider gameProvider) {
         super("game");
+
+        this.gameProvider = gameProvider;
 
         this.setCondition((sender, commandString) -> {
             return sender.hasPermission("command.game.blocksumo");
@@ -47,19 +50,19 @@ public final class GameCommand extends Command {
         this.addSyntax(this::executeGivePowerUp, give, powerup, powerUpType);
     }
 
-    private @Nullable BlockSumoGame getGame(final CommandSender sender) {
+    private @Nullable BlockSumoGame getGame(@NotNull CommandSender sender) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("You must be a player to use this command!");
             return null;
         }
 
-        final Optional<Game> game = GameSdkModule.getGameManager().findGame(player);
-        if (game.isEmpty()) {
+        Game game = gameProvider.findGame(player);
+        if (game == null) {
             sender.sendMessage("You are not in a game!");
             return null;
         }
 
-        return (BlockSumoGame) game.get();
+        return (BlockSumoGame) game;
     }
 
     private void suggestEvents(final CommandSender sender, final Suggestion suggestion) {

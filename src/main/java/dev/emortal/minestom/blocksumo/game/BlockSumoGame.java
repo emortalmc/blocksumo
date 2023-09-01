@@ -1,6 +1,5 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.api.kurushimi.KurushimiMinestomUtils;
 import dev.emortal.minestom.blocksumo.entity.FishingBobberManager;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
@@ -9,7 +8,7 @@ import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.core.Environment;
-import dev.emortal.minestom.gamesdk.GameSdkModule;
+import dev.emortal.minestom.gamesdk.MinestomGameServer;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
 import net.kyori.adventure.key.Key;
@@ -25,12 +24,6 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.Event;
-import net.minestom.server.event.EventFilter;
-import net.minestom.server.event.EventNode;
-import net.minestom.server.event.player.PlayerLoginEvent;
-import net.minestom.server.event.trait.InstanceEvent;
-import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
@@ -53,12 +46,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
+    public static final int MIN_PLAYERS = 2;
     public static final @NotNull Component TITLE =
             MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
 
@@ -69,15 +62,13 @@ public class BlockSumoGame extends Game {
     private final ExplosionManager explosionManager;
     private final FishingBobberManager bobberManager;
     private final SpawnProtectionManager spawnProtectionManager;
-
-    private final @NotNull EventNode<Event> eventNode;
     private final @NotNull Instance instance;
     private final @NotNull MapData mapData;
 
     private Task countdownTask;
 
-    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull EventNode<Event> gameEventNode, @NotNull LoadedMap map) {
-        super(creationInfo, gameEventNode);
+    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map) {
+        super(creationInfo);
         this.instance = map.instance();
         this.mapData = map.mapData();
 
@@ -93,20 +84,10 @@ public class BlockSumoGame extends Game {
         this.bobberManager = new FishingBobberManager(this);
         this.spawnProtectionManager = new SpawnProtectionManager();
 
-        this.eventNode = EventNode.event(UUID.randomUUID().toString(), EventFilter.ALL, event -> {
-            if (event instanceof PlayerEvent playerEvent) {
-                if (!isValidPlayerForGame(playerEvent.getPlayer())) return false;
-            }
-            if (event instanceof InstanceEvent instanceEvent) {
-                return instanceEvent.getInstance() == instance;
-            }
-            return true;
-        });
-        gameEventNode.addChild(this.eventNode);
-        playerManager.registerPreGameListeners(eventNode);
+        playerManager.registerPreGameListeners(getEventNode());
         playerManager.setupWaitingScoreboard();
 
-        if (GameSdkModule.TEST_MODE) {
+        if (MinestomGameServer.TEST_MODE) {
             MinecraftServer.getSchedulerManager()
                     .buildTask(this::sendSpawnPacketsToPlayers)
                     .delay(3, ChronoUnit.SECONDS)
@@ -116,24 +97,27 @@ public class BlockSumoGame extends Game {
     }
 
     private boolean isValidPlayerForGame(@NotNull Player player) {
-        return getGameCreationInfo().playerIds().contains(player.getUuid());
+        return getCreationInfo().playerIds().contains(player.getUuid());
     }
 
     @Override
-    public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
-        final Player player = event.getPlayer();
-        if (!getGameCreationInfo().playerIds().contains(player.getUuid())) {
+    public void onJoin(Player player) {
+        if (!getCreationInfo().playerIds().contains(player.getUuid())) {
             player.kick("Unexpected join (" + Environment.getHostname() + ")");
             LOGGER.info("Unexpected join for player {}", player.getUuid());
             return;
         }
 
         player.setRespawnPoint(spawnHandler.getBestSpawn());
-        event.setSpawningInstance(instance);
         players.add(player);
 
         player.setAutoViewable(true);
         playerManager.addInitialTags(player);
+    }
+
+    @Override
+    public void onLeave(@NotNull Player player) {
+        playerManager.getDisconnectHandler().onDisconnect(player);
     }
 
     private void sendSpawnPacketsToPlayers() {
@@ -165,7 +149,7 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void start() {
-        audience.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
+        this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
         countdownTask = instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
@@ -186,8 +170,8 @@ public class BlockSumoGame extends Game {
     }
 
     private void startGame() {
-        playerManager.registerGameListeners(eventNode);
-        powerUpManager.registerListeners(eventNode);
+        playerManager.registerGameListeners(getEventNode());
+        powerUpManager.registerListeners(getEventNode());
         removeLockingEntities();
         for (final Player player : getPlayers()) {
             giveWoolAndShears(player);
@@ -199,8 +183,8 @@ public class BlockSumoGame extends Game {
     }
 
     private void showCountdown(final int countdown) {
-        audience.playSound(Sound.sound(Key.key("battle.countdown.begin"), Sound.Source.MASTER, 1F, 1F), Sound.Emitter.self());
-        audience.showTitle(Title.title(
+        this.playSound(Sound.sound(Key.key("battle.countdown.begin"), Sound.Source.MASTER, 1F, 1F), Sound.Emitter.self());
+        this.showTitle(Title.title(
                 Component.text(countdown, NamedTextColor.GREEN, TextDecoration.BOLD),
                 Component.empty(),
                 Title.Times.times(Duration.ZERO, Duration.ofMillis(1500), Duration.ofMillis(500))
@@ -213,7 +197,7 @@ public class BlockSumoGame extends Game {
                 Component.empty(),
                 Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ZERO)
         );
-        audience.showTitle(title);
+        this.showTitle(title);
     }
 
     private void removeLockingEntities() {
@@ -268,30 +252,23 @@ public class BlockSumoGame extends Game {
         instance.scheduler().buildTask(this::sendBackToLobby).delay(TaskSchedule.seconds(6)).schedule();
     }
 
-    @Override
-    public void cancel() {
-        LOGGER.warn("Game cancelled early. Sending players back to lobby.");
-        sendBackToLobby();
-    }
-
     private void sendBackToLobby() {
-        KurushimiMinestomUtils.sendToLobby(players, this::removeGame, this::removeGame);
+        finish();
     }
 
-    private void removeGame() {
-        GameSdkModule.getGameManager().removeGame(this);
-        cleanUp();
-    }
-
-    private void cleanUp() {
+    @Override
+    public void cleanUp() {
         for (final Player player : players) {
             player.kick(Component.text("The game ended but we weren't able to connect you to a lobby. Please reconnect.", NamedTextColor.RED));
         }
-        MinecraftServer.getInstanceManager().unregisterInstance(instance);
+        instance.scheduler().scheduleNextTick(() -> {
+            MinecraftServer.getInstanceManager().unregisterInstance(instance);
+        });
         playerManager.cleanUp();
     }
 
-    public @NotNull Instance getInstance() {
+    @Override
+    public @NotNull Instance getSpawningInstance() {
         return instance;
     }
 

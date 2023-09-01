@@ -39,7 +39,7 @@ public final class RandomPowerUpHandler {
     }
 
     public void startRandomPowerUpTasks() {
-        final Instance instance = game.getInstance();
+        final Instance instance = game.getSpawningInstance();
 
         instance.scheduler().buildTask(this::spawnRandomCenterPowerUp)
                 .delay(TaskSchedule.seconds(10))
@@ -83,7 +83,7 @@ public final class RandomPowerUpHandler {
         entity.setMergeable(false);
         entity.setPickupDelay(5, TimeUnit.CLIENT_TICK);
         entity.setBoundingBox(0.5, 0.25, 0.5);
-        entity.setInstance(game.getInstance(), MapData.CENTER);
+        entity.setInstance(game.getSpawningInstance(), MapData.CENTER);
 
         notifySpawned(powerUp);
         displaySpawnedFirework();
@@ -107,7 +107,7 @@ public final class RandomPowerUpHandler {
                 .append(Objects.requireNonNull(powerUp.getDisplayName()))
                 .append(Component.text(" has spawned at the center!", NamedTextColor.GRAY))
                 .build();
-        game.getAudience().sendMessage(message);
+        game.sendMessage(message);
     }
 
     private void notifyGiven(@NotNull PowerUp powerUp) {
@@ -115,16 +115,16 @@ public final class RandomPowerUpHandler {
                 .append(powerUp.getItemName())
                 .append(Component.text(" has been given to everyone!", NamedTextColor.GRAY))
                 .build();
-        game.getAudience().sendMessage(message);
+        game.sendMessage(message);
     }
 
     private void displaySpawnedFirework() {
         final FireworkEffect effect = new FireworkEffect(false, false, FireworkEffectType.SMALL_BALL,
                 List.of(new Color(255, 100, 0)), List.of(new Color(255, 0, 255)));
-        FireworkUtil.showFirework(game.getPlayers(), game.getInstance(), FIREWORK_CENTER, List.of(effect));
+        FireworkUtil.showFirework(game.getPlayers(), game.getSpawningInstance(), FIREWORK_CENTER, List.of(effect));
     }
 
     private void playGivenSound() {
-        game.getAudience().playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.PLAYER, 1, 1));
+        game.playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.PLAYER, 1, 1));
     }
 }

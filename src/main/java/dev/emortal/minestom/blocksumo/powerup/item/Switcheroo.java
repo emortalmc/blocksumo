@@ -5,11 +5,7 @@ import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpItemInfo;
 import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
-import dev.emortal.minestom.blocksumo.utils.raycast.EntityHitPredicate;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastContext;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastResult;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastResultType;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastUtil;
+import dev.emortal.minestom.blocksumo.utils.raycast.*;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -58,7 +54,7 @@ public final class Switcheroo extends PowerUp {
     private void playSwitchSound(@NotNull Player player) {
         final Sound sound = Sound.sound(SoundEvent.BLOCK_BEACON_ACTIVATE, Sound.Source.PLAYER, 1, 1);
         final Pos source = player.getPosition();
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private @NotNull RaycastResult doRaycast(@NotNull Point eyePosition, @NotNull Player player) {
@@ -68,7 +64,7 @@ public final class Switcheroo extends PowerUp {
                     other.getGameMode() == GameMode.SURVIVAL &&
                     other != player;
         };
-        final RaycastContext context = new RaycastContext(game.getInstance(), eyePosition, direction, 60, predicate);
+        final RaycastContext context = new RaycastContext(game.getSpawningInstance(), eyePosition, direction, 60, predicate);
         return RaycastUtil.raycast(context);
     }
 
@@ -76,7 +72,7 @@ public final class Switcheroo extends PowerUp {
         // This error is BS. IntelliJ is on crack here. Build it and you'll see.
         final Particle<?, ?> particle = Particle.particle(ParticleType.END_ROD, 1, new OffsetAndSpeed());
         final Vec targetPos = hitPos != null ? hitPos : eyePosition.add(player.getPosition().direction().mul(20));
-        AudienceExtensionsKt.showParticle(game.getAudience(), particle, Renderer.INSTANCE.fixedLine(eyePosition, targetPos, 0.1));
+        AudienceExtensionsKt.showParticle(game, particle, Renderer.INSTANCE.fixedLine(eyePosition, targetPos, 0.1));
     }
 
     private void doSwitcheroo(@NotNull Player player, @NotNull Entity target) {
@@ -98,6 +94,6 @@ public final class Switcheroo extends PowerUp {
 
     private void playTeleportSound(@NotNull Point source) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_ENDERMAN_TELEPORT, Sound.Source.PLAYER, 1, 1);
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 }

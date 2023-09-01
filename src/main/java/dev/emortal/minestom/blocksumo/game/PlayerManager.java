@@ -53,7 +53,6 @@ public final class PlayerManager {
             scoreboard.addViewer(player);
             updateLivesInHealth(player);
         });
-        disconnectHandler.registerListeners(eventNode);
     }
 
     public void updateLivesInHealth(@NotNull Player player) {
@@ -66,7 +65,7 @@ public final class PlayerManager {
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
         respawnHandler.prepareSpawn(player, pos);
 
-        final Instance instance = game.getInstance();
+        final Instance instance = game.getSpawningInstance();
         final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
         ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
         entity.setNoGravity(true);
@@ -143,7 +142,11 @@ public final class PlayerManager {
         return scoreboard;
     }
 
+    public @NotNull PlayerDisconnectHandler getDisconnectHandler() {
+        return disconnectHandler;
+    }
+
     public void broadcastMessage(@NotNull Component message) {
-        game.getAudience().sendMessage(message);
+        game.sendMessage(message);
     }
 }

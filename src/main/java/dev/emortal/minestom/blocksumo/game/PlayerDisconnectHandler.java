@@ -1,14 +1,10 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.minestom.blocksumo.BlockSumoModule;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.Event;
-import net.minestom.server.event.EventNode;
-import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,11 +21,7 @@ public final class PlayerDisconnectHandler {
         this.playerManager = playerManager;
     }
 
-    public void registerListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerDisconnectEvent.class, event -> onDisconnect(event.getPlayer()));
-    }
-
-    private void onDisconnect(@NotNull Player player) {
+    public void onDisconnect(@NotNull Player player) {
         playerManager.cleanUpPlayer(player);
         removePlayer(player);
 
@@ -37,7 +29,7 @@ public final class PlayerDisconnectHandler {
         playQuitSound();
 
         cancelCountdownIfNeeded();
-        final boolean singlePlayerWinner = hasSinglePlayerWinner();
+        boolean singlePlayerWinner = hasSinglePlayerWinner();
         if (singlePlayerWinner) endWithSinglePlayerWinner();
 
         playerManager.getRespawnHandler().cleanUpPlayer(player);
@@ -54,22 +46,22 @@ public final class PlayerDisconnectHandler {
     }
 
     private void sendQuitMessage(@NotNull Player left) {
-        final Component message = Component.text()
+        Component message = Component.text()
                 .append(Component.text("QUIT", NamedTextColor.RED, TextDecoration.BOLD))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
                 .append(Component.text(left.getUsername(), NamedTextColor.RED))
                 .append(Component.text(" left the game", NamedTextColor.GRAY))
                 .build();
-        game.getAudience().sendMessage(message);
+        game.sendMessage(message);
     }
 
     private void playQuitSound() {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1F, 0.5F);
-        game.getAudience().playSound(sound);
+        Sound sound = Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1F, 0.5F);
+        game.playSound(sound);
     }
 
     private void cancelCountdownIfNeeded() {
-        if (game.getPlayers().size() >= BlockSumoModule.MIN_PLAYERS) return;
+        if (game.getPlayers().size() >= BlockSumoGame.MIN_PLAYERS) return;
         game.cancelCountdown();
     }
 
@@ -78,12 +70,12 @@ public final class PlayerDisconnectHandler {
     }
 
     private void endWithSinglePlayerWinner() {
-        final Player winner = game.getPlayers().iterator().next();
+        Player winner = game.getPlayers().iterator().next();
         game.victory(Set.of(winner));
     }
 
     private void checkForWinner() {
-        final Set<Player> alivePlayers = new HashSet<>();
+        Set<Player> alivePlayers = new HashSet<>();
         for (final Player player : game.getPlayers()) {
             if (player.getTag(PlayerTags.LIVES) > 0) alivePlayers.add(player);
         }

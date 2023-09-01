@@ -49,7 +49,7 @@ public final class Snowball extends PowerUp {
     private void playThrowSound(@NotNull Player thrower) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_SNOWBALL_THROW, Sound.Source.BLOCK, 1, 1);
         final Pos source = thrower.getPosition();
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     @Override

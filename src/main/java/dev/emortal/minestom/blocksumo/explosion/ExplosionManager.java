@@ -40,7 +40,7 @@ public final class ExplosionManager {
         final PrimedTntMeta meta = (PrimedTntMeta) tnt.getEntityMeta();
         meta.setFuseTime(fuseTime);
 
-        tnt.setInstance(game.getInstance(), position);
+        tnt.setInstance(game.getSpawningInstance(), position);
         playPrimedSound(tnt);
 
         scheduleExplosion(tnt, fuseTime, explosion, placer);
@@ -49,7 +49,7 @@ public final class ExplosionManager {
 
     private void playPrimedSound(@NotNull Entity tnt) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_TNT_PRIMED, Sound.Source.BLOCK, 2, 1);
-        game.getAudience().playSound(sound, tnt);
+        game.playSound(sound, tnt);
     }
 
     private void scheduleExplosion(@NotNull Entity tnt, int fuseTime, @NotNull ExplosionData explosion, @Nullable Player placer) {
@@ -65,7 +65,7 @@ public final class ExplosionManager {
         final float posX = (float) position.x();
         final float posY = (float) position.y();
         final float posZ = (float) position.z();
-        game.getInstance().sendGroupedPacket(new ExplosionPacket(posX, posY, posZ, explosion.size(), new byte[0], 0, 0, 0));
+        game.sendGroupedPacket(new ExplosionPacket(posX, posY, posZ, explosion.size(), new byte[0], 0, 0, 0));
 
         if (!explosion.breakBlocks()) return;
         explodeBlocks(position, explosion);
@@ -155,16 +155,16 @@ public final class ExplosionManager {
 
         for (final Point pos : blocksToBreak) {
             final Point blockPos = position.add(pos);
-            final Block block = game.getInstance().getBlock(blockPos, Block.Getter.Condition.TYPE);
+            final Block block = game.getSpawningInstance().getBlock(blockPos, Block.Getter.Condition.TYPE);
             if (!block.name().toLowerCase(Locale.ROOT).contains("wool") && !block.isAir()) continue;
 
             // Send block break effect because Minestom won't send it for a batch break.
-            game.getInstance().sendGroupedPacket(new EffectPacket(2001, blockPos, block.stateId(), false));
+            game.sendGroupedPacket(new EffectPacket(2001, blockPos, block.stateId(), false));
 
             batch.setBlock(blockPos, Block.AIR);
         }
 
-        batch.apply(game.getInstance(), () -> {
+        batch.apply(game.getSpawningInstance(), () -> {
         });
     }
 

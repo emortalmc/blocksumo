@@ -98,7 +98,7 @@ public final class PlayerBlockHandler {
 
     private boolean nextToBarrier(@NotNull Point blockPos) {
         for (Direction direction : DIRECTIONS) {
-            if (game.getInstance().getBlock(blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ()), Block.Getter.Condition.TYPE) == Block.BARRIER) {
+            if (game.getSpawningInstance().getBlock(blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ()), Block.Getter.Condition.TYPE) == Block.BARRIER) {
                 return true;
             }
         }
@@ -121,8 +121,8 @@ public final class PlayerBlockHandler {
     }
 
     private void scheduleCenterBlockBreak(@NotNull Point blockPos, @NotNull Block block) {
-        final Task task = game.getInstance().scheduler().buildTask(() -> {
-            game.getInstance().setBlock(blockPos, Block.AIR);
+        final Task task = game.getSpawningInstance().scheduler().buildTask(() -> {
+            game.getSpawningInstance().setBlock(blockPos, Block.AIR);
             sendBlockBreakEffect(blockPos, block);
         }).delay(TaskSchedule.seconds(5)).schedule();
         centerBlockBreakTasks.put(blockPos, task);
@@ -130,7 +130,7 @@ public final class PlayerBlockHandler {
 
     private void sendBlockBreakEffect(@NotNull Point blockPos, @NotNull Block block) {
         final EffectPacket packet = new EffectPacket(2001, blockPos, block.stateId(), false);
-        game.getInstance().sendGroupedPacket(packet);
+        game.sendGroupedPacket(packet);
     }
 
     private boolean handlePowerUp(@Nullable PowerUp powerUp, @NotNull PlayerBlockPlaceEvent event) {

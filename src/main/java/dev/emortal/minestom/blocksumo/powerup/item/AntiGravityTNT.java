@@ -47,7 +47,7 @@ public final class AntiGravityTNT extends PowerUp {
 
     private void playPrimedSound(@NotNull Point source) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_TNT_PRIMED, Sound.Source.BLOCK, 2, 1);
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void setNewUpwardsVelocity(@NotNull Entity tnt) {

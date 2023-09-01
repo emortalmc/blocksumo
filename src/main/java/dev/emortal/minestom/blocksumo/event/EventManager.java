@@ -5,7 +5,6 @@ import dev.emortal.minestom.blocksumo.event.events.MapClearEvent;
 import dev.emortal.minestom.blocksumo.event.events.MotherloadEvent;
 import dev.emortal.minestom.blocksumo.event.events.TNTRainEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -36,9 +35,8 @@ public final class EventManager {
     }
 
     public void startEvent(final @NotNull BlockSumoEvent event) {
-        final Audience audience = game.getAudience();
-        audience.sendMessage(event.getStartMessage());
-        audience.playSound(
+        game.sendMessage(event.getStartMessage());
+        game.playSound(
                 Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_GROWL, Sound.Source.MASTER, 0.7f, 1.2f),
                 Sound.Emitter.self()
         );

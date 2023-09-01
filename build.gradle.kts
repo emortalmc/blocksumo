@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "dev.emortal.minestom.blocksumo"
@@ -18,13 +18,13 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal:rayfast:d198fa1")
+    implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:core:2acaef1")
-    implementation("dev.emortal.minestom:game-sdk:4d22719")
+    implementation("dev.emortal.minestom:core:9c52249")
+    implementation("dev.emortal.minestom:game-sdk:4b3cedb")
 
-    implementation("net.kyori:adventure-text-minimessage:4.13.0")
+    implementation("net.kyori:adventure-text-minimessage:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
 
     implementation("dev.hollowcube:polar:1.3.1")
@@ -32,7 +32,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(20))
     }
 }
 

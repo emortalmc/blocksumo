@@ -38,6 +38,6 @@ public final class Puncher extends PowerUp {
     private void playHitSound(@NotNull Player player) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_PLAYER_ATTACK_CRIT, Sound.Source.PLAYER, 1, 1);
         final Pos source = player.getPosition();
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 }

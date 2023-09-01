@@ -2,16 +2,7 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
-import dev.emortal.minestom.blocksumo.powerup.item.AntiGravityTNT;
-import dev.emortal.minestom.blocksumo.powerup.item.EnderPearl;
-import dev.emortal.minestom.blocksumo.powerup.item.Fireball;
-import dev.emortal.minestom.blocksumo.powerup.item.GrapplingHook;
-import dev.emortal.minestom.blocksumo.powerup.item.KnockbackStick;
-import dev.emortal.minestom.blocksumo.powerup.item.Puncher;
-import dev.emortal.minestom.blocksumo.powerup.item.Slimeball;
-import dev.emortal.minestom.blocksumo.powerup.item.Snowball;
-import dev.emortal.minestom.blocksumo.powerup.item.Switcheroo;
-import dev.emortal.minestom.blocksumo.powerup.item.TNT;
+import dev.emortal.minestom.blocksumo.powerup.item.*;
 import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.DamageType;

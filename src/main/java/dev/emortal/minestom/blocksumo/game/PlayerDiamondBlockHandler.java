@@ -62,16 +62,16 @@ public final class PlayerDiamondBlockHandler {
                         event.getPlayer().playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.MASTER, 1f, 1.5f), Sound.Emitter.self());
 
                         if (secondsLeft <= 5) {
-                            game.getAudience().showTitle(Title.title(
+                            game.showTitle(Title.title(
                                     Component.text(secondsLeft, TextColor.lerp(secondsLeft / 5f, NamedTextColor.RED, NamedTextColor.GREEN), TextDecoration.BOLD),
                                     Component.empty(),
                                     Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
                             ));
 
-                            game.getAudience().playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 1f, 0.8f), Sound.Emitter.self());
+                            game.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 1f, 0.8f), Sound.Emitter.self());
                         }
                         if (secondsLeft % 5 == 0 && secondsLeft != DIAMOND_BLOCK_SECONDS) {
-                            game.getAudience().sendMessage(
+                            game.sendMessage(
                                     Component.text()
                                             .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
                                             .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
@@ -84,7 +84,7 @@ public final class PlayerDiamondBlockHandler {
                                             .append(Component.text(" seconds!", NamedTextColor.GRAY))
                                             .build()
                             );
-                            game.getAudience().playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1f, 1.2f), Sound.Emitter.self());
+                            game.playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1f, 1.2f), Sound.Emitter.self());
                         }
 
                         secondsLeft--;

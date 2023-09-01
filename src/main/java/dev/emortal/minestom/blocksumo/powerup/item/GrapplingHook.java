@@ -57,7 +57,7 @@ public final class GrapplingHook extends PowerUp {
 
     private void playRetractSound(@NotNull Pos source) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_FISHING_BOBBER_RETRIEVE, Sound.Source.PLAYER, 1, 1);
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void playRodBreakSound(@NotNull Player caster) {

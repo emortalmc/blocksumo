@@ -50,7 +50,7 @@ public final class MotherloadEvent extends BlockSumoEvent {
             this.setGravity(0, this.getGravityAcceleration() / 3.5);
 
             MinecraftServer.getSchedulerManager().buildTask(() -> {
-                this.setInstance(game.getInstance(), MOTHERLOAD_SPAWN_POS);
+                this.setInstance(game.getSpawningInstance(), MOTHERLOAD_SPAWN_POS);
             }).delay(SPAWN_DELAY).schedule();
         }
 

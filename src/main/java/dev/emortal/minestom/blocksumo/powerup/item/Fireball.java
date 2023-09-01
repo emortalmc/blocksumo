@@ -77,13 +77,13 @@ public final class Fireball extends PowerUp {
         fireball.setTag(PowerUp.NAME, name);
         fireball.setTag(SHOOTER, shooter.getUsername());
         fireball.setBoundingBox(0.6, 0.6, 0.6);
-        fireball.setInstance(game.getInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
+        fireball.setInstance(game.getSpawningInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
         return fireball;
     }
 
     private void playShootingSound(@NotNull Point source) {
         final Sound sound = Sound.sound(SoundEvent.ENTITY_GHAST_SHOOT, Sound.Source.BLOCK, 1, 1);
-        game.getAudience().playSound(sound, source.x(), source.y(), source.z());
+        game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void collide(@NotNull Entity entity) {
@@ -116,7 +116,7 @@ public final class Fireball extends PowerUp {
         final double posY = fireball.getPosition().y();
         final double posZ = fireball.getPosition().z();
         final ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
-        game.getInstance().sendGroupedPacket(packet);
+        game.sendGroupedPacket(packet);
     }
 
     @Override

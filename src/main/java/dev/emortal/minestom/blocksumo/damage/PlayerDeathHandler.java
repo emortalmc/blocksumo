@@ -44,10 +44,10 @@ public final class PlayerDeathHandler {
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerTickEvent.class, event -> {
-            final Player player = event.getPlayer();
+            Player player = event.getPlayer();
             if (isDead(player)) return;
 
-            final Entity killer = determineKiller(player);
+            Entity killer = determineKiller(player);
             if (isUnderMinAllowedHeight(player)) kill(player, killer);
         });
     }
@@ -58,7 +58,7 @@ public final class PlayerDeathHandler {
 
     private @Nullable Entity determineKiller(@NotNull Player player) {
         Entity killer = null;
-        final DamageType lastDamageSource = player.getLastDamageSource();
+        DamageType lastDamageSource = player.getLastDamageSource();
         if (isValidDamageTimestamp(player) && lastDamageSource != null) {
             if (lastDamageSource instanceof EntityDamage damage) {
                 killer = getKillerFromDamage(damage);
@@ -75,7 +75,7 @@ public final class PlayerDeathHandler {
     }
 
     private @Nullable Entity getKillerFromDamage(@NotNull EntityDamage damage) {
-        final Entity source = damage.getSource();
+        Entity source = damage.getSource();
         if (source instanceof Player player) return player;
         // TODO: Check if the source is a power up.
         return null;
@@ -98,7 +98,7 @@ public final class PlayerDeathHandler {
         player.setCanPickupItem(false);
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
-        final int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
+        int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
         player.setTag(PlayerTags.LIVES, (byte) remainingLives);
 
         sendKillMessage(player, killer, remainingLives);
@@ -117,7 +117,7 @@ public final class PlayerDeathHandler {
     }
 
     private void checkForWinner() {
-        final Set<Player> alivePlayers = new HashSet<>();
+        Set<Player> alivePlayers = new HashSet<>();
         for (final Player player : game.getPlayers()) {
             if (player.getTag(PlayerTags.LIVES) > 0) alivePlayers.add(player);
         }
@@ -133,8 +133,8 @@ public final class PlayerDeathHandler {
     private void updateScoreboardLives(@NotNull Player player, int remainingLives) {
         playerManager.getTeamManager().updateTeamLives(player, remainingLives);
 
-        final Sidebar scoreboard = playerManager.getScoreboard();
-        final String lineName = player.getUuid().toString();
+        Sidebar scoreboard = playerManager.getScoreboard();
+        String lineName = player.getUuid().toString();
         scoreboard.updateLineContent(lineName, player.getDisplayName());
         scoreboard.updateLineScore(lineName, remainingLives);
     }
@@ -175,9 +175,9 @@ public final class PlayerDeathHandler {
     }
 
     private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
-        final Component subtitle;
+        Component subtitle;
         if (killer instanceof Player playerKiller) {
-            final TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
+            TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
 
             subtitle = Component.text()
                     .append(Component.text("Killed by ", NamedTextColor.GRAY))
@@ -189,8 +189,8 @@ public final class PlayerDeathHandler {
             subtitle = Component.empty();
         }
 
-        final Duration stay = Duration.ofSeconds(remainingLives <= 0 ? 2 : 1);
-        final Title title = Title.title(
+        Duration stay = Duration.ofSeconds(remainingLives <= 0 ? 2 : 1);
+        Title title = Title.title(
                 Component.text("YOU DIED", NamedTextColor.RED, TextDecoration.BOLD),
                 subtitle,
                 Title.Times.times(Duration.ZERO, stay, Duration.ofSeconds(1))

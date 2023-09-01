@@ -154,7 +154,7 @@ public final class PlayerRespawnHandler {
     }
 
     public void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
-        final Instance instance = game.getInstance();
+        final Instance instance = game.getSpawningInstance();
 
         instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.BEDROCK);
         instance.setBlock(pos.blockX(), pos.blockY() + 1, pos.blockZ(), Block.AIR);
@@ -164,7 +164,7 @@ public final class PlayerRespawnHandler {
     private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
         prepareSpawn(player, pos);
 
-        final Instance instance = game.getInstance();
+        final Instance instance = game.getSpawningInstance();
         MinecraftServer.getSchedulerManager()
                 .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL))
                 .delay(restoreDelay, ChronoUnit.SECONDS)
