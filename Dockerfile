@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre
+FROM --platform=$BUILDPLATFOMR eclipse-temurin:20-jre
 
 RUN mkdir /app
 WORKDIR /app
@@ -10,4 +10,4 @@ RUN apt-get install wget \
 COPY build/libs/*-all.jar /app/block_sumo.jar
 COPY run/maps/ /app/maps/
 
-CMD ["java", "-jar", "/app/block_sumo.jar"]
+CMD ["java", "--enable-preview", "-jar", "/app/block_sumo.jar"]

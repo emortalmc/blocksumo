@@ -42,7 +42,7 @@ tasks {
 
         manifest {
             attributes (
-                "Main-Class" to "dev.emortal.minestom.blocksumo.Entrypoint",
+                "Main-Class" to "dev.emortal.minestom.blocksumo.Main",
                 "Multi-Release" to true
             )
         }
