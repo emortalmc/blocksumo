@@ -7,7 +7,6 @@ import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
-import dev.emortal.minestom.core.Environment;
 import dev.emortal.minestom.gamesdk.MinestomGameServer;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
@@ -38,8 +37,6 @@ import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.PacketUtils;
 import net.minestom.server.utils.binary.BinaryWriter;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -50,7 +47,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlockSumoGame.class);
     public static final int MIN_PLAYERS = 2;
     public static final @NotNull Component TITLE =
             MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
@@ -96,21 +92,9 @@ public class BlockSumoGame extends Game {
         }
     }
 
-    private boolean isValidPlayerForGame(@NotNull Player player) {
-        return getCreationInfo().playerIds().contains(player.getUuid());
-    }
-
     @Override
     public void onJoin(Player player) {
-        if (!getCreationInfo().playerIds().contains(player.getUuid())) {
-            player.kick("Unexpected join (" + Environment.getHostname() + ")");
-            LOGGER.info("Unexpected join for player {}", player.getUuid());
-            return;
-        }
-
         player.setRespawnPoint(spawnHandler.getBestSpawn());
-        players.add(player);
-
         player.setAutoViewable(true);
         playerManager.addInitialTags(player);
     }
