@@ -71,17 +71,17 @@ public class BlockSumoGame extends Game {
         this.playerManager = new PlayerManager(this, 49);
 
         this.eventManager = new EventManager(this);
-        eventManager.registerDefaultEvents();
+        this.eventManager.registerDefaultEvents();
 
         this.powerUpManager = new PowerUpManager(this);
-        powerUpManager.registerDefaultPowerUps();
+        this.powerUpManager.registerDefaultPowerUps();
         this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
         this.explosionManager = new ExplosionManager(this);
         this.bobberManager = new FishingBobberManager(this);
         this.spawnProtectionManager = new SpawnProtectionManager();
 
-        playerManager.registerPreGameListeners(getEventNode());
-        playerManager.setupWaitingScoreboard();
+        this.playerManager.registerPreGameListeners(getEventNode());
+        this.playerManager.setupWaitingScoreboard();
 
         if (MinestomGameServer.TEST_MODE) {
             MinecraftServer.getSchedulerManager()
@@ -94,20 +94,20 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void onJoin(Player player) {
-        player.setRespawnPoint(spawnHandler.getBestSpawn());
+        player.setRespawnPoint(this.spawnHandler.getBestSpawn());
         player.setAutoViewable(true);
-        playerManager.addInitialTags(player);
+        this.playerManager.addInitialTags(player);
     }
 
     @Override
     public void onLeave(@NotNull Player player) {
-        playerManager.getDisconnectHandler().onDisconnect(player);
+        this.playerManager.getDisconnectHandler().onDisconnect(player);
     }
 
     private void sendSpawnPacketsToPlayers() {
         final Set<ServerPacket> packets = createSpawnPackets();
         for (final ServerPacket packet : packets) {
-            PacketUtils.sendGroupedPacket(players, packet);
+            PacketUtils.sendGroupedPacket(this.players, packet);
         }
     }
 
@@ -120,7 +120,7 @@ public class BlockSumoGame extends Game {
         };
 
         final Set<ServerPacket> packets = new HashSet<>();
-        for (final Pos spawn : mapData.spawns()) {
+        for (final Pos spawn : this.mapData.spawns()) {
             final ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
                     0, 0, 0,
@@ -135,35 +135,35 @@ public class BlockSumoGame extends Game {
     public void start() {
         this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
-        countdownTask = instance.scheduler().submitTask(new Supplier<>() {
+        this.countdownTask = this.instance.scheduler().submitTask(new Supplier<>() {
             int i = 3;
 
             @Override
             public TaskSchedule get() {
-                if (i == 0) {
-                    showGameStartTitle();
-                    startGame();
+                if (this.i == 0) {
+                    BlockSumoGame.this.showGameStartTitle();
+                    BlockSumoGame.this.startGame();
                     return TaskSchedule.stop();
                 }
 
-                showCountdown(i);
-                i--;
+                showCountdown(this.i);
+                this.i--;
                 return TaskSchedule.seconds(1);
             }
         });
     }
 
     private void startGame() {
-        playerManager.registerGameListeners(getEventNode());
-        powerUpManager.registerListeners(getEventNode());
-        removeLockingEntities();
-        for (final Player player : getPlayers()) {
-            giveWoolAndShears(player);
-            giveColoredChestplate(player);
-            setSpawnBlockToWool(player);
+        this.playerManager.registerGameListeners(getEventNode());
+        this.powerUpManager.registerListeners(getEventNode());
+        this.removeLockingEntities();
+        for (final Player player : this.getPlayers()) {
+            this.giveWoolAndShears(player);
+            this.giveColoredChestplate(player);
+            this.setSpawnBlockToWool(player);
         }
-        eventManager.startRandomEventTask();
-        powerUpManager.startRandomPowerUpTasks();
+        this.eventManager.startRandomEventTask();
+        this.powerUpManager.startRandomPowerUpTasks();
     }
 
     private void showCountdown(final int countdown) {
@@ -210,7 +210,7 @@ public class BlockSumoGame extends Game {
     }
 
     public void cancelCountdown() {
-        if (countdownTask != null) countdownTask.cancel();
+        if (this.countdownTask != null) this.countdownTask.cancel();
     }
 
     public void victory(final @NotNull Set<Player> winners) {
@@ -225,7 +225,7 @@ public class BlockSumoGame extends Game {
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
 
-        for (final Player player : players) {
+        for (final Player player : this.players) {
             if (winners.contains(player)) {
                 player.showTitle(victoryTitle);
             } else {
@@ -233,7 +233,7 @@ public class BlockSumoGame extends Game {
             }
         }
 
-        instance.scheduler().buildTask(this::sendBackToLobby).delay(TaskSchedule.seconds(6)).schedule();
+        this.instance.scheduler().buildTask(this::sendBackToLobby).delay(TaskSchedule.seconds(6)).schedule();
     }
 
     private void sendBackToLobby() {
@@ -242,41 +242,41 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void cleanUp() {
-        for (final Player player : players) {
+        for (final Player player : this.players) {
             player.kick(Component.text("The game ended but we weren't able to connect you to a lobby. Please reconnect.", NamedTextColor.RED));
         }
-        instance.scheduler().scheduleNextTick(() -> {
-            MinecraftServer.getInstanceManager().unregisterInstance(instance);
+        this.instance.scheduler().scheduleNextTick(() -> {
+            MinecraftServer.getInstanceManager().unregisterInstance(this.instance);
         });
-        playerManager.cleanUp();
+        this.playerManager.cleanUp();
     }
 
     @Override
     public @NotNull Instance getSpawningInstance() {
-        return instance;
+        return this.instance;
     }
 
     public @NotNull EventManager getEventManager() {
-        return eventManager;
+        return this.eventManager;
     }
 
     public @NotNull PowerUpManager getPowerUpManager() {
-        return powerUpManager;
+        return this.powerUpManager;
     }
 
     public @NotNull PlayerSpawnHandler getSpawnHandler() {
-        return spawnHandler;
+        return this.spawnHandler;
     }
 
     public @NotNull ExplosionManager getExplosionManager() {
-        return explosionManager;
+        return this.explosionManager;
     }
 
     public @NotNull FishingBobberManager getBobberManager() {
-        return bobberManager;
+        return this.bobberManager;
     }
 
     public @NotNull SpawnProtectionManager getSpawnProtectionManager() {
-        return spawnProtectionManager;
+        return this.spawnProtectionManager;
     }
 }
