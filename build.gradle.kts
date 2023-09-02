@@ -21,7 +21,10 @@ dependencies {
     implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:game-sdk:b46a416")
+    implementation("dev.emortal.minestom:game-sdk:b46a416") {
+        exclude("dev.emortal.minestom", "core")
+    }
+    implementation("dev.emortal.minestom:core:7cab99f")
 
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
