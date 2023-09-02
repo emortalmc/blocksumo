@@ -63,7 +63,7 @@ public final class PlayerManager {
     }
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
-        respawnHandler.prepareSpawn(player, pos);
+        respawnHandler.prepareSpawn(pos);
 
         final Instance instance = game.getSpawningInstance();
         final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
