@@ -14,6 +14,7 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.entity.EntityDamageEvent;
+import net.minestom.server.network.packet.server.play.HitAnimationPacket;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +51,7 @@ public final class PlayerDamageHandler {
             victim.setTag(PlayerTags.CAN_BE_HIT, false);
 
             victim.damage(DamageType.fromPlayer(attacker), 0);
+            game.sendGroupedPacket(new HitAnimationPacket(victim.getEntityId(), attacker.getPosition().yaw()));
             KnockbackUtil.takeKnockback(attacker, victim); // TODO: Check for anti-KB tag when anti-KB command exists
 
             final PowerUp heldPowerUp = game.getPowerUpManager().getHeldPowerUp(attacker, Player.Hand.MAIN);

@@ -13,6 +13,7 @@ import net.minestom.server.event.entity.projectile.ProjectileCollideWithEntityEv
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.network.packet.server.play.HitAnimationPacket;
 import net.minestom.server.tag.TagReadable;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
@@ -94,6 +95,8 @@ public final class PowerUpManager {
         target.scheduler().buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
 
         target.damage(DamageType.fromPlayer(shooter), 0);
+        HitAnimationPacket hitAnimationPacket = new HitAnimationPacket(target.getEntityId(), entity.getPosition().yaw());
+        game.sendGroupedPacket(hitAnimationPacket);
 
         final String powerUpName = getPowerUpName(entity);
         final PowerUp powerUp = findNamedPowerUp(powerUpName);
