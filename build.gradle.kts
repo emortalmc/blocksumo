@@ -21,7 +21,7 @@ dependencies {
     implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:game-sdk:b46a416") {
+    implementation("dev.emortal.minestom:game-sdk:9a08845") {
         exclude("dev.emortal.minestom", "core")
     }
     implementation("dev.emortal.minestom:core:7cab99f")
