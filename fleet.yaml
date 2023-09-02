@@ -31,7 +31,7 @@ spec:
         spec:
           containers:
             - name: blocksumo
-              image: ghcr.io/emortalmc/blocksumo:54bf078e8f41cf751332a1c738805492b0fcdc28
+              image: ghcr.io/emortalmc/blocksumo:ac80f760e1c8d9f1b1e92596fd0256dd9a678567
 
               resources:
                 requests:
