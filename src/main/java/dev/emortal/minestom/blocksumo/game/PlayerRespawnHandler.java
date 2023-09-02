@@ -86,23 +86,23 @@ public final class PlayerRespawnHandler {
     }
 
     private void respawn(@NotNull Player player) {
-        final Pos respawnPos = game.getSpawnHandler().getBestRespawn();
+        final Pos respawnPos = this.game.getSpawnHandler().getBestRespawn();
 
         player.teleport(respawnPos).thenRun(() -> {
-            reset(player);
-            playerManager.updateLivesInHealth(player);
+            this.reset(player);
+            this.playerManager.updateLivesInHealth(player);
         });
 
-        playRespawnSound(player);
+        this.playRespawnSound(player);
         player.setTag(PlayerTags.CAN_BE_HIT, true);
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
         player.setCanPickupItem(true);
 
-        game.getSpawnProtectionManager().startProtection(player, 4000);
+        this.game.getSpawnProtectionManager().startProtection(player, 4000);
 
-        prepareRespawn(player, respawnPos, 5);
-        giveWoolAndShears(player);
-        giveColoredChestplate(player);
+        this.prepareRespawn(respawnPos, 5);
+        this.giveWoolAndShears(player);
+        this.giveColoredChestplate(player);
     }
 
     private void reset(@NotNull Player player) {
@@ -153,20 +153,23 @@ public final class PlayerRespawnHandler {
         );
     }
 
-    public void prepareSpawn(@NotNull Player player, @NotNull Pos pos) {
-        final Instance instance = game.getSpawningInstance();
+    public Block prepareSpawn(@NotNull Pos pos) {
+        final Instance instance = this.game.getSpawningInstance();
 
-        instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.BEDROCK);
-        instance.setBlock(pos.blockX(), pos.blockY() + 1, pos.blockZ(), Block.AIR);
-        instance.setBlock(pos.blockX(), pos.blockY() + 2, pos.blockZ(), Block.AIR);
+        Block replacedBlock = instance.getBlock(pos.sub(0, 1, 0));
+        instance.setBlock(pos.sub(0, 1, 0), Block.BEDROCK);
+        instance.setBlock(pos.add(0, 1, 0), Block.AIR);
+        instance.setBlock(pos.add(0, 2, 0), Block.AIR);
+
+        return replacedBlock;
     }
 
-    private void prepareRespawn(@NotNull Player player, @NotNull Pos pos, int restoreDelay) {
-        prepareSpawn(player, pos);
+    private void prepareRespawn(@NotNull Pos pos, int restoreDelay) {
+        Block replacedBlock = this.prepareSpawn(pos);
 
         final Instance instance = game.getSpawningInstance();
         MinecraftServer.getSchedulerManager()
-                .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL))
+                .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock))
                 .delay(restoreDelay, ChronoUnit.SECONDS)
                 .schedule();
 

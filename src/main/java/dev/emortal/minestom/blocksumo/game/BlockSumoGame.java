@@ -80,7 +80,7 @@ public class BlockSumoGame extends Game {
         this.bobberManager = new FishingBobberManager(this);
         this.spawnProtectionManager = new SpawnProtectionManager();
 
-        this.playerManager.registerPreGameListeners(getEventNode());
+        this.playerManager.registerPreGameListeners(super.getEventNode());
         this.playerManager.setupWaitingScoreboard();
 
         if (MinestomGameServer.TEST_MODE) {
