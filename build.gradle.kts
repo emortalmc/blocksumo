@@ -8,7 +8,6 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 
     maven("https://repo.emortal.dev/snapshots")
     maven("https://repo.emortal.dev/releases")
@@ -21,10 +20,7 @@ dependencies {
     implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("dev.emortal.minestom:game-sdk:de763e2") {
-        exclude("dev.emortal.minestom", "core")
-    }
-    implementation("dev.emortal.minestom:core:209bab1")
+    implementation("dev.emortal.minestom:game-sdk:fa6aefa")
 
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
@@ -39,7 +35,14 @@ java {
 }
 
 tasks {
-    named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf(
+                "--release", "20",
+                "--enable-preview"
+        ))
+    }
+
+    shadowJar {
         mergeServiceFiles()
 
         manifest {
@@ -55,5 +58,7 @@ tasks {
         isReproducibleFileOrder = true
     }
 
-    build { dependsOn(shadowJar) }
+    build {
+        dependsOn(shadowJar)
+    }
 }

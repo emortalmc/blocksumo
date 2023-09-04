@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apt-get install wget \
     libstdc++6 libstdc++ # Add libraries required for pyroscope
 
-COPY build/libs/*-all.jar /app/block_sumo.jar
+COPY build/libs/*-all.jar /app/blocksumo.jar
 COPY run/maps/ /app/maps/
 
-CMD ["java", "--enable-preview", "-jar", "/app/block_sumo.jar"]
+CMD ["java", "--enable-preview", "-jar", "/app/blocksumo.jar"]
