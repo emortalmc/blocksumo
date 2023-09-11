@@ -13,35 +13,50 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
-public final class TNTRainEvent extends BlockSumoEvent {
+public final class TNTRainEvent implements BlockSumoEvent {
     private static final Component START_MESSAGE = MiniMessage.miniMessage()
             .deserialize("<red>Uh oh... <gray>prepare for <italic>lots</italic> of explosions; <yellow>the TNT rain event just started");
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 33, 5, true);
 
+    private final @NotNull BlockSumoGame game;
+
     public TNTRainEvent(@NotNull BlockSumoGame game) {
-        super(game, START_MESSAGE);
+        this.game = game;
     }
 
     @Override
     public void start() {
-        final Instance instance = game.getSpawningInstance();
-        instance.scheduler().submitTask(new Supplier<>() {
-            int i = 0;
+        this.game.getSpawningInstance().scheduler().submitTask(new TntRainTask(this.game));
+    }
 
-            @Override
-            public TaskSchedule get() {
-                if (i >= 4) return TaskSchedule.stop();
+    @Override
+    public @NotNull Component getStartMessage() {
+        return START_MESSAGE;
+    }
 
-                for (final Player player : game.getPlayers()) {
-                    if (player.getGameMode() != GameMode.SURVIVAL) continue;
+    private static final class TntRainTask implements Supplier<TaskSchedule> {
 
-                    final Point tntPos = player.getPosition().add(0, 10, 0);
-                    game.getExplosionManager().spawnTnt(tntPos, 80, EXPLOSION, null);
-                }
+        private final @NotNull BlockSumoGame game;
 
-                i++;
-                return TaskSchedule.seconds(2);
+        private int i = 0;
+
+        TntRainTask(@NotNull BlockSumoGame game) {
+            this.game = game;
+        }
+
+        @Override
+        public @NotNull TaskSchedule get() {
+            if (this.i >= 4) return TaskSchedule.stop();
+
+            for (Player player : this.game.getPlayers()) {
+                if (player.getGameMode() != GameMode.SURVIVAL) continue;
+
+                Point tntPos = player.getPosition().add(0, 10, 0);
+                this.game.getExplosionManager().spawnTnt(tntPos, 80, EXPLOSION, null);
             }
-        });
+
+            this.i++;
+            return TaskSchedule.seconds(2);
+        }
     }
 }

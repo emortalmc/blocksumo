@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.jetbrains.annotations.NotNull;
 
 public enum ItemRarity {
 
@@ -13,19 +14,19 @@ public enum ItemRarity {
     LEGENDARY(MiniMessage.miniMessage().deserialize("<bold><gradient:light_purple:gold>LEGENDARY</gradient></bold>"), 1),
     IMPOSSIBLE(Component.empty(), 0);
 
-    private final Component name;
+    private final @NotNull Component name;
     private final int weight;
 
-    ItemRarity(Component name, int weight) {
+    ItemRarity(@NotNull Component name, int weight) {
         this.name = name;
         this.weight = weight;
     }
 
-    public Component getName() {
-        return name;
+    public @NotNull Component getName() {
+        return this.name;
     }
 
     public int getWeight() {
-        return weight;
+        return this.weight;
     }
 }

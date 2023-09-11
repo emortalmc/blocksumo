@@ -7,7 +7,8 @@ import dev.emortal.minestom.gamesdk.MinestomGameServer;
 import dev.emortal.minestom.gamesdk.config.GameSdkConfig;
 import net.minestom.server.MinecraftServer;
 
-public class Main {
+public final class Main {
+
     public static void main(String[] args) {
         MinestomGameServer server = MinestomGameServer.create(() -> {
             MapManager mapManager = new MapManager();

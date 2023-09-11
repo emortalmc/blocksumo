@@ -22,61 +22,62 @@ import org.jetbrains.annotations.NotNull;
 
 public final class PlayerManager {
 
-    private final BlockSumoGame game;
-    private final PlayerDeathHandler deathHandler;
-    private final PlayerRespawnHandler respawnHandler;
-    private final PlayerTeamManager teamManager;
-    private final PlayerDamageHandler damageHandler;
-    private final PlayerBlockHandler blockHandler;
-    private final PlayerDiamondBlockHandler diamondBlockHandler;
-    private final PlayerDisconnectHandler disconnectHandler;
+    private final @NotNull BlockSumoGame game;
+    private final @NotNull PlayerRespawnHandler respawnHandler;
+    private final @NotNull PlayerDeathHandler deathHandler;
+    private final @NotNull PlayerTeamManager teamManager;
+    private final @NotNull PlayerDamageHandler damageHandler;
+    private final @NotNull PlayerBlockHandler blockHandler;
+    private final @NotNull PlayerDiamondBlockHandler diamondBlockHandler;
 
-    private final Sidebar scoreboard;
+    private final @NotNull Sidebar scoreboard;
 
-    public PlayerManager(@NotNull BlockSumoGame game, int minAllowedHeight) {
+    public PlayerManager(@NotNull BlockSumoGame game, @NotNull PlayerRespawnHandler respawnHandler, int minAllowedHeight) {
         this.game = game;
-        this.deathHandler = new PlayerDeathHandler(game, this, minAllowedHeight);
-        this.respawnHandler = new PlayerRespawnHandler(game, this);
+        this.respawnHandler = respawnHandler;
+        this.deathHandler = new PlayerDeathHandler(game, this, respawnHandler, minAllowedHeight);
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
         this.blockHandler = new PlayerBlockHandler(game);
         this.diamondBlockHandler = new PlayerDiamondBlockHandler(game);
-        this.disconnectHandler = new PlayerDisconnectHandler(game, this);
         this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 
     public void registerPreGameListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerSpawnEvent.class, event -> {
-            final Player player = event.getPlayer();
-            prepareInitialSpawn(player, player.getRespawnPoint());
-            selectTeam(player);
-            scoreboard.addViewer(player);
-            updateLivesInHealth(player);
-        });
+        eventNode.addListener(PlayerSpawnEvent.class, this::onSpawn);
     }
 
-    public void updateLivesInHealth(@NotNull Player player) {
-        final int lives = player.getTag(PlayerTags.LIVES);
-        final float health = lives * 2;
+    public void registerGameListeners(@NotNull EventNode<Event> eventNode) {
+        this.deathHandler.registerListeners(eventNode);
+        this.damageHandler.registerListeners(eventNode);
+        this.blockHandler.registerListeners(eventNode);
+        this.diamondBlockHandler.registerListeners(eventNode);
+    }
+
+    private void onSpawn(@NotNull PlayerSpawnEvent event) {
+        Player player = event.getPlayer();
+        this.prepareInitialSpawn(player, player.getRespawnPoint());
+        this.selectTeam(player);
+        this.scoreboard.addViewer(player);
+        this.updateLivesInHealth(player);
+    }
+
+    private void updateLivesInHealth(@NotNull Player player) {
+        int lives = player.getTag(PlayerTags.LIVES);
+        float health = lives * 2;
+
         player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
         player.setHealth(player.getMaxHealth());
     }
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
-        respawnHandler.prepareSpawn(pos);
+        this.respawnHandler.prepareSpawn(pos);
 
-        final Instance instance = game.getSpawningInstance();
-        final Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
+        Instance instance = this.game.getSpawningInstance();
+        Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
         ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
         entity.setNoGravity(true);
         entity.setInstance(instance, pos).thenRun(() -> entity.addPassenger(player));
-    }
-
-    public void registerGameListeners(@NotNull EventNode<Event> eventNode) {
-        deathHandler.registerListeners(eventNode);
-        damageHandler.registerListeners(eventNode);
-        blockHandler.registerListeners(eventNode);
-        diamondBlockHandler.registerListeners(eventNode);
     }
 
     public void addInitialTags(@NotNull Player player) {
@@ -88,9 +89,9 @@ public final class PlayerManager {
     }
 
     public void setupWaitingScoreboard() {
-        scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
-        scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
-        scoreboard.createLine(new Sidebar.ScoreboardLine(
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine(
                 "ipLine",
                 Component.text()
                         .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
@@ -101,15 +102,16 @@ public final class PlayerManager {
     }
 
     private void selectTeam(@NotNull Player player) {
-        teamManager.allocateTeam(player);
-        scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), player.getDisplayName(), 5));
+        this.teamManager.allocateTeam(player);
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), player.getDisplayName(), 5));
     }
 
     public void cleanUp() {
-        teamManager.removeAllTeams();
-        respawnHandler.stopAllScheduledRespawns();
-        for (final Player player : game.getPlayers()) {
-            cleanUpPlayer(player);
+        this.teamManager.removeAllTeams();
+        this.respawnHandler.stopAllScheduledRespawns();
+
+        for (Player player : this.game.getPlayers()) {
+            this.cleanUpPlayer(player);
         }
     }
 
@@ -119,34 +121,22 @@ public final class PlayerManager {
         player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
         player.removeTag(PlayerTags.DEAD);
         player.removeTag(PlayerTags.CAN_BE_HIT);
-        scoreboard.removeViewer(player);
+
+        this.scoreboard.removeViewer(player);
+        this.scoreboard.removeLine(player.getUuid().toString());
     }
 
-    public void removeFromScoreboard(@NotNull Player player) {
-        scoreboard.removeLine(player.getUuid().toString());
+    public void removeDeadPlayer(@NotNull Player player) {
+        this.scoreboard.removeLine(player.getUuid().toString());
+        player.setTeam(null);
+        this.teamManager.resetTeam(player);
     }
 
-    public @NotNull PlayerDeathHandler getDeathHandler() {
-        return deathHandler;
-    }
+    public void updateRemainingLives(@NotNull Player player, int lives) {
+        this.teamManager.updateTeamLives(player, lives);
 
-    public @NotNull PlayerRespawnHandler getRespawnHandler() {
-        return respawnHandler;
-    }
-
-    public @NotNull PlayerTeamManager getTeamManager() {
-        return teamManager;
-    }
-
-    public @NotNull Sidebar getScoreboard() {
-        return scoreboard;
-    }
-
-    public @NotNull PlayerDisconnectHandler getDisconnectHandler() {
-        return disconnectHandler;
-    }
-
-    public void broadcastMessage(@NotNull Component message) {
-        game.sendMessage(message);
+        String lineName = player.getUuid().toString();
+        this.scoreboard.updateLineContent(lineName, player.getDisplayName());
+        this.scoreboard.updateLineScore(lineName, lives);
     }
 }

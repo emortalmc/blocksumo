@@ -25,19 +25,19 @@ public final class Puncher extends PowerUp {
     }
 
     @Override
-    public void addExtraMetadata(ItemMeta.@NotNull Builder builder) {
+    public void addExtraMetadata(@NotNull ItemMeta.Builder builder) {
         builder.enchantment(Enchantment.KNOCKBACK, (short) 4);
     }
 
     @Override
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
-        removeOneItemFromPlayer(attacker, Player.Hand.MAIN);
-        playHitSound(attacker);
+        this.removeOneItemFromPlayer(attacker, Player.Hand.MAIN);
+        this.playHitSound(attacker);
     }
 
     private void playHitSound(@NotNull Player player) {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_PLAYER_ATTACK_CRIT, Sound.Source.PLAYER, 1, 1);
-        final Pos source = player.getPosition();
-        game.playSound(sound, source.x(), source.y(), source.z());
+        Sound sound = Sound.sound(SoundEvent.ENTITY_PLAYER_ATTACK_CRIT, Sound.Source.PLAYER, 1, 1);
+        Pos source = player.getPosition();
+        this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 }

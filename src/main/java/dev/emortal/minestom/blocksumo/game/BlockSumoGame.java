@@ -1,6 +1,5 @@
 package dev.emortal.minestom.blocksumo.game;
 
-import dev.emortal.minestom.blocksumo.entity.FishingBobberManager;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
@@ -37,6 +36,7 @@ import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.PacketUtils;
 import net.minestom.server.utils.binary.BinaryWriter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -51,34 +51,35 @@ public class BlockSumoGame extends Game {
     public static final @NotNull Component TITLE =
             MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
 
-    private final PlayerManager playerManager;
-    private final EventManager eventManager;
-    private final PowerUpManager powerUpManager;
-    private final PlayerSpawnHandler spawnHandler;
-    private final ExplosionManager explosionManager;
-    private final FishingBobberManager bobberManager;
-    private final SpawnProtectionManager spawnProtectionManager;
+    private final @NotNull PlayerManager playerManager;
+    private final @NotNull SpawnProtectionManager spawnProtectionManager;
+    private final @NotNull PlayerDisconnectHandler disconnectHandler;
+    private final @NotNull EventManager eventManager;
+    private final @NotNull PowerUpManager powerUpManager;
+    private final @NotNull PlayerSpawnHandler spawnHandler;
+    private final @NotNull ExplosionManager explosionManager;
     private final @NotNull Instance instance;
     private final @NotNull MapData mapData;
 
-    private Task countdownTask;
+    private @Nullable Task countdownTask;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map) {
         super(creationInfo);
         this.instance = map.instance();
         this.mapData = map.mapData();
 
-        this.playerManager = new PlayerManager(this, 49);
+        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this);
+        this.playerManager = new PlayerManager(this, respawnHandler, 49);
+        this.spawnProtectionManager = new SpawnProtectionManager();
+        this.disconnectHandler = new PlayerDisconnectHandler(this, this.playerManager, respawnHandler, this.spawnProtectionManager);
 
         this.eventManager = new EventManager(this);
         this.eventManager.registerDefaultEvents();
 
         this.powerUpManager = new PowerUpManager(this);
         this.powerUpManager.registerDefaultPowerUps();
-        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(mapData.spawns()));
+        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(this.mapData.spawns()));
         this.explosionManager = new ExplosionManager(this);
-        this.bobberManager = new FishingBobberManager(this);
-        this.spawnProtectionManager = new SpawnProtectionManager();
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
         this.playerManager.setupWaitingScoreboard();
@@ -93,7 +94,7 @@ public class BlockSumoGame extends Game {
     }
 
     @Override
-    public void onJoin(Player player) {
+    public void onJoin(@NotNull Player player) {
         player.setRespawnPoint(this.spawnHandler.getBestSpawn());
         player.setAutoViewable(true);
         this.playerManager.addInitialTags(player);
@@ -101,27 +102,27 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void onLeave(@NotNull Player player) {
-        this.playerManager.getDisconnectHandler().onDisconnect(player);
+        this.disconnectHandler.onDisconnect(player);
     }
 
     private void sendSpawnPacketsToPlayers() {
-        final Set<ServerPacket> packets = createSpawnPackets();
-        for (final ServerPacket packet : packets) {
-            PacketUtils.sendGroupedPacket(this.players, packet);
+        Set<ServerPacket> packets = this.createSpawnPackets();
+        for (ServerPacket packet : packets) {
+            PacketUtils.sendGroupedPacket(this.getPlayers(), packet);
         }
     }
 
     private Set<ServerPacket> createSpawnPackets() {
-        final Consumer<BinaryWriter> extraDataWriter = writer -> {
+        Consumer<BinaryWriter> extraDataWriter = writer -> {
             writer.writeFloat(1);
             writer.writeFloat(0);
             writer.writeFloat(0);
             writer.writeFloat(1.5F);
         };
 
-        final Set<ServerPacket> packets = new HashSet<>();
-        for (final Pos spawn : this.mapData.spawns()) {
-            final ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
+        Set<ServerPacket> packets = new HashSet<>();
+        for (Pos spawn : this.mapData.spawns()) {
+            ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
                     0, 0, 0,
                     0, 1, extraDataWriter);
@@ -146,7 +147,7 @@ public class BlockSumoGame extends Game {
                     return TaskSchedule.stop();
                 }
 
-                showCountdown(this.i);
+                BlockSumoGame.this.showCountdown(this.i);
                 this.i--;
                 return TaskSchedule.seconds(1);
             }
@@ -154,14 +155,16 @@ public class BlockSumoGame extends Game {
     }
 
     private void startGame() {
-        this.playerManager.registerGameListeners(getEventNode());
-        this.powerUpManager.registerListeners(getEventNode());
+        this.playerManager.registerGameListeners(this.getEventNode());
+        this.powerUpManager.registerListeners(this.getEventNode());
         this.removeLockingEntities();
-        for (final Player player : this.getPlayers()) {
+
+        for (Player player : this.getPlayers()) {
             this.giveWoolAndShears(player);
             this.giveColoredChestplate(player);
             this.setSpawnBlockToWool(player);
         }
+
         this.eventManager.startRandomEventTask();
         this.powerUpManager.startRandomPowerUpTasks();
     }
@@ -176,7 +179,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void showGameStartTitle() {
-        final Title title = Title.title(
+        Title title = Title.title(
                 Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
                 Component.empty(),
                 Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ZERO)
@@ -185,47 +188,47 @@ public class BlockSumoGame extends Game {
     }
 
     private void removeLockingEntities() {
-        for (final Entity entity : instance.getEntities()) {
+        for (Entity entity : this.instance.getEntities()) {
             if (entity.getEntityType() == EntityType.AREA_EFFECT_CLOUD) entity.remove();
         }
     }
 
     private void giveWoolAndShears(@NotNull Player player) {
-        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
         player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
         player.getInventory().setItemStack(1, color.getWoolItem());
     }
 
     private void giveColoredChestplate(@NotNull Player player) {
-        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
-        final ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
+        TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
                 .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
                 .build();
         player.getInventory().setChestplate(chestplate);
     }
 
     private void setSpawnBlockToWool(@NotNull Player player) {
-        final Pos pos = player.getPosition();
-        instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
+        Pos pos = player.getPosition();
+        this.instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
 
     public void cancelCountdown() {
         if (this.countdownTask != null) this.countdownTask.cancel();
     }
 
-    public void victory(final @NotNull Set<Player> winners) {
-        final Title victoryTitle = Title.title(
+    public void victory(@NotNull Set<Player> winners) {
+        Title victoryTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY!</bold></gradient>"),
                 Component.empty(),
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
-        final Title defeatTitle = Title.title(
+        Title defeatTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ff474e:#ff0d0d><bold>DEFEAT!</bold></gradient>"),
                 Component.empty(),
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
 
-        for (final Player player : this.players) {
+        for (Player player : this.getPlayers()) {
             if (winners.contains(player)) {
                 player.showTitle(victoryTitle);
             } else {
@@ -233,21 +236,12 @@ public class BlockSumoGame extends Game {
             }
         }
 
-        this.instance.scheduler().buildTask(this::sendBackToLobby).delay(TaskSchedule.seconds(6)).schedule();
-    }
-
-    private void sendBackToLobby() {
-        finish();
+        this.instance.scheduler().buildTask(this::finish).delay(TaskSchedule.seconds(6)).schedule();
     }
 
     @Override
     public void cleanUp() {
-        for (final Player player : this.players) {
-            player.kick(Component.text("The game ended but we weren't able to connect you to a lobby. Please reconnect.", NamedTextColor.RED));
-        }
-        this.instance.scheduler().scheduleNextTick(() -> {
-            MinecraftServer.getInstanceManager().unregisterInstance(this.instance);
-        });
+        this.instance.scheduleNextTick(MinecraftServer.getInstanceManager()::unregisterInstance);
         this.playerManager.cleanUp();
     }
 
@@ -270,10 +264,6 @@ public class BlockSumoGame extends Game {
 
     public @NotNull ExplosionManager getExplosionManager() {
         return this.explosionManager;
-    }
-
-    public @NotNull FishingBobberManager getBobberManager() {
-        return this.bobberManager;
     }
 
     public @NotNull SpawnProtectionManager getSpawnProtectionManager() {

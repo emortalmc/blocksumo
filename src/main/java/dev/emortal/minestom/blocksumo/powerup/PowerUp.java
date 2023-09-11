@@ -13,14 +13,15 @@ import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class PowerUp {
-    public static final Tag<String> NAME = Tag.String("power_up");
+    public static final @NotNull Tag<String> NAME = Tag.String("power_up");
 
-    protected final BlockSumoGame game;
-    protected final String name;
-    private final PowerUpItemInfo itemInfo;
-    private final SpawnLocation spawnLocation;
+    protected final @NotNull BlockSumoGame game;
+    protected final @NotNull String name;
+    private final @NotNull PowerUpItemInfo itemInfo;
+    private final @NotNull SpawnLocation spawnLocation;
 
-    public PowerUp(@NotNull BlockSumoGame game, @NotNull String name, @NotNull PowerUpItemInfo itemInfo, @NotNull SpawnLocation spawnLocation) {
+    protected PowerUp(@NotNull BlockSumoGame game, @NotNull String name, @NotNull PowerUpItemInfo itemInfo,
+                      @NotNull SpawnLocation spawnLocation) {
         this.game = game;
         this.name = name;
         this.itemInfo = itemInfo;
@@ -65,9 +66,9 @@ public abstract class PowerUp {
     }
 
     protected final void removeOneItemFromPlayer(@NotNull Player player, @NotNull Player.Hand hand) {
-        final ItemStack heldItem = player.getItemInHand(hand);
+        ItemStack heldItem = player.getItemInHand(hand);
 
-        final ItemStack newHeldItem;
+        ItemStack newHeldItem;
         if (heldItem.amount() == 1) {
             newHeldItem = ItemStack.AIR;
         } else {
@@ -77,30 +78,30 @@ public abstract class PowerUp {
     }
 
     public final @NotNull ItemStack createItemStack() {
-        return ItemStack.builder(itemInfo.material())
-                .amount(itemInfo.amount())
+        return ItemStack.builder(this.itemInfo.material())
+                .amount(this.itemInfo.amount())
                 .meta(builder -> {
-                    builder.displayName(itemInfo.name().decoration(TextDecoration.ITALIC, false));
-                    builder.lore(itemInfo.rarity().getName().decoration(TextDecoration.ITALIC, false));
-                    addExtraMetadata(builder);
-                    builder.setTag(NAME, name);
+                    builder.displayName(this.itemInfo.name().decoration(TextDecoration.ITALIC, false));
+                    builder.lore(this.itemInfo.rarity().getName().decoration(TextDecoration.ITALIC, false));
+                    this.addExtraMetadata(builder);
+                    builder.setTag(NAME, this.name);
                 })
                 .build();
     }
 
     public @NotNull String getName() {
-        return name;
+        return this.name;
     }
 
     public @NotNull Component getItemName() {
-        return itemInfo.name();
+        return this.itemInfo.name();
     }
 
     public @NotNull ItemRarity getRarity() {
-        return itemInfo.rarity();
+        return this.itemInfo.rarity();
     }
 
     public @NotNull SpawnLocation getSpawnLocation() {
-        return spawnLocation;
+        return this.spawnLocation;
     }
 }

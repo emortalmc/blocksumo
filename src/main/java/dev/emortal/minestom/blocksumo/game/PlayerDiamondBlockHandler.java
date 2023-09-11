@@ -27,7 +27,8 @@ public final class PlayerDiamondBlockHandler {
     private static final Point SPAWN = MapData.CENTER.sub(0.5, 0, 0.5);
     private static final int DIAMOND_BLOCK_SECONDS = 20;
 
-    private final BlockSumoGame game;
+    private final @NotNull BlockSumoGame game;
+
     private @Nullable Player playerOnDiamondBlock = null;
     private @Nullable Task diamondBlockTask = null;
 
@@ -40,68 +41,90 @@ public final class PlayerDiamondBlockHandler {
     }
 
     private void onPlayerMove(@NotNull PlayerMoveEvent event) {
-        if (event.getNewPosition().sameBlock(SPAWN)) {
-            // player is now standing on the diamond block
-            if (playerOnDiamondBlock == null) {
-                playerOnDiamondBlock = event.getPlayer();
+        Player player = event.getPlayer();
+        if (!event.getNewPosition().sameBlock(SPAWN)) {
+            this.stopStandingOnBlock(player);
+            return;
+        }
 
-                TeamColor playerTeam = event.getPlayer().getTag(PlayerTags.TEAM_COLOR);
+        if (this.playerOnDiamondBlock != null) return;
+        // player is now standing on the diamond block
+        this.playerOnDiamondBlock = player;
 
-                diamondBlockTask = event.getPlayer().scheduler().submitTask(new Supplier<>() {
-                    int secondsLeft = DIAMOND_BLOCK_SECONDS;
+        this.diamondBlockTask = player.scheduler().submitTask(new DiamondBlockTask(this.game, player));
+    }
 
-                    @Override
-                    public TaskSchedule get() {
-                        if (secondsLeft == 0) {
-                            game.victory(Set.of(event.getPlayer()));
+    private void stopStandingOnBlock(@NotNull Player player) {
+        if (this.playerOnDiamondBlock != player) return;
 
-                            return TaskSchedule.stop();
-                        }
+        this.playerOnDiamondBlock.setLevel(0);
+        this.playerOnDiamondBlock = null;
 
-                        event.getPlayer().setLevel(secondsLeft);
-                        event.getPlayer().playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.MASTER, 1f, 1.5f), Sound.Emitter.self());
+        if (this.diamondBlockTask != null) {
+            this.diamondBlockTask.cancel();
+        }
+    }
 
-                        if (secondsLeft <= 5) {
-                            game.showTitle(Title.title(
-                                    Component.text(secondsLeft, TextColor.lerp(secondsLeft / 5f, NamedTextColor.RED, NamedTextColor.GREEN), TextDecoration.BOLD),
-                                    Component.empty(),
-                                    Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
-                            ));
+    private static final class DiamondBlockTask implements Supplier<TaskSchedule> {
 
-                            game.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 1f, 0.8f), Sound.Emitter.self());
-                        }
-                        if (secondsLeft % 5 == 0 && secondsLeft != DIAMOND_BLOCK_SECONDS) {
-                            game.sendMessage(
-                                    Component.text()
-                                            .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
-                                            .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                                            .append(Component.text(event.getPlayer().getUsername(), TextColor.color(playerTeam.getColor()), TextDecoration.BOLD))
-                                            .append(Component.text(" is standing on the diamond block!\n", NamedTextColor.GRAY))
-                                            .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
-                                            .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                                            .append(Component.text("They win in ", NamedTextColor.GRAY))
-                                            .append(Component.text(secondsLeft, NamedTextColor.RED))
-                                            .append(Component.text(" seconds!", NamedTextColor.GRAY))
-                                            .build()
-                            );
-                            game.playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1f, 1.2f), Sound.Emitter.self());
-                        }
+        private final @NotNull BlockSumoGame game;
+        private final @NotNull Player player;
+        private final @NotNull TeamColor teamColor;
 
-                        secondsLeft--;
+        private int secondsLeft = DIAMOND_BLOCK_SECONDS;
 
-                        return TaskSchedule.seconds(1);
-                    }
-                });
+        DiamondBlockTask(@NotNull BlockSumoGame game, @NotNull Player player) {
+            this.game = game;
+            this.player = player;
+            this.teamColor = player.getTag(PlayerTags.TEAM_COLOR);
+        }
+
+        @Override
+        public TaskSchedule get() {
+            if (this.secondsLeft == 0) {
+                this.game.victory(Set.of(this.player));
+                return TaskSchedule.stop();
             }
-        } else {
-            if (playerOnDiamondBlock == event.getPlayer()) {
-                // player is no longer standing on the diamond block
-                playerOnDiamondBlock.setLevel(0);
-                playerOnDiamondBlock = null;
-                if (diamondBlockTask != null) diamondBlockTask.cancel();
 
+            this.player.setLevel(this.secondsLeft);
+            this.player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.MASTER, 1f, 1.5f), Sound.Emitter.self());
 
+            if (this.secondsLeft <= 5) {
+                this.notifyFinalCountdown();
             }
+            if (this.secondsLeft % 5 == 0 && this.secondsLeft != DIAMOND_BLOCK_SECONDS) {
+                this.notifyCountdown();
+            }
+
+            this.secondsLeft--;
+            return TaskSchedule.seconds(1);
+        }
+
+        private void notifyCountdown() {
+            this.game.sendMessage(Component.text()
+                    .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
+                    .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+                    .append(Component.text(this.player.getUsername(), TextColor.color(this.teamColor.getColor()), TextDecoration.BOLD))
+                    .append(Component.text(" is standing on the diamond block!\n", NamedTextColor.GRAY))
+                    .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
+                    .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+                    .append(Component.text("They win in ", NamedTextColor.GRAY))
+                    .append(Component.text(this.secondsLeft, NamedTextColor.RED))
+                    .append(Component.text(" seconds!", NamedTextColor.GRAY))
+                    .build());
+
+            this.game.playSound(Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1f, 1.2f), Sound.Emitter.self());
+        }
+
+        private void notifyFinalCountdown() {
+            TextColor titleColor = TextColor.lerp(this.secondsLeft / 5f, NamedTextColor.RED, NamedTextColor.GREEN);
+            this.game.showTitle(Title.title(
+                    Component.text(this.secondsLeft, titleColor, TextDecoration.BOLD),
+                    Component.empty(),
+                    Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
+            ));
+
+            this.game.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 1f, 0.8f), Sound.Emitter.self());
         }
     }
 }

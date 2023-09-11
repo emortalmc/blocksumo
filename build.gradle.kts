@@ -17,10 +17,10 @@ repositories {
 }
 
 dependencies {
+    implementation("dev.emortal.minestom:game-sdk:bf1bede")
+
     implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
-
-    implementation("dev.emortal.minestom:game-sdk:fa6aefa")
 
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
@@ -35,7 +35,7 @@ java {
 }
 
 tasks {
-    withType<JavaCompile> {
+    compileJava {
         options.compilerArgs.addAll(listOf(
                 "--release", "20",
                 "--enable-preview"

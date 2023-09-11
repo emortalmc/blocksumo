@@ -1,48 +1,41 @@
 package dev.emortal.minestom.blocksumo.team;
 
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.util.RGBLike;
-import net.minestom.server.instance.block.Block;
+import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
 public enum TeamColor {
 
-    BLACK(NamedTextColor.BLACK, Block.BLACK_WOOL, Material.BLACK_WOOL),
-    DARK_BLUE(NamedTextColor.DARK_BLUE, Block.BLUE_WOOL, Material.BLUE_WOOL),
-    DARK_GREEN(NamedTextColor.DARK_GREEN, Block.GREEN_WOOL, Material.GREEN_WOOL),
-    DARK_RED(NamedTextColor.DARK_RED, Block.RED_WOOL, Material.RED_WOOL),
-    DARK_PURPLE(NamedTextColor.DARK_PURPLE, Block.PURPLE_WOOL, Material.PURPLE_WOOL),
-    GOLD(NamedTextColor.GOLD, Block.ORANGE_WOOL, Material.ORANGE_WOOL),
-    GRAY(NamedTextColor.GRAY, Block.LIGHT_GRAY_WOOL, Material.LIGHT_GRAY_WOOL),
-    DARK_GRAY(NamedTextColor.DARK_GRAY, Block.GRAY_WOOL, Material.GRAY_WOOL),
-    BLUE(NamedTextColor.BLUE, Block.LIGHT_BLUE_WOOL, Material.LIGHT_BLUE_WOOL),
-    GREEN(NamedTextColor.GREEN, Block.LIME_WOOL, Material.LIME_WOOL),
-    AQUA(NamedTextColor.AQUA, Block.CYAN_WOOL, Material.CYAN_WOOL),
-    RED(NamedTextColor.RED, Block.RED_WOOL, Material.RED_WOOL),
-    LIGHT_PURPLE(NamedTextColor.LIGHT_PURPLE, Block.MAGENTA_WOOL, Material.MAGENTA_WOOL),
-    YELLOW(NamedTextColor.YELLOW, Block.YELLOW_WOOL, Material.YELLOW_WOOL);
+    BLACK(NamedTextColor.BLACK, Material.BLACK_WOOL),
+    DARK_BLUE(NamedTextColor.DARK_BLUE, Material.BLUE_WOOL),
+    DARK_GREEN(NamedTextColor.DARK_GREEN, Material.GREEN_WOOL),
+    DARK_RED(NamedTextColor.DARK_RED, Material.RED_WOOL),
+    DARK_PURPLE(NamedTextColor.DARK_PURPLE, Material.PURPLE_WOOL),
+    GOLD(NamedTextColor.GOLD, Material.ORANGE_WOOL),
+    GRAY(NamedTextColor.GRAY, Material.LIGHT_GRAY_WOOL),
+    DARK_GRAY(NamedTextColor.DARK_GRAY, Material.GRAY_WOOL),
+    BLUE(NamedTextColor.BLUE, Material.LIGHT_BLUE_WOOL),
+    GREEN(NamedTextColor.GREEN, Material.LIME_WOOL),
+    AQUA(NamedTextColor.AQUA, Material.CYAN_WOOL),
+    RED(NamedTextColor.RED, Material.RED_WOOL),
+    LIGHT_PURPLE(NamedTextColor.LIGHT_PURPLE, Material.MAGENTA_WOOL),
+    YELLOW(NamedTextColor.YELLOW, Material.YELLOW_WOOL);
 
-    private final RGBLike color;
-    private final Block woolBlock;
-    private final ItemStack woolItem;
+    private final @NotNull TextColor color;
+    private final @NotNull ItemStack woolItem;
 
-    TeamColor(RGBLike color, Block woolBlock, Material woolItem) {
+    TeamColor(@NotNull TextColor color, @NotNull Material woolItem) {
         this.color = color;
-        this.woolBlock = woolBlock;
         this.woolItem = ItemStack.of(woolItem, 64);
     }
 
-    public @NotNull RGBLike getColor() {
-        return color;
-    }
-
-    public @NotNull Block getWoolBlock() {
-        return woolBlock;
+    public @NotNull TextColor getColor() {
+        return this.color;
     }
 
     public @NotNull ItemStack getWoolItem() {
-        return woolItem;
+        return this.woolItem;
     }
 }

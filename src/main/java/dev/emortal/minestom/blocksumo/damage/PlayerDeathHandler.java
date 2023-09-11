@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.damage;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
+import dev.emortal.minestom.blocksumo.game.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
@@ -32,46 +33,55 @@ import java.util.Set;
 
 public final class PlayerDeathHandler {
 
-    private final BlockSumoGame game;
-    private final PlayerManager playerManager;
+    private final @NotNull BlockSumoGame game;
+    private final @NotNull PlayerManager playerManager;
+    private final @NotNull PlayerRespawnHandler respawnHandler;
     private final int minAllowedHeight;
 
-    public PlayerDeathHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager, int minAllowedHeight) {
+    public PlayerDeathHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager, @NotNull PlayerRespawnHandler respawnHandler,
+                              int minAllowedHeight) {
         this.game = game;
         this.playerManager = playerManager;
+        this.respawnHandler = respawnHandler;
         this.minAllowedHeight = minAllowedHeight;
     }
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
-        eventNode.addListener(PlayerTickEvent.class, event -> {
-            Player player = event.getPlayer();
-            if (isDead(player)) return;
+        eventNode.addListener(PlayerTickEvent.class, this::onTick);
+    }
 
-            Entity killer = determineKiller(player);
-            if (isUnderMinAllowedHeight(player)) kill(player, killer);
-        });
+    private void onTick(@NotNull PlayerTickEvent event) {
+        Player player = event.getPlayer();
+        if (this.isDead(player)) return;
+
+        Entity killer = this.determineKiller(player);
+        if (this.isUnderMinAllowedHeight(player)) {
+            this.kill(player, killer);
+        }
     }
 
     private boolean isUnderMinAllowedHeight(@NotNull Player player) {
-        return player.getPosition().y() < minAllowedHeight;
+        return player.getPosition().y() < this.minAllowedHeight;
     }
 
     private @Nullable Entity determineKiller(@NotNull Player player) {
         Entity killer = null;
         DamageType lastDamageSource = player.getLastDamageSource();
-        if (isValidDamageTimestamp(player) && lastDamageSource != null) {
+
+        if (this.isValidDamageTimestamp(player) && lastDamageSource != null) {
             if (lastDamageSource instanceof EntityDamage damage) {
-                killer = getKillerFromDamage(damage);
+                killer = this.getKillerFromDamage(damage);
             } else if (lastDamageSource instanceof EntityProjectileDamage damage) {
                 killer = damage.getShooter();
             }
         }
+
         return killer != player ? killer : null;
     }
 
     private boolean isValidDamageTimestamp(@NotNull Player player) {
         // Last damage time is only valid for 8 seconds after the damage.
-        return getLastDamageTime(player) + 8000 > System.currentTimeMillis();
+        return this.getLastDamageTime(player) + 8000 > System.currentTimeMillis();
     }
 
     private @Nullable Entity getKillerFromDamage(@NotNull EntityDamage damage) {
@@ -92,51 +102,41 @@ public final class PlayerDeathHandler {
     public void kill(@NotNull Player player, @Nullable Entity killer) {
         player.setTag(PlayerTags.DEAD, true);
 
-        makeSpectator(player);
-        playDeathSound(player);
+        this.makeSpectator(player);
+        this.playDeathSound(player);
 
         player.setCanPickupItem(false);
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
+
         int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
         player.setTag(PlayerTags.LIVES, (byte) remainingLives);
 
-        sendKillMessage(player, killer, remainingLives);
-        sendVictimTitle(player, killer, remainingLives);
+        this.sendKillMessage(player, killer, remainingLives);
+        this.sendVictimTitle(player, killer, remainingLives);
 
         if (remainingLives <= 0) {
-            playerManager.getScoreboard().removeLine(player.getUuid().toString());
-            player.setTeam(null);
-            checkForWinner();
-            playerManager.getTeamManager().resetTeam(player);
+            this.playerManager.removeDeadPlayer(player);
+            this.checkForWinner();
             return;
         }
 
-        updateScoreboardLives(player, remainingLives);
-        playerManager.getRespawnHandler().scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
+        this.playerManager.updateRemainingLives(player, remainingLives);
+        this.respawnHandler.scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
     }
 
     private void checkForWinner() {
         Set<Player> alivePlayers = new HashSet<>();
-        for (final Player player : game.getPlayers()) {
+        for (Player player : this.game.getPlayers()) {
             if (player.getTag(PlayerTags.LIVES) > 0) alivePlayers.add(player);
         }
         if (alivePlayers.isEmpty()) return;
 
-        final Player firstPlayer = alivePlayers.iterator().next();
-        for (final Player alive : alivePlayers) {
+        Player firstPlayer = alivePlayers.iterator().next();
+        for (Player alive : alivePlayers) {
             if (alive.getTag(PlayerTags.TEAM_COLOR) != firstPlayer.getTag(PlayerTags.TEAM_COLOR)) return;
         }
-        game.victory(alivePlayers);
-    }
-
-    private void updateScoreboardLives(@NotNull Player player, int remainingLives) {
-        playerManager.getTeamManager().updateTeamLives(player, remainingLives);
-
-        Sidebar scoreboard = playerManager.getScoreboard();
-        String lineName = player.getUuid().toString();
-        scoreboard.updateLineContent(lineName, player.getDisplayName());
-        scoreboard.updateLineScore(lineName, remainingLives);
+        this.game.victory(alivePlayers);
     }
 
     private void makeSpectator(final @NotNull Player player) {
@@ -151,15 +151,15 @@ public final class PlayerDeathHandler {
     }
 
     private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {
-        final TeamColor victimTeam = victim.getTag(PlayerTags.TEAM_COLOR);
+        TeamColor victimTeam = victim.getTag(PlayerTags.TEAM_COLOR);
 
-        final TextComponent.Builder message = Component.text()
+        TextComponent.Builder message = Component.text()
                 .append(Component.text("☠", NamedTextColor.RED))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
                 .append(Component.text(victim.getUsername(), TextColor.color(victimTeam.getColor())));
 
         if (killer instanceof Player playerKiller) {
-            final TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
+            TeamColor killerTeam = playerKiller.getTag(PlayerTags.TEAM_COLOR);
 
             message.append(Component.text(" was killed by ", NamedTextColor.GRAY));
             message.append(Component.text(playerKiller.getUsername(), TextColor.color(killerTeam.getColor())));
@@ -171,7 +171,7 @@ public final class PlayerDeathHandler {
             message.append(Component.text(" FINAL KILL", NamedTextColor.AQUA, TextDecoration.BOLD));
         }
 
-        playerManager.broadcastMessage(message.build());
+        this.game.sendMessage(message.build());
     }
 
     private void sendVictimTitle(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {

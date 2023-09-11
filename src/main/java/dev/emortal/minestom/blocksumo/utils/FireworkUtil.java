@@ -22,11 +22,11 @@ public final class FireworkUtil {
 
     public static void showFirework(@NotNull Collection<Player> players, @NotNull Instance instance, @NotNull Pos pos,
                                     @NotNull List<FireworkEffect> effects) {
-        final ItemMeta itemMeta = new FireworkMeta.Builder().effects(effects).build();
-        final ItemStack item = ItemStack.builder(Material.FIREWORK_ROCKET).meta(itemMeta).build();
+        ItemMeta itemMeta = new FireworkMeta.Builder().effects(effects).build();
+        ItemStack item = ItemStack.builder(Material.FIREWORK_ROCKET).meta(itemMeta).build();
 
-        final Entity firework = new Entity(EntityType.FIREWORK_ROCKET);
-        final FireworkRocketMeta meta = (FireworkRocketMeta) firework.getEntityMeta();
+        Entity firework = new Entity(EntityType.FIREWORK_ROCKET);
+        FireworkRocketMeta meta = (FireworkRocketMeta) firework.getEntityMeta();
         meta.setFireworkInfo(item);
 
         firework.updateViewableRule(players::contains);
@@ -39,6 +39,5 @@ public final class FireworkUtil {
     }
 
     private FireworkUtil() {
-        throw new AssertionError("This class cannot be instantiated.");
     }
 }

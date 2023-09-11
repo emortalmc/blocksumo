@@ -10,10 +10,11 @@ public final class TextUtil {
             'ᴠ', 'ᴡ', 'х', 'ʏ', 'ᴢ', '₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'
     };
 
-    public static @NotNull String convertToSmallFont(final @NotNull String input) {
-        final StringBuilder builder = new StringBuilder();
-        final String lowercase = input.toLowerCase(Locale.ROOT);
-        for (final char element : lowercase.toCharArray()) {
+    public static @NotNull String convertToSmallFont(@NotNull String input) {
+        StringBuilder builder = new StringBuilder();
+        String lowercase = input.toLowerCase(Locale.ROOT);
+
+        for (char element : lowercase.toCharArray()) {
             if (element >= 'a' && element <= 'z') {
                 builder.append(SMALL_FONT[element - 'a']);
             } else if (element >= '0' && element <= '9') {
@@ -22,6 +23,10 @@ public final class TextUtil {
                 builder.append(element);
             }
         }
+
         return builder.toString();
+    }
+
+    private TextUtil() {
     }
 }

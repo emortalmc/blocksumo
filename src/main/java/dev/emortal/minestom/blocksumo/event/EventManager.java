@@ -14,47 +14,48 @@ import java.util.Collection;
 
 public final class EventManager {
 
-    private final EventRegistry registry;
-    private final BlockSumoGame game;
-    private final RandomEventHandler randomEventHandler;
+    private final @NotNull BlockSumoGame game;
+    private final @NotNull RandomEventHandler randomEventHandler;
 
-    public EventManager(final @NotNull BlockSumoGame game) {
-        this.registry = new EventRegistry();
+    private final @NotNull EventRegistry registry = new EventRegistry();
+
+    public EventManager(@NotNull BlockSumoGame game) {
         this.game = game;
         this.randomEventHandler = new RandomEventHandler(game, this);
     }
 
     public void startRandomEventTask() {
-        randomEventHandler.startRandomEventTask();
+        this.randomEventHandler.startRandomEventTask();
     }
 
     public void registerDefaultEvents() {
-        registry.registerEvent("TNT_RAIN", TNTRainEvent::new);
-        registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
-        registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
+        this.registry.registerEvent("TNT_RAIN", TNTRainEvent::new);
+        this.registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
+        this.registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
     }
 
-    public void startEvent(final @NotNull BlockSumoEvent event) {
-        game.sendMessage(event.getStartMessage());
-        game.playSound(
+    public void startEvent(@NotNull BlockSumoEvent event) {
+        this.game.sendMessage(event.getStartMessage());
+        this.game.playSound(
                 Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_GROWL, Sound.Source.MASTER, 0.7f, 1.2f),
                 Sound.Emitter.self()
         );
         event.start();
     }
 
-    public @Nullable BlockSumoEvent findNamedEvent(final @NotNull String eventName) {
-        final EventConstructor constructor = registry.findByName(eventName);
+    public @Nullable BlockSumoEvent findNamedEvent(@NotNull String eventName) {
+        EventConstructor constructor = this.registry.findByName(eventName);
         if (constructor == null) return null;
-        return constructor.create(game);
+
+        return constructor.create(this.game);
     }
 
     public @NotNull BlockSumoEvent findRandomEvent() {
-        final EventConstructor constructor = registry.findRandom();
-        return constructor.create(game);
+        EventConstructor constructor = this.registry.findRandom();
+        return constructor.create(this.game);
     }
 
     public @NotNull Collection<String> getEventNames() {
-        return registry.getEventNames();
+        return this.registry.getEventNames();
     }
 }

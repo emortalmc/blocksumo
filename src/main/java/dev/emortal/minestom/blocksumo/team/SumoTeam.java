@@ -15,58 +15,59 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public final class SumoTeam implements PacketGroupingAudience {
 
-    private final String teamName;
-    private final TeamColor color;
+    private final @NotNull String teamName;
+    private final @NotNull TeamColor color;
+    private final @NotNull Team scoreboardTeam;
 
-    private final Set<Player> players = new CopyOnWriteArraySet<>();
-    private final Team scoreboardTeam;
+    private final Set<Player> members = new CopyOnWriteArraySet<>();
 
     public SumoTeam(@NotNull String teamName, @NotNull TeamColor color) {
         this.teamName = teamName;
         this.color = color;
-        this.scoreboardTeam = createScoreboardTeam();
+        this.scoreboardTeam = this.createScoreboardTeam();
     }
 
     public @NotNull Team getScoreboardTeam() {
-        return scoreboardTeam;
+        return this.scoreboardTeam;
     }
 
-    private Team createScoreboardTeam() {
-        return MinecraftServer.getTeamManager().createBuilder(teamName)
-                .teamColor(NamedTextColor.nearestTo(TextColor.color(color.getColor())))
+    private @NotNull Team createScoreboardTeam() {
+        return MinecraftServer.getTeamManager().createBuilder(this.teamName)
+                .teamColor(NamedTextColor.nearestTo(TextColor.color(this.color.getColor())))
                 .collisionRule(TeamsPacket.CollisionRule.NEVER)
                 .updateTeamPacket()
                 .build();
     }
 
     public @NotNull TeamColor getColor() {
-        return color;
+        return this.color;
     }
 
     public void setSuffix(@NotNull Component suffix) {
-        scoreboardTeam.updateSuffix(suffix);
+        this.scoreboardTeam.updateSuffix(suffix);
     }
 
-    public void addPlayer(@NotNull Player player) {
-        player.setTeam(scoreboardTeam);
-        players.add(player);
+    public void addMember(@NotNull Player member) {
+        member.setTeam(this.scoreboardTeam);
+        this.members.add(member);
     }
 
-    public void removePlayer(@NotNull Player player) {
-        player.setTeam(null);
-        players.remove(player);
+    public void removeMember(@NotNull Player member) {
+        member.setTeam(null);
+        this.members.remove(member);
     }
 
     public void destroy() {
-        for (final Player player : players) {
+        for (Player player : this.members) {
             player.setTeam(null);
         }
-        players.clear();
-        MinecraftServer.getTeamManager().deleteTeam(scoreboardTeam);
+
+        this.members.clear();
+        MinecraftServer.getTeamManager().deleteTeam(this.scoreboardTeam);
     }
 
     @Override
     public @NotNull Set<Player> getPlayers() {
-        return players;
+        return this.members;
     }
 }

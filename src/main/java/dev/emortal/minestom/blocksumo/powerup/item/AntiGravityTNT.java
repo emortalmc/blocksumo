@@ -35,23 +35,22 @@ public final class AntiGravityTNT extends PowerUp {
 
     @Override
     public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
-        removeOneItemFromPlayer(player, hand);
+        this.removeOneItemFromPlayer(player, hand);
 
-        final Entity tnt = game.getExplosionManager().spawnTnt(clickedPos.sub(0, 0.4, 0), 60, EXPLOSION, player);
+        Entity tnt = this.game.getExplosionManager().spawnTnt(clickedPos.sub(0, 0.4, 0), 60, EXPLOSION, player);
         tnt.setNoGravity(true);
 
-        playPrimedSound(clickedPos);
-
-        tnt.scheduler().buildTask(() -> setNewUpwardsVelocity(tnt)).repeat(TaskSchedule.nextTick()).schedule();
+        this.playPrimedSound(clickedPos);
+        tnt.scheduler().buildTask(() -> this.setNewUpwardsVelocity(tnt)).repeat(TaskSchedule.nextTick()).schedule();
     }
 
     private void playPrimedSound(@NotNull Point source) {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_TNT_PRIMED, Sound.Source.BLOCK, 2, 1);
-        game.playSound(sound, source.x(), source.y(), source.z());
+        Sound sound = Sound.sound(SoundEvent.ENTITY_TNT_PRIMED, Sound.Source.BLOCK, 2, 1);
+        this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void setNewUpwardsVelocity(@NotNull Entity tnt) {
-        final Vec velocity = tnt.getPosition().y() > 80 ? Vec.ZERO : new Vec(0, 7, 0);
+        Vec velocity = tnt.getPosition().y() > 80 ? Vec.ZERO : new Vec(0, 7, 0);
         tnt.setVelocity(velocity);
     }
 }

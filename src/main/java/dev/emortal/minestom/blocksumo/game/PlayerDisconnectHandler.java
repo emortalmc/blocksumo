@@ -13,36 +13,34 @@ import java.util.Set;
 
 public final class PlayerDisconnectHandler {
 
-    private final BlockSumoGame game;
-    private final PlayerManager playerManager;
+    private final @NotNull BlockSumoGame game;
+    private final @NotNull PlayerManager playerManager;
+    private final @NotNull PlayerRespawnHandler respawnHandler;
+    private final @NotNull SpawnProtectionManager spawnProtectionManager;
 
-    public PlayerDisconnectHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager) {
+    public PlayerDisconnectHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager, @NotNull PlayerRespawnHandler respawnHandler,
+                                   @NotNull SpawnProtectionManager spawnProtectionManager) {
         this.game = game;
         this.playerManager = playerManager;
+        this.respawnHandler = respawnHandler;
+        this.spawnProtectionManager = spawnProtectionManager;
     }
 
     public void onDisconnect(@NotNull Player player) {
-        playerManager.cleanUpPlayer(player);
-        removePlayer(player);
+        this.playerManager.cleanUpPlayer(player);
 
-        sendQuitMessage(player);
-        playQuitSound();
+        this.sendQuitMessage(player);
+        this.playQuitSound();
 
-        cancelCountdownIfNeeded();
-        boolean singlePlayerWinner = hasSinglePlayerWinner();
-        if (singlePlayerWinner) endWithSinglePlayerWinner();
+        this.cancelCountdownIfNeeded();
+        boolean singlePlayerWinner = this.hasSinglePlayerWinner();
+        if (singlePlayerWinner) this.endWithSinglePlayerWinner();
 
-        playerManager.getRespawnHandler().cleanUpPlayer(player);
-        game.getSpawnProtectionManager().cleanUpPlayer(player);
+        this.respawnHandler.cleanUpPlayer(player);
+        this.spawnProtectionManager.cleanUpPlayer(player);
 
-        playerManager.cleanUpPlayer(player);
-        playerManager.removeFromScoreboard(player);
-
-        if (!singlePlayerWinner) checkForWinner();
-    }
-
-    private void removePlayer(@NotNull Player left) {
-        game.getPlayers().remove(left);
+        this.playerManager.cleanUpPlayer(player);
+        if (!singlePlayerWinner) this.checkForWinner();
     }
 
     private void sendQuitMessage(@NotNull Player left) {
@@ -52,39 +50,39 @@ public final class PlayerDisconnectHandler {
                 .append(Component.text(left.getUsername(), NamedTextColor.RED))
                 .append(Component.text(" left the game", NamedTextColor.GRAY))
                 .build();
-        game.sendMessage(message);
+        this.game.sendMessage(message);
     }
 
     private void playQuitSound() {
         Sound sound = Sound.sound(SoundEvent.ENTITY_ITEM_PICKUP, Sound.Source.MASTER, 1F, 0.5F);
-        game.playSound(sound);
+        this.game.playSound(sound);
     }
 
     private void cancelCountdownIfNeeded() {
-        if (game.getPlayers().size() >= BlockSumoGame.MIN_PLAYERS) return;
-        game.cancelCountdown();
+        if (this.game.getPlayers().size() >= BlockSumoGame.MIN_PLAYERS) return;
+        this.game.cancelCountdown();
     }
 
     private boolean hasSinglePlayerWinner() {
-        return game.getPlayers().size() == 1;
+        return this.game.getPlayers().size() == 1;
     }
 
     private void endWithSinglePlayerWinner() {
-        Player winner = game.getPlayers().iterator().next();
-        game.victory(Set.of(winner));
+        Player winner = this.game.getPlayers().iterator().next();
+        this.game.victory(Set.of(winner));
     }
 
     private void checkForWinner() {
         Set<Player> alivePlayers = new HashSet<>();
-        for (final Player player : game.getPlayers()) {
+        for (Player player : this.game.getPlayers()) {
             if (player.getTag(PlayerTags.LIVES) > 0) alivePlayers.add(player);
         }
         if (alivePlayers.isEmpty()) return;
 
-        final Player firstPlayer = alivePlayers.iterator().next();
-        for (final Player alive : alivePlayers) {
+        Player firstPlayer = alivePlayers.iterator().next();
+        for (Player alive : alivePlayers) {
             if (alive.getTag(PlayerTags.TEAM_COLOR) != firstPlayer.getTag(PlayerTags.TEAM_COLOR)) return;
         }
-        game.victory(alivePlayers);
+        this.game.victory(alivePlayers);
     }
 }

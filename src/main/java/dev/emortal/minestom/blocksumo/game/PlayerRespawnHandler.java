@@ -33,128 +33,21 @@ import java.util.function.Supplier;
 
 public final class PlayerRespawnHandler {
 
-    private final BlockSumoGame game;
-    private final PlayerManager playerManager;
+    private final @NotNull BlockSumoGame game;
+
     private final Map<UUID, Task> respawnTasks = new ConcurrentHashMap<>();
 
-    public PlayerRespawnHandler(@NotNull BlockSumoGame game, @NotNull PlayerManager playerManager) {
+    public PlayerRespawnHandler(@NotNull BlockSumoGame game) {
         this.game = game;
-        this.playerManager = playerManager;
     }
 
     public void scheduleRespawn(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
-        final Task task = player.scheduler().submitTask(new Supplier<>() {
-            int i = 4;
-
-            @Override
-            public TaskSchedule get() {
-                if (i == 4) {
-                    // Wait 2 seconds so that the death title is cleared before we count down until respawn.
-                    i--;
-                    return TaskSchedule.seconds(2);
-                }
-
-                if (i == 0) {
-                    respawn(player);
-                    afterRespawnAction.run();
-                    return TaskSchedule.stop();
-                }
-
-                playPrepareRespawnSound(player);
-                showCountdownTitle(player, i);
-                i--;
-                return TaskSchedule.seconds(1);
-            }
-        });
-        respawnTasks.put(player.getUuid(), task);
-    }
-
-    private void playPrepareRespawnSound(@NotNull Player player) {
-        player.playSound(
-                Sound.sound(SoundEvent.BLOCK_METAL_BREAK, Sound.Source.BLOCK, 1, 2),
-                Sound.Emitter.self()
-        );
-    }
-
-    private void showCountdownTitle(@NotNull Player player, int countdown) {
-        final Title title = Title.title(
-                Component.text(countdown, TextColor.lerp(countdown / 3F, NamedTextColor.GREEN, NamedTextColor.RED), TextDecoration.BOLD),
-                Component.empty(),
-                Title.Times.times(Duration.ZERO, Duration.ofMillis(800), Duration.ofMillis(200))
-        );
-        player.showTitle(title);
-    }
-
-    private void respawn(@NotNull Player player) {
-        final Pos respawnPos = this.game.getSpawnHandler().getBestRespawn();
-
-        player.teleport(respawnPos).thenRun(() -> {
-            this.reset(player);
-            this.playerManager.updateLivesInHealth(player);
-        });
-
-        this.playRespawnSound(player);
-        player.setTag(PlayerTags.CAN_BE_HIT, true);
-        player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
-        player.setCanPickupItem(true);
-
-        this.game.getSpawnProtectionManager().startProtection(player, 4000);
-
-        this.prepareRespawn(respawnPos, 5);
-        this.giveWoolAndShears(player);
-        this.giveColoredChestplate(player);
-    }
-
-    private void reset(@NotNull Player player) {
-        player.getEntityMeta().setNotifyAboutChanges(false);
-
-        player.getInventory().clear();
-        player.setAutoViewable(true);
-        player.setInvisible(false);
-        player.setGlowing(false);
-        player.setSneaking(false);
-        player.setAllowFlying(false);
-        player.setFlying(false);
-        player.setAdditionalHearts(0);
-        player.setGameMode(GameMode.SURVIVAL);
-        player.setFood(20);
-        player.setLevel(0);
-
-        if (player.getVehicle() != null) {
-            player.getVehicle().removePassenger(player);
-        }
-
-        player.setArrowCount(0);
-        player.setFireForDuration(0);
-        player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1F);
-        player.setCanPickupItem(true);
-
-        if (player.getOpenInventory() != null) {
-            player.closeInventory();
-        }
-
-        player.setNoGravity(false);
-        player.heal();
-
-        player.getEntityMeta().setNotifyAboutChanges(true);
-
-        player.clearEffects();
-        player.stopSpectating();
-        player.stopSound(SoundStop.all());
-
-        player.updateViewableRule($ -> true);
-        player.updateViewerRule($ -> true);
-    }
-
-    private void playRespawnSound(@NotNull Player player) {
-        player.playSound(
-                Sound.sound(SoundEvent.BLOCK_BEACON_ACTIVATE, Sound.Source.MASTER, 1, 2),
-                Sound.Emitter.self()
-        );
+        RespawnTask task = new RespawnTask(this.game, player, afterRespawnAction);
+        this.respawnTasks.put(player.getUuid(), player.scheduler().submitTask(task));
     }
 
     public Block prepareSpawn(@NotNull Pos pos) {
-        final Instance instance = this.game.getSpawningInstance();
+        Instance instance = this.game.getSpawningInstance();
 
         Block replacedBlock = instance.getBlock(pos.sub(0, 1, 0));
         instance.setBlock(pos.sub(0, 1, 0), Block.BEDROCK);
@@ -164,41 +57,168 @@ public final class PlayerRespawnHandler {
         return replacedBlock;
     }
 
-    private void prepareRespawn(@NotNull Pos pos, int restoreDelay) {
-        Block replacedBlock = this.prepareSpawn(pos);
-
-        final Instance instance = game.getSpawningInstance();
-        MinecraftServer.getSchedulerManager()
-                .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock))
-                .delay(restoreDelay, ChronoUnit.SECONDS)
-                .schedule();
-
-        // TODO: Spawn protection
-    }
-
-    private void giveWoolAndShears(@NotNull Player player) {
-        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
-        player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-        player.getInventory().setItemStack(1, color.getWoolItem());
-    }
-
-    private void giveColoredChestplate(@NotNull Player player) {
-        final TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
-        final ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
-                .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
-                .build();
-        player.getInventory().setChestplate(chestplate);
-    }
-
     public void stopAllScheduledRespawns() {
-        for (final Task task : respawnTasks.values()) {
+        for (Task task : this.respawnTasks.values()) {
             task.cancel();
         }
-        respawnTasks.clear();
+        this.respawnTasks.clear();
     }
 
     public void cleanUpPlayer(@NotNull Player player) {
-        final Task task = respawnTasks.remove(player.getUuid());
+        Task task = this.respawnTasks.remove(player.getUuid());
         if (task != null) task.cancel();
+    }
+
+    private final class RespawnTask implements Supplier<TaskSchedule> {
+
+        private final @NotNull BlockSumoGame game;
+        private final @NotNull Player player;
+        private final @NotNull Runnable afterRespawnAction;
+
+        private int i = 4;
+
+        RespawnTask(@NotNull BlockSumoGame game, @NotNull Player player, @NotNull Runnable afterRespawnAction) {
+            this.game = game;
+            this.player = player;
+            this.afterRespawnAction = afterRespawnAction;
+        }
+
+        @Override
+        public @NotNull TaskSchedule get() {
+            if (this.i == 4) {
+                // Wait 2 seconds so that the death title is cleared before we count down until respawn.
+                this.i--;
+                return TaskSchedule.seconds(2);
+            }
+
+            if (this.i == 0) {
+                this.respawn();
+                this.afterRespawnAction.run();
+                return TaskSchedule.stop();
+            }
+
+            this.playPrepareRespawnSound();
+            this.showCountdownTitle(this.i);
+            this.i--;
+            return TaskSchedule.seconds(1);
+        }
+
+        private void playPrepareRespawnSound() {
+            this.player.playSound(
+                    Sound.sound(SoundEvent.BLOCK_METAL_BREAK, Sound.Source.BLOCK, 1, 2),
+                    Sound.Emitter.self()
+            );
+        }
+
+        private void showCountdownTitle(int countdown) {
+            Title title = Title.title(
+                    Component.text(countdown, TextColor.lerp(countdown / 3F, NamedTextColor.GREEN, NamedTextColor.RED), TextDecoration.BOLD),
+                    Component.empty(),
+                    Title.Times.times(Duration.ZERO, Duration.ofMillis(800), Duration.ofMillis(200))
+            );
+            this.player.showTitle(title);
+        }
+
+        private void respawn() {
+            Pos respawnPos = this.game.getSpawnHandler().getBestRespawn();
+
+            this.player.teleport(respawnPos).thenRun(() -> {
+                this.reset();
+                this.updateLivesInHealth();
+            });
+
+            this.playRespawnSound();
+            this.player.setTag(PlayerTags.CAN_BE_HIT, true);
+            this.player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
+            this.player.setCanPickupItem(true);
+
+            this.game.getSpawnProtectionManager().startProtection(this.player, 4000);
+
+            this.prepareRespawn(respawnPos, 5);
+            this.giveWoolAndShears();
+            this.giveColoredChestplate();
+        }
+
+        private void reset() {
+            this.player.getEntityMeta().setNotifyAboutChanges(false);
+
+            this.player.getInventory().clear();
+            this.player.setAutoViewable(true);
+            this.player.setInvisible(false);
+            this.player.setGlowing(false);
+            this.player.setSneaking(false);
+            this.player.setAllowFlying(false);
+            this.player.setFlying(false);
+            this.player.setAdditionalHearts(0);
+            this.player.setGameMode(GameMode.SURVIVAL);
+            this.player.setFood(20);
+            this.player.setLevel(0);
+
+            if (this.player.getVehicle() != null) {
+                this.player.getVehicle().removePassenger(this.player);
+            }
+
+            this.player.setArrowCount(0);
+            this.player.setFireForDuration(0);
+            this.player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1F);
+            this.player.setCanPickupItem(true);
+
+            if (this.player.getOpenInventory() != null) {
+                this.player.closeInventory();
+            }
+
+            this.player.setNoGravity(false);
+            this.player.heal();
+
+            this.player.getEntityMeta().setNotifyAboutChanges(true);
+
+            this.player.clearEffects();
+            this.player.stopSpectating();
+            this.player.stopSound(SoundStop.all());
+
+            this.player.updateViewableRule($ -> true);
+            this.player.updateViewerRule($ -> true);
+        }
+
+        private void updateLivesInHealth() {
+            int lives = this.player.getTag(PlayerTags.LIVES);
+            float health = lives * 2;
+
+            this.player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+            this.player.setHealth(this.player.getMaxHealth());
+        }
+
+        private void playRespawnSound() {
+            this.player.playSound(
+                    Sound.sound(SoundEvent.BLOCK_BEACON_ACTIVATE, Sound.Source.MASTER, 1, 2),
+                    Sound.Emitter.self()
+            );
+        }
+
+        private void prepareRespawn(@NotNull Pos pos, int restoreDelay) {
+            Block replacedBlock = PlayerRespawnHandler.this.prepareSpawn(pos);
+
+            Instance instance = this.game.getSpawningInstance();
+            MinecraftServer.getSchedulerManager()
+                    .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock))
+                    .delay(restoreDelay, ChronoUnit.SECONDS)
+                    .schedule();
+
+            // TODO: Spawn protection
+        }
+
+        private void giveWoolAndShears() {
+            TeamColor color = this.player.getTag(PlayerTags.TEAM_COLOR);
+            this.player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
+            this.player.getInventory().setItemStack(1, color.getWoolItem());
+        }
+
+        private void giveColoredChestplate() {
+            TeamColor color = this.player.getTag(PlayerTags.TEAM_COLOR);
+            ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
+                    .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
+                    .build();
+            this.player.getInventory().setChestplate(chestplate);
+        }
     }
 }

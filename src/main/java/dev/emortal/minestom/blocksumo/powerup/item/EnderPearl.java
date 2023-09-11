@@ -27,29 +27,29 @@ public final class EnderPearl extends PowerUp {
 
     @Override
     public void onUse(@NotNull Player player, @NotNull Player.Hand hand) {
-        removeOneItemFromPlayer(player, hand);
-        shootProjectile(player);
-        playThrowSound(player);
+        this.removeOneItemFromPlayer(player, hand);
+        this.shootProjectile(player);
+        this.playThrowSound(player);
     }
 
     private void shootProjectile(@NotNull Player thrower) {
-        final EntityProjectile pearl = new EntityProjectile(thrower, EntityType.ENDER_PEARL);
+        EntityProjectile pearl = new EntityProjectile(thrower, EntityType.ENDER_PEARL);
 
         pearl.setTag(PowerUp.NAME, name);
         pearl.setBoundingBox(0.1, 0.1, 0.1);
         pearl.setVelocity(thrower.getPosition().direction().mul(35.0));
         pearl.setGravity(0.04, 0.04);
 
-        final Instance instance = thrower.getInstance();
+        Instance instance = thrower.getInstance();
         pearl.setInstance(instance, thrower.getPosition().add(0, thrower.getEyeHeight(), 0));
 
         // TODO: Schedule cleanup task
     }
 
     private void playThrowSound(@NotNull Player thrower) {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_ENDER_PEARL_THROW, Sound.Source.BLOCK, 1, 1);
-        final Pos source = thrower.getPosition();
-        game.playSound(sound, source.x(), source.y(), source.z());
+        Sound sound = Sound.sound(SoundEvent.ENTITY_ENDER_PEARL_THROW, Sound.Source.BLOCK, 1, 1);
+        Pos source = thrower.getPosition();
+        this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
@@ -58,12 +58,12 @@ public final class EnderPearl extends PowerUp {
 
     @Override
     public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
-        onCollide(shooter, collisionPosition.add(0, 1, 0));
+        this.onCollide(shooter, collisionPosition.add(0, 1, 0));
     }
 
     @Override
     public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
                                     @NotNull Pos collisionPos) {
-        onCollide(shooter, collisionPos);
+        this.onCollide(shooter, collisionPos);
     }
 }

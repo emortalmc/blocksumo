@@ -33,7 +33,7 @@ public final class Fireball extends PowerUp {
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.FIRE_CHARGE, NAME, ItemRarity.COMMON);
 
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 35, 5.5, true);
-    public static final Tag<String> SHOOTER = Tag.String("shooter");
+    public static final @NotNull Tag<String> SHOOTER = Tag.String("shooter");
 
     public Fireball(@NotNull BlockSumoGame game) {
         super(game, "fireball", ITEM_INFO, SpawnLocation.ANYWHERE);
@@ -41,13 +41,13 @@ public final class Fireball extends PowerUp {
 
     @Override
     public void onUse(@NotNull Player player, @NotNull Player.Hand hand) {
-        removeOneItemFromPlayer(player, hand);
+        this.removeOneItemFromPlayer(player, hand);
 
-        final Entity fireball = shootFireball(player);
-        final Vec originalVelocity = player.getPosition().direction().mul(20);
+        Entity fireball = this.shootFireball(player);
+        Vec originalVelocity = player.getPosition().direction().mul(20);
         fireball.setVelocity(originalVelocity);
 
-        playShootingSound(player.getPosition());
+        this.playShootingSound(player.getPosition());
 
         fireball.scheduler().submitTask(() -> {
             if (fireball.getAliveTicks() > 5L * MinecraftServer.TICK_PER_SECOND) {
@@ -56,72 +56,75 @@ public final class Fireball extends PowerUp {
             }
 
             if (!fireball.getVelocity().sameBlock(originalVelocity)) {
-                collide(fireball);
+                this.collide(fireball);
                 return TaskSchedule.stop();
             }
 
-            final Player firstCollider = findFirstCollider(fireball, player);
+            Player firstCollider = this.findFirstCollider(fireball, player);
             if (firstCollider != null) {
-                collide(fireball);
+                this.collide(fireball);
                 return TaskSchedule.stop();
             }
 
-            showCollisionParticle(fireball);
+            this.showCollisionParticle(fireball);
             return TaskSchedule.nextTick();
         });
     }
 
     private @NotNull Entity shootFireball(@NotNull Player shooter) {
-        final Entity fireball = new NoDragEntity(EntityType.FIREBALL);
+        Entity fireball = new NoDragEntity(EntityType.FIREBALL);
+
         fireball.setNoGravity(true);
         fireball.setTag(PowerUp.NAME, name);
         fireball.setTag(SHOOTER, shooter.getUsername());
         fireball.setBoundingBox(0.6, 0.6, 0.6);
-        fireball.setInstance(game.getSpawningInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
+        fireball.setInstance(this.game.getSpawningInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
+
         return fireball;
     }
 
     private void playShootingSound(@NotNull Point source) {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_GHAST_SHOOT, Sound.Source.BLOCK, 1, 1);
-        game.playSound(sound, source.x(), source.y(), source.z());
+        Sound sound = Sound.sound(SoundEvent.ENTITY_GHAST_SHOOT, Sound.Source.BLOCK, 1, 1);
+        this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void collide(@NotNull Entity entity) {
-        final Player shooter = findShooter(entity);
-        game.getExplosionManager().explode(entity.getPosition(), EXPLOSION, shooter, entity);
+        Player shooter = this.findShooter(entity);
+        this.game.getExplosionManager().explode(entity.getPosition(), EXPLOSION, shooter, entity);
         entity.remove();
     }
 
     private @NotNull Player findShooter(@NotNull Entity entity) {
-        final String shooterName = entity.getTag(SHOOTER);
+        String shooterName = entity.getTag(SHOOTER);
 
-        for (final Player player : game.getPlayers()) {
+        for (Player player : this.game.getPlayers()) {
             if (player.getUsername().equals(shooterName)) return player;
         }
         throw new IllegalStateException("Shooter " + shooterName + " not found!");
     }
 
     private @Nullable Player findFirstCollider(@NotNull Entity fireball, @NotNull Player shooter) {
-        for (final Player player : game.getPlayers()) {
+        for (Player player : this.game.getPlayers()) {
             if (player == shooter) continue;
-            final Pos position = player.getPosition();
-            final BoundingBox box = player.getBoundingBox();
+
+            Pos position = player.getPosition();
+            BoundingBox box = player.getBoundingBox();
             if (box.intersectEntity(position, fireball)) return player;
         }
         return null;
     }
 
     private void showCollisionParticle(@NotNull Entity fireball) {
-        final double posX = fireball.getPosition().x();
-        final double posY = fireball.getPosition().y();
-        final double posZ = fireball.getPosition().z();
-        final ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
-        game.sendGroupedPacket(packet);
+        double posX = fireball.getPosition().x();
+        double posY = fireball.getPosition().y();
+        double posZ = fireball.getPosition().z();
+        ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
+        this.game.sendGroupedPacket(packet);
     }
 
     @Override
     public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
-        onUse(player, hand);
+        this.onUse(player, hand);
     }
 
     @Override
@@ -131,6 +134,6 @@ public final class Fireball extends PowerUp {
 
     @Override
     public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
-        onUse(player, hand);
+        this.onUse(player, hand);
     }
 }

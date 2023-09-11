@@ -30,8 +30,8 @@ public final class KnockbackStick extends PowerUp {
 
     @Override
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
-        removeOneItemFromPlayer(attacker, Player.Hand.MAIN);
-        playHitSound(attacker);
+        this.removeOneItemFromPlayer(attacker, Player.Hand.MAIN);
+        this.playHitSound(attacker);
     }
 
     private void playHitSound(@NotNull Player attacker) {

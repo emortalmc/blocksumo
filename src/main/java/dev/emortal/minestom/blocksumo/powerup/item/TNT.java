@@ -30,7 +30,7 @@ public final class TNT extends PowerUp {
 
     @Override
     public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
-        removeOneItemFromPlayer(player, hand);
-        game.getExplosionManager().spawnTnt(clickedPos, 60, EXPLOSION, player);
+        this.removeOneItemFromPlayer(player, hand);
+        this.game.getExplosionManager().spawnTnt(clickedPos, 60, EXPLOSION, player);
     }
 }

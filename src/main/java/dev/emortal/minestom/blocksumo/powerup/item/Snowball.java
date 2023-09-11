@@ -29,32 +29,31 @@ public final class Snowball extends PowerUp {
 
     @Override
     public void onUse(@NotNull Player player, @NotNull Player.Hand hand) {
-        removeOneItemFromPlayer(player, hand);
-        shootProjectile(player);
-        playThrowSound(player);
+        this.removeOneItemFromPlayer(player, hand);
+        this.shootProjectile(player);
+        this.playThrowSound(player);
     }
 
     private void shootProjectile(@NotNull Player thrower) {
-        final EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
+        EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
 
         snowball.setTag(PowerUp.NAME, name);
         snowball.setBoundingBox(0.1, 0.1, 0.1);
         snowball.setVelocity(thrower.getPosition().direction().mul(30.0));
 
-        final Instance instance = thrower.getInstance();
+        Instance instance = thrower.getInstance();
         snowball.scheduleRemove(10, TimeUnit.SECOND);
         snowball.setInstance(instance, thrower.getPosition().add(0, thrower.getEyeHeight(), 0));
     }
 
     private void playThrowSound(@NotNull Player thrower) {
-        final Sound sound = Sound.sound(SoundEvent.ENTITY_SNOWBALL_THROW, Sound.Source.BLOCK, 1, 1);
-        final Pos source = thrower.getPosition();
-        game.playSound(sound, source.x(), source.y(), source.z());
+        Sound sound = Sound.sound(SoundEvent.ENTITY_SNOWBALL_THROW, Sound.Source.BLOCK, 1, 1);
+        Pos source = thrower.getPosition();
+        this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     @Override
-    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
-                                    @NotNull Pos collisionPos) {
+    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
         KnockbackUtil.takeKnockback(target, collisionPos, 1);
     }
 }

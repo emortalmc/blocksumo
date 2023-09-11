@@ -1,4 +1,4 @@
-package dev.emortal.minestom.blocksumo.entity;
+package dev.emortal.minestom.blocksumo.powerup.item.hook;
 
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.minestom.server.entity.EntityProjectile;
@@ -12,56 +12,58 @@ import org.jetbrains.annotations.Nullable;
 
 // Thanks to
 // https://github.com/Bloepiloepi/MinestomPvP/blob/master/src/main/java/io/github/bloepiloepi/pvp/projectile/FishingBobber.java
-public final class FishingBobber extends EntityProjectile {
+final class FishingBobber extends EntityProjectile {
 
-    private final FishingBobberManager manager;
-    private final Player caster;
-    private Player hooked;
+    private final @NotNull FishingBobberManager manager;
+    private final @NotNull Player caster;
 
-    public FishingBobber(@NotNull FishingBobberManager manager, @NotNull Player caster) {
+    private @Nullable Player hooked;
+
+    FishingBobber(@NotNull FishingBobberManager manager, @NotNull Player caster) {
         super(caster, EntityType.FISHING_BOBBER);
         this.manager = manager;
         this.caster = caster;
-        setOwner(caster);
+        this.setOwner(caster);
     }
 
     @Override
     public void update(long time) {
-        if (shouldStopFishing(caster)) doRemove();
+        if (this.shouldStopFishing(this.caster)) this.remove();
     }
 
-    void doRemove() {
-        remove();
-        hooked = null;
-        setOwner(null);
-        manager.removeBobber(caster);
+    @Override
+    public void remove() {
+        super.remove();
+        this.hooked = null;
+        this.setOwner(null);
+        this.manager.removeBobber(this.caster);
     }
 
     private boolean shouldStopFishing(@NotNull Player caster) {
-        final boolean holdingFishingRod = caster.getItemInMainHand().material() == Material.FISHING_ROD ||
+        boolean holdingFishingRod = caster.getItemInMainHand().material() == Material.FISHING_ROD ||
                 caster.getItemInOffHand().material() == Material.FISHING_ROD;
         if (caster.getTag(PlayerTags.DEAD) || !holdingFishingRod) return true;
 
-        if (hooked != null) {
-            return hooked.isRemoved() || hooked.getGameMode() != GameMode.SURVIVAL;
+        if (this.hooked != null) {
+            return this.hooked.isRemoved() || this.hooked.getGameMode() != GameMode.SURVIVAL;
         }
         return false;
     }
 
-    public @Nullable Player getHooked() {
-        return hooked;
+    @Nullable Player getHooked() {
+        return this.hooked;
     }
 
-    public void setHooked(@Nullable Player hooked) {
-        getMeta().setHookedEntity(hooked);
+    void setHooked(@Nullable Player hooked) {
+        this.meta().setHookedEntity(hooked);
         this.hooked = hooked;
     }
 
     private void setOwner(@Nullable Player owner) {
-        getMeta().setOwnerEntity(owner);
+        this.meta().setOwnerEntity(owner);
     }
 
-    private @NotNull FishingHookMeta getMeta() {
-        return (FishingHookMeta) entityMeta;
+    private @NotNull FishingHookMeta meta() {
+        return (FishingHookMeta) this.entityMeta;
     }
 }

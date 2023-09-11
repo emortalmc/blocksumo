@@ -17,13 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class MapManager {
+public final class MapManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MapManager.class);
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(MapData.class, new MapData.Adapter())
@@ -44,23 +45,19 @@ public class MapManager {
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
-    private static final int CHUNK_LOADING_RADIUS = 8;
-
-    private final Map<String, PreLoadedMap> preLoadedMaps;
-
+    private final @NotNull Map<String, PreLoadedMap> preLoadedMaps;
 
     public MapManager() {
         MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
 
-        Map<String, PreLoadedMap> chunkLoaders = new HashMap<>();
-
+        Map<String, PreLoadedMap> maps = new HashMap<>();
         for (String mapName : ENABLED_MAPS) {
-            final Path mapPath = MAPS_PATH.resolve(mapName);
-            final Path polarPath = mapPath.resolve("map.polar");
-            final Path dataPath = mapPath.resolve("map_data.json");
+            Path mapPath = MAPS_PATH.resolve(mapName);
+            Path polarPath = mapPath.resolve("map.polar");
+            Path dataPath = mapPath.resolve("map_data.json");
 
             try {
-                final MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
+                MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
                 LOGGER.info("Loaded map data for map {}: [{}]", mapName, mapData);
 
                 PolarLoader polarLoader = new PolarLoader(polarPath);
@@ -72,53 +69,49 @@ public class MapManager {
 //                    polarLoader = new PolarLoader(polarPath);
 //                }
 
-                chunkLoaders.put(mapName, new PreLoadedMap(polarLoader, mapData));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                maps.put(mapName, new PreLoadedMap(polarLoader, mapData));
+            } catch (IOException exception) {
+                throw new UncheckedIOException(exception);
             }
         }
 
-        this.preLoadedMaps = Map.copyOf(chunkLoaders);
+        this.preLoadedMaps = Map.copyOf(maps);
     }
 
     public @NotNull LoadedMap getMap(@Nullable String id) {
-        if (id == null) return this.getRandomMap();
+        if (id == null) {
+            return this.getRandomMap();
+        }
 
-        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(id);
-        if (preLoadedMap == null) {
+        PreLoadedMap map = this.preLoadedMaps.get(id);
+        if (map == null) {
             LOGGER.warn("Map {} not found, loading random map", id);
             return this.getRandomMap();
         }
 
-        final PolarLoader chunkLoader = preLoadedMap.chunkLoader();
-
-        LOGGER.info("Creating instance for map {}", id);
-
-        Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, chunkLoader);
-//        instance.enableAutoChunkLoad(false);
-//        for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
-//            for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-//                instance.loadChunk(x, z);
-//            }
-//        }
-
-        return new LoadedMap(instance, preLoadedMap.mapData());
+        return map.load();
     }
 
-    public LoadedMap getRandomMap() {
-        final String randomMapName = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
+    public @NotNull LoadedMap getRandomMap() {
+        String randomMapId = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
-        final PreLoadedMap preLoadedMap = this.preLoadedMaps.get(randomMapName);
-        final Instance instance = MinecraftServer.getInstanceManager()
-                .createInstanceContainer(DIMENSION_TYPE, preLoadedMap.chunkLoader());
+        PreLoadedMap map = this.preLoadedMaps.get(randomMapId);
+        return map.load();
+    }
 
-//        instance.enableAutoChunkLoad(false);
-//        for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
-//            for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-//                instance.loadChunk(x, z);
+    private record PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
+
+        @NotNull LoadedMap load() {
+            Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, this.chunkLoader());
+
+//            instance.enableAutoChunkLoad(false);
+//            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
+//                for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
+//                    instance.loadChunk(x, z);
+//                }
 //            }
-//        }
 
-        return new LoadedMap(instance, preLoadedMap.mapData());
+            return new LoadedMap(instance, this.mapData());
+        }
     }
 }

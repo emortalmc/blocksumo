@@ -24,14 +24,11 @@ public final class GameCommand extends Command {
 
     private final @NotNull GameProvider gameProvider;
 
-    public GameCommand(GameProvider gameProvider) {
+    public GameCommand(@NotNull GameProvider gameProvider) {
         super("game");
-
         this.gameProvider = gameProvider;
 
-        this.setCondition((sender, commandString) -> {
-            return sender.hasPermission("command.game.blocksumo");
-        });
+        this.setCondition((sender, commandString) -> sender.hasPermission("command.game.blocksumo"));
 
         ArgumentLiteral start = new ArgumentLiteral("start");
         ArgumentLiteral event = new ArgumentLiteral("event");
@@ -41,9 +38,9 @@ public final class GameCommand extends Command {
         this.addSyntax(this::executeStartEvent, start, event);
         this.addSyntax(this::executeStartEvent, start, event, eventType);
 
-        final ArgumentLiteral give = new ArgumentLiteral("give");
-        final ArgumentLiteral powerup = new ArgumentLiteral("powerup");
-        final ArgumentWord powerUpType = new ArgumentWord("powerUpType");
+        ArgumentLiteral give = new ArgumentLiteral("give");
+        ArgumentLiteral powerup = new ArgumentLiteral("powerup");
+        ArgumentWord powerUpType = new ArgumentWord("powerUpType");
         powerUpType.setSuggestionCallback((sender, context, suggestion) -> suggestPowerUps(sender, suggestion));
 
         this.addSyntax(this::executeGivePowerUp, give, powerup);
@@ -56,7 +53,7 @@ public final class GameCommand extends Command {
             return null;
         }
 
-        Game game = gameProvider.findGame(player);
+        Game game = this.gameProvider.findGame(player);
         if (game == null) {
             sender.sendMessage("You are not in a game!");
             return null;
@@ -65,23 +62,23 @@ public final class GameCommand extends Command {
         return (BlockSumoGame) game;
     }
 
-    private void suggestEvents(final CommandSender sender, final Suggestion suggestion) {
-        final BlockSumoGame game = getGame(sender);
+    private void suggestEvents(@NotNull CommandSender sender, @NotNull Suggestion suggestion) {
+        BlockSumoGame game = this.getGame(sender);
         if (game == null) return;
 
-        for (final String eventName : game.getEventManager().getEventNames()) {
+        for (String eventName : game.getEventManager().getEventNames()) {
             suggestion.addEntry(new SuggestionEntry(eventName));
         }
     }
 
-    private void executeStartEvent(CommandSender sender, CommandContext context) {
-        final BlockSumoGame game = getGame(sender);
+    private void executeStartEvent(@NotNull CommandSender sender, @NotNull CommandContext context) {
+        BlockSumoGame game = this.getGame(sender);
         if (game == null) return;
 
-        final String eventName = context.has("eventType") ? context.get("eventType") : null;
-        final EventManager eventManager = game.getEventManager();
+        String eventName = context.has("eventType") ? context.get("eventType") : null;
+        EventManager eventManager = game.getEventManager();
 
-        final BlockSumoEvent event;
+        BlockSumoEvent event;
         if (eventName != null) {
             event = eventManager.findNamedEvent(eventName);
             if (event == null) {
@@ -97,24 +94,24 @@ public final class GameCommand extends Command {
         // TODO: Set current event in game
     }
 
-    private void suggestPowerUps(final CommandSender sender, final Suggestion suggestion) {
-        final BlockSumoGame game = getGame(sender);
+    private void suggestPowerUps(@NotNull CommandSender sender, @NotNull Suggestion suggestion) {
+        BlockSumoGame game = this.getGame(sender);
         if (game == null) return;
 
-        for (final String powerUpName : game.getPowerUpManager().getPowerUpIds()) {
+        for (String powerUpName : game.getPowerUpManager().getPowerUpIds()) {
             suggestion.addEntry(new SuggestionEntry(powerUpName));
         }
     }
 
-    private void executeGivePowerUp(final CommandSender sender, final CommandContext context) {
-        final Player player = (Player) sender;
-        final BlockSumoGame game = getGame(sender);
+    private void executeGivePowerUp(@NotNull CommandSender sender, @NotNull CommandContext context) {
+        Player player = (Player) sender;
+        BlockSumoGame game = getGame(sender);
         if (game == null) return;
 
-        final String powerUpName = context.has("powerUpType") ? context.get("powerUpType") : null;
-        final PowerUpManager powerUpManager = game.getPowerUpManager();
+        String powerUpName = context.has("powerUpType") ? context.get("powerUpType") : null;
+        PowerUpManager powerUpManager = game.getPowerUpManager();
 
-        final PowerUp powerUp;
+        PowerUp powerUp;
         if (powerUpName != null) {
             powerUp = powerUpManager.findNamedPowerUp(powerUpName);
             if (powerUp == null) {

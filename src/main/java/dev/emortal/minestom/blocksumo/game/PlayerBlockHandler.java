@@ -9,6 +9,7 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
 import net.minestom.server.timer.Task;
@@ -26,13 +27,13 @@ public final class PlayerBlockHandler {
 
     private static final Direction[] DIRECTIONS = Direction.values();
 
-
     // These values are trial-and-error. If they break, blame me. Don't complain, just fix it kekw
     private static final float REACH_TOLERANCE = 1.0f;
     private static final float NON_SNEAKING_RANGE = 4.65f + REACH_TOLERANCE;
     private static final float SNEAKING_RANGE = 4.9f + REACH_TOLERANCE;
 
-    private final BlockSumoGame game;
+    private final @NotNull BlockSumoGame game;
+
     private final Map<Point, Task> centerBlockBreakTasks = new ConcurrentHashMap<>();
 
     public PlayerBlockHandler(@NotNull BlockSumoGame game) {
@@ -41,30 +42,22 @@ public final class PlayerBlockHandler {
 
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerBlockPlaceEvent.class, this::onBlockPlace);
-
-        // Fixes replacement of non-solid blocks like stairs
-        eventNode.addListener(PlayerBlockPlaceEvent.class, event -> {
-            if (event.getInstance().getBlock(event.getBlockPosition(), Block.Getter.Condition.TYPE).isSolid()) {
-                event.setCancelled(true);
-            }
-        });
-
-        eventNode.addListener(PlayerBlockBreakEvent.class, event -> {
-            Task removedTask = this.centerBlockBreakTasks.remove(event.getBlockPosition());
-            if (removedTask != null) removedTask.cancel();
-
-            final String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
-            if (!blockName.contains("wool")) event.setCancelled(true);
-        });
+        eventNode.addListener(PlayerBlockBreakEvent.class, this::onBlockBreak);
     }
 
     private void onBlockPlace(@NotNull PlayerBlockPlaceEvent event) {
+        Point pos = event.getBlockPosition();
+
+        // Fixes replacement of non-solid blocks like stairs
+        if (event.getInstance().getBlock(pos, Block.Getter.Condition.TYPE).isSolid()) {
+            event.setCancelled(true);
+            return;
+        }
+
         event.consumeBlock(false);
+        Player player = event.getPlayer();
 
-        final Player player = event.getPlayer();
-        final Point blockPosition = event.getBlockPosition();
-
-        if (nextToBarrier(blockPosition)) {
+        if (this.nextToBarrier(pos)) {
             event.setCancelled(true);
             // force player downwards when placing next to barriers - avoids clutching literally everything
             player.teleport(player.getPosition().sub(0, 1, 0));
@@ -72,35 +65,43 @@ public final class PlayerBlockHandler {
             return;
         }
 
-        final PowerUp heldPowerup = game.getPowerUpManager().getHeldPowerUp(event.getPlayer(), event.getHand());
+        PowerUp heldPowerup = this.game.getPowerUpManager().getHeldPowerUp(player, event.getHand());
 
-        if (!withinLegalRange(player, blockPosition)) {
+        if (!this.withinLegalRange(player, pos)) {
             event.setCancelled(true);
             return;
         }
 
         // Handle powerups before height limit check. It can be aggravating
         if (heldPowerup != null) {
-            handlePowerUp(heldPowerup, event);
+            this.handlePowerUp(heldPowerup, event);
             return;
         }
 
         // Exclude powerup usage from the height limit. It can be aggravating
-        if (!withinWorldLimits(blockPosition)) {
+        if (!this.withinWorldLimits(pos)) {
             event.setCancelled(true);
             return;
         }
 
-        if (isAroundCenter(blockPosition)) {
-            scheduleCenterBlockBreak(blockPosition, event.getBlock());
+        if (this.isAroundCenter(pos)) {
+            this.scheduleCenterBlockBreak(pos, event.getBlock());
         }
+    }
+
+    private void onBlockBreak(@NotNull PlayerBlockBreakEvent event) {
+        Task removedTask = this.centerBlockBreakTasks.remove(event.getBlockPosition());
+        if (removedTask != null) removedTask.cancel();
+
+        String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
+        if (!blockName.contains("wool")) event.setCancelled(true);
     }
 
     private boolean nextToBarrier(@NotNull Point blockPos) {
         for (Direction direction : DIRECTIONS) {
-            if (game.getSpawningInstance().getBlock(blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ()), Block.Getter.Condition.TYPE) == Block.BARRIER) {
-                return true;
-            }
+            Point offsetPos = blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ());
+            Block offsetBlock = this.game.getSpawningInstance().getBlock(offsetPos, Block.Getter.Condition.TYPE);
+            if (offsetBlock == Block.BARRIER) return true;
         }
 
         return false;
@@ -121,16 +122,20 @@ public final class PlayerBlockHandler {
     }
 
     private void scheduleCenterBlockBreak(@NotNull Point blockPos, @NotNull Block block) {
-        final Task task = game.getSpawningInstance().scheduler().buildTask(() -> {
-            game.getSpawningInstance().setBlock(blockPos, Block.AIR);
-            sendBlockBreakEffect(blockPos, block);
-        }).delay(TaskSchedule.seconds(5)).schedule();
-        centerBlockBreakTasks.put(blockPos, task);
+        Instance instance = this.game.getSpawningInstance();
+        Task task = instance.scheduler()
+                .buildTask(() -> {
+                    instance.setBlock(blockPos, Block.AIR);
+                    this.sendBlockBreakEffect(blockPos, block);
+                })
+                .delay(TaskSchedule.seconds(5))
+                .schedule();
+        this.centerBlockBreakTasks.put(blockPos, task);
     }
 
     private void sendBlockBreakEffect(@NotNull Point blockPos, @NotNull Block block) {
-        final EffectPacket packet = new EffectPacket(2001, blockPos, block.stateId(), false);
-        game.sendGroupedPacket(packet);
+        EffectPacket packet = new EffectPacket(2001, blockPos, block.stateId(), false);
+        this.game.sendGroupedPacket(packet);
     }
 
     private boolean handlePowerUp(@Nullable PowerUp powerUp, @NotNull PlayerBlockPlaceEvent event) {
