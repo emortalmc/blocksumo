@@ -1,7 +1,9 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
+import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -13,7 +15,7 @@ public final class PlayerSpawnHandler {
     private final @NotNull BlockSumoGame game;
     private final @NotNull List<Pos> availableSpawns;
 
-    private final Set<Pos> usedSpawns = new HashSet<>();
+    private final @NotNull Set<Pos> allocatedSpawns = new HashSet<>();
 
     public PlayerSpawnHandler(@NotNull BlockSumoGame game, @NotNull List<Pos> availableSpawns) {
         this.game = game;
@@ -32,13 +34,11 @@ public final class PlayerSpawnHandler {
             }
 
             if (totalDistance > distanceHighscore) {
-                if (this.usedSpawns.contains(spawnPos)) continue;
                 distanceHighscore = totalDistance;
                 bestPos = spawnPos;
             }
         }
 
-        this.usedSpawns.add(bestPos);
         return bestPos;
     }
 
@@ -53,12 +53,21 @@ public final class PlayerSpawnHandler {
                 if (player.getTag(PlayerTags.DEAD)) continue;
                 totalDistance += player.getPosition().distanceSquared(spawnPos);
             }
+            for (Pos allocatedSpawn : allocatedSpawns) {
+                totalDistance += allocatedSpawn.distanceSquared(spawnPos);
+            }
 
             if (totalDistance > distanceHighscore) {
                 distanceHighscore = totalDistance;
                 bestPos = spawnPos;
             }
         }
+
+        allocatedSpawns.add(bestPos);
+        Pos finalBestPos = bestPos;
+        game.getSpawningInstance().scheduler().buildTask(() -> allocatedSpawns.remove(finalBestPos))
+                .delay(TaskSchedule.tick(MinecraftServer.TICK_PER_SECOND * 6))
+                .schedule();
 
         return bestPos;
     }
