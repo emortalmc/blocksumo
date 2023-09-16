@@ -3,11 +3,12 @@ package dev.emortal.minestom.blocksumo.map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import dev.emortal.minestom.blocksumo.utils.RandomStringGenerator;
 import dev.emortal.minestom.blocksumo.utils.gson.PosAdapter;
 import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class MapManager {
@@ -102,7 +104,8 @@ public final class MapManager {
     private record PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
 
         @NotNull LoadedMap load() {
-            Instance instance = MinecraftServer.getInstanceManager().createInstanceContainer(DIMENSION_TYPE, this.chunkLoader());
+            InstanceContainer instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, this.chunkLoader(), generateDimensionId());
+            MinecraftServer.getInstanceManager().registerInstance(instance);
 
 //            instance.enableAutoChunkLoad(false);
 //            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
@@ -112,6 +115,11 @@ public final class MapManager {
 //            }
 
             return new LoadedMap(instance, this.mapData());
+        }
+
+        private static @NotNull NamespaceID generateDimensionId() {
+            String randomValue = RandomStringGenerator.generate(16);
+            return NamespaceID.from("emortalmc", "dim_" + randomValue);
         }
     }
 }
