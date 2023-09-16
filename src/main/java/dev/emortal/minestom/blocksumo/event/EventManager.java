@@ -2,7 +2,6 @@ package dev.emortal.minestom.blocksumo.event;
 
 import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
 import dev.emortal.minestom.blocksumo.event.events.MapClearEvent;
-import dev.emortal.minestom.blocksumo.event.events.MotherloadEvent;
 import dev.emortal.minestom.blocksumo.event.events.TNTRainEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.sound.Sound;
@@ -31,7 +30,7 @@ public final class EventManager {
     public void registerDefaultEvents() {
         this.registry.registerEvent("TNT_RAIN", TNTRainEvent::new);
         this.registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
-        this.registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
+//        this.registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
     }
 
     public void startEvent(@NotNull BlockSumoEvent event) {
