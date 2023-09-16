@@ -17,8 +17,10 @@ import net.minestom.server.instance.batch.AbsoluteBlockBatch;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
 import net.minestom.server.network.packet.server.play.ExplosionPacket;
+import net.minestom.server.network.packet.server.play.HitAnimationPacket;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
+import net.minestom.server.utils.position.PositionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,6 +87,10 @@ public final class ExplosionManager {
 
             double distance = player.getPosition().distanceSquared(position);
             if (distance > forceDistance) continue;
+
+            Point direction = player.getPosition().sub(position);
+            float yaw = PositionUtils.getLookYaw(direction.x(), direction.z());
+            this.game.sendGroupedPacket(new HitAnimationPacket(player.getEntityId(), yaw));
 
             player.damage(DamageType.fromEntity(entity), 0);
             Vec newVelocity = player.getPosition()
