@@ -35,7 +35,6 @@ public final class MapManager {
 
     private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
             .skylightEnabled(true)
-            .ambientLight(1.0f)
             .build();
 
     private static final List<String> ENABLED_MAPS = List.of(
