@@ -1,6 +1,6 @@
 package dev.emortal.minestom.blocksumo.powerup.item;
 
-import dev.emortal.minestom.blocksumo.entity.NoDragEntity;
+import dev.emortal.minestom.blocksumo.entity.BetterEntityProjectile;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionData;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
@@ -44,7 +44,7 @@ public final class Fireball extends PowerUp {
         this.removeOneItemFromPlayer(player, hand);
 
         Entity fireball = this.shootFireball(player);
-        Vec originalVelocity = player.getPosition().direction().mul(20);
+        Vec originalVelocity = player.getPosition().direction().mul(30);
         fireball.setVelocity(originalVelocity);
 
         this.playShootingSound(player.getPosition());
@@ -72,12 +72,8 @@ public final class Fireball extends PowerUp {
     }
 
     private @NotNull Entity shootFireball(@NotNull Player shooter) {
-        Entity fireball = new NoDragEntity(EntityType.FIREBALL);
+        Entity fireball = new FireballEntity(shooter);
 
-        fireball.setNoGravity(true);
-        fireball.setTag(PowerUp.NAME, name);
-        fireball.setTag(SHOOTER, shooter.getUsername());
-        fireball.setBoundingBox(0.6, 0.6, 0.6);
         fireball.setInstance(this.game.getSpawningInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
 
         return fireball;
@@ -136,4 +132,29 @@ public final class Fireball extends PowerUp {
     public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
         this.onUse(player, hand);
     }
+
+    private class FireballEntity extends BetterEntityProjectile {
+
+        public FireballEntity(Player player) {
+            super(player, EntityType.FIREBALL);
+
+            setDrag(false);
+            setGravityDrag(false);
+            setNoGravity(true);
+            setBoundingBox(0.6, 0.6, 0.6);
+            setTag(PowerUp.NAME, name);
+            setTag(SHOOTER, shooter.getUsername());
+        }
+
+        @Override
+        public void collideBlock(Point pos) {
+            collide(this);
+        }
+
+        @Override
+        public void collidePlayer(Point pos, Player player) {
+            collide(this);
+        }
+    }
+
 }
