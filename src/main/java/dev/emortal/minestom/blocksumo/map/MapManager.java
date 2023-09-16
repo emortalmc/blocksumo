@@ -94,6 +94,16 @@ public final class MapManager {
         return map.load();
     }
 
+    public @Nullable MapData getMapData(@NotNull String id) {
+        PreLoadedMap map = this.preLoadedMaps.get(id);
+        if (map == null) {
+            LOGGER.warn("Map {} not ", id);
+            return null;
+        }
+
+        return map.mapData();
+    }
+
     public @NotNull LoadedMap getRandomMap() {
         String randomMapId = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 

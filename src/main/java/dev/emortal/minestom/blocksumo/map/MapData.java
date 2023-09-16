@@ -8,27 +8,26 @@ import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns) {
+public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, String credits) {
     public static final @NotNull Pos CENTER = new Pos(0.5, 65, 0.5);
 
     // Gson parser
     public static class Adapter implements JsonDeserializer<MapData> {
 
         @Override
-        public @NotNull MapData deserialize(@NotNull JsonElement element, @NotNull Type typeOfT,
-                                            @NotNull JsonDeserializationContext context) throws JsonParseException {
+        public MapData deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject json = element.getAsJsonObject();
 
             String name = json.get("name").getAsString();
             int time = json.get("time").getAsInt();
             int spawnRadius = json.get("spawnRadius").getAsInt();
+            String credits = json.get("credits").getAsString();
 
-            return new MapData(name, time, this.createSpawns(spawnRadius));
+            return new MapData(name, time, this.createSpawns(spawnRadius), credits);
         }
 
         private @NotNull Set<Pos> createSpawns(int spawnRadius) {
             Set<Pos> spawns = new HashSet<>();
-
             // radius is of a circle
             Pos previousPos = null;
             for (double i = 0; i <= 2 * Math.PI; i += 0.01) {

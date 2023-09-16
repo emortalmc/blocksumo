@@ -1,5 +1,6 @@
 {
   "name": "IceBS",
   "time": 0,
-  "spawnRadius": 14
+  "spawnRadius": 14,
+  "credits": "Snowfro"
 }

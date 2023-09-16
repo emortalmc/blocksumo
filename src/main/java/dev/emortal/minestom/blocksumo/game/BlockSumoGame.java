@@ -269,4 +269,8 @@ public class BlockSumoGame extends Game {
     public @NotNull SpawnProtectionManager getSpawnProtectionManager() {
         return this.spawnProtectionManager;
     }
+
+    public @NotNull MapData getMapData() {
+        return mapData;
+    }
 }
