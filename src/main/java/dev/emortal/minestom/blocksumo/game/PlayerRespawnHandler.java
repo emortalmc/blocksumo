@@ -49,10 +49,10 @@ public final class PlayerRespawnHandler {
     public Block prepareSpawn(@NotNull Pos pos) {
         Instance instance = this.game.getSpawningInstance();
 
-        Block replacedBlock = instance.getBlock(pos.sub(0, 1, 0));
-        instance.setBlock(pos.sub(0, 1, 0), Block.BEDROCK);
+        Block replacedBlock = instance.getBlock(pos.add(0, -1, 0));
+        instance.setBlock(pos.add(0, -1, 0), Block.BEDROCK);
+        instance.setBlock(pos, Block.AIR);
         instance.setBlock(pos.add(0, 1, 0), Block.AIR);
-        instance.setBlock(pos.add(0, 2, 0), Block.AIR);
 
         return replacedBlock;
     }
@@ -200,7 +200,7 @@ public final class PlayerRespawnHandler {
 
             Instance instance = this.game.getSpawningInstance();
             MinecraftServer.getSchedulerManager()
-                    .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock))
+                    .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock.isAir() ? Block.WHITE_WOOL : replacedBlock))
                     .delay(restoreDelay, ChronoUnit.SECONDS)
                     .schedule();
 
