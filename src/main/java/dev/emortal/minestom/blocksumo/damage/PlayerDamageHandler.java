@@ -2,7 +2,6 @@ package dev.emortal.minestom.blocksumo.damage;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
-import dev.emortal.minestom.blocksumo.game.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.blocksumo.utils.KnockbackUtil;

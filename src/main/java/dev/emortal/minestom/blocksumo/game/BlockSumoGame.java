@@ -5,6 +5,9 @@ import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
+import dev.emortal.minestom.blocksumo.spawning.InitialSpawnPointSelector;
+import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.MinestomGameServer;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
@@ -56,7 +59,7 @@ public class BlockSumoGame extends Game {
     private final @NotNull PlayerDisconnectHandler disconnectHandler;
     private final @NotNull EventManager eventManager;
     private final @NotNull PowerUpManager powerUpManager;
-    private final @NotNull PlayerSpawnHandler spawnHandler;
+    private final @NotNull InitialSpawnPointSelector initialSpawnPointSelector;
     private final @NotNull ExplosionManager explosionManager;
     private final @NotNull Instance instance;
     private final @NotNull MapData mapData;
@@ -68,7 +71,9 @@ public class BlockSumoGame extends Game {
         this.instance = map.instance();
         this.mapData = map.mapData();
 
-        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this);
+        List<Pos> mapSpawns = List.copyOf(this.mapData.spawns());
+        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, mapSpawns);
+
         this.playerManager = new PlayerManager(this, respawnHandler, 49);
         this.spawnProtectionManager = new SpawnProtectionManager();
         this.disconnectHandler = new PlayerDisconnectHandler(this, this.playerManager, respawnHandler, this.spawnProtectionManager);
@@ -78,7 +83,7 @@ public class BlockSumoGame extends Game {
 
         this.powerUpManager = new PowerUpManager(this);
         this.powerUpManager.registerDefaultPowerUps();
-        this.spawnHandler = new PlayerSpawnHandler(this, List.copyOf(this.mapData.spawns()));
+        this.initialSpawnPointSelector = new InitialSpawnPointSelector(mapSpawns);
         this.explosionManager = new ExplosionManager(this);
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
@@ -95,7 +100,7 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void onJoin(@NotNull Player player) {
-        player.setRespawnPoint(this.spawnHandler.getBestSpawn());
+        player.setRespawnPoint(this.initialSpawnPointSelector.select());
         player.setAutoViewable(true);
         this.playerManager.addInitialTags(player);
     }
@@ -256,10 +261,6 @@ public class BlockSumoGame extends Game {
 
     public @NotNull PowerUpManager getPowerUpManager() {
         return this.powerUpManager;
-    }
-
-    public @NotNull PlayerSpawnHandler getSpawnHandler() {
-        return this.spawnHandler;
     }
 
     public @NotNull ExplosionManager getExplosionManager() {

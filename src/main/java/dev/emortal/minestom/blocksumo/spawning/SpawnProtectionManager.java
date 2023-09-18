@@ -1,5 +1,6 @@
-package dev.emortal.minestom.blocksumo.game;
+package dev.emortal.minestom.blocksumo.spawning;
 
+import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;

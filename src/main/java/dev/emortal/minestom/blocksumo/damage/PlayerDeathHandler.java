@@ -2,7 +2,7 @@ package dev.emortal.minestom.blocksumo.damage;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
-import dev.emortal.minestom.blocksumo.game.PlayerRespawnHandler;
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
@@ -22,7 +22,6 @@ import net.minestom.server.entity.damage.EntityProjectileDamage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerTickEvent;
-import net.minestom.server.scoreboard.Sidebar;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

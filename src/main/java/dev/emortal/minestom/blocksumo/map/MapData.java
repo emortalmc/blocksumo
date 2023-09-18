@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, String credits) {
@@ -27,7 +28,9 @@ public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, 
         }
 
         private @NotNull Set<Pos> createSpawns(int spawnRadius) {
-            Set<Pos> spawns = new HashSet<>();
+            // Preserve ordering with LinkedHashSet so spawns align to corners
+            Set<Pos> spawns = new LinkedHashSet<>();
+
             // radius is of a circle
             Pos previousPos = null;
             for (double i = 0; i <= 2 * Math.PI; i += 0.01) {

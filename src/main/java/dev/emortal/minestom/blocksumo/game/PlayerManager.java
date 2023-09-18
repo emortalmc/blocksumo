@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.damage.PlayerDamageHandler;
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;

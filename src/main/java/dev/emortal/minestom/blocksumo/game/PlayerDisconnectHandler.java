@@ -1,5 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
+import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

@@ -1,5 +1,8 @@
-package dev.emortal.minestom.blocksumo.game;
+package dev.emortal.minestom.blocksumo.spawning;
 
+import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -26,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,15 +38,17 @@ import java.util.function.Supplier;
 public final class PlayerRespawnHandler {
 
     private final @NotNull BlockSumoGame game;
+    private final @NotNull RespawnPointSelector respawnPointSelector;
 
     private final Map<UUID, Task> respawnTasks = new ConcurrentHashMap<>();
 
-    public PlayerRespawnHandler(@NotNull BlockSumoGame game) {
+    public PlayerRespawnHandler(@NotNull BlockSumoGame game, @NotNull List<Pos> spawns) {
         this.game = game;
+        this.respawnPointSelector = new RespawnPointSelector(game, spawns);
     }
 
     public void scheduleRespawn(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
-        RespawnTask task = new RespawnTask(this.game, player, afterRespawnAction);
+        RespawnTask task = new RespawnTask(player, afterRespawnAction);
         this.respawnTasks.put(player.getUuid(), player.scheduler().submitTask(task));
     }
 
@@ -71,14 +77,12 @@ public final class PlayerRespawnHandler {
 
     private final class RespawnTask implements Supplier<TaskSchedule> {
 
-        private final @NotNull BlockSumoGame game;
         private final @NotNull Player player;
         private final @NotNull Runnable afterRespawnAction;
 
         private int i = 4;
 
-        RespawnTask(@NotNull BlockSumoGame game, @NotNull Player player, @NotNull Runnable afterRespawnAction) {
-            this.game = game;
+        RespawnTask(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
             this.player = player;
             this.afterRespawnAction = afterRespawnAction;
         }
@@ -120,7 +124,7 @@ public final class PlayerRespawnHandler {
         }
 
         private void respawn() {
-            Pos respawnPos = this.game.getSpawnHandler().getBestRespawn();
+            Pos respawnPos = PlayerRespawnHandler.this.respawnPointSelector.select();
 
             this.player.teleport(respawnPos).thenRun(() -> {
                 this.reset();
@@ -132,7 +136,7 @@ public final class PlayerRespawnHandler {
             this.player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
             this.player.setCanPickupItem(true);
 
-            this.game.getSpawnProtectionManager().startProtection(this.player, 4000);
+            PlayerRespawnHandler.this.game.getSpawnProtectionManager().startProtection(this.player, 4000);
 
             this.prepareRespawn(respawnPos, 5);
             this.giveWoolAndShears();
@@ -198,7 +202,7 @@ public final class PlayerRespawnHandler {
         private void prepareRespawn(@NotNull Pos pos, int restoreDelay) {
             Block replacedBlock = PlayerRespawnHandler.this.prepareSpawn(pos);
 
-            Instance instance = this.game.getSpawningInstance();
+            Instance instance = PlayerRespawnHandler.this.game.getSpawningInstance();
             MinecraftServer.getSchedulerManager()
                     .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock.isAir() ? Block.WHITE_WOOL : replacedBlock))
                     .delay(restoreDelay, ChronoUnit.SECONDS)
