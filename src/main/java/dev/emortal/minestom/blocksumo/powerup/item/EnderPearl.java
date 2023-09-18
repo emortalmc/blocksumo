@@ -35,7 +35,7 @@ public final class EnderPearl extends PowerUp {
     private void shootProjectile(@NotNull Player thrower) {
         EntityProjectile pearl = new EntityProjectile(thrower, EntityType.ENDER_PEARL);
 
-        pearl.setTag(PowerUp.NAME, name);
+        pearl.setTag(PowerUp.NAME, super.name);
         pearl.setBoundingBox(0.1, 0.1, 0.1);
         pearl.setVelocity(thrower.getPosition().direction().mul(35.0));
         pearl.setGravity(0.04, 0.04);

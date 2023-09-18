@@ -3,6 +3,7 @@ package dev.emortal.minestom.blocksumo.entity;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.collision.CollisionUtils;
 import net.minestom.server.collision.PhysicsResult;
+import net.minestom.server.collision.Shape;
 import net.minestom.server.collision.ShapeImpl;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -19,33 +20,32 @@ import org.jetbrains.annotations.Nullable;
 
 public class BetterEntityProjectile extends LivingEntity {
 
-    private long cooldown = 0;
-    protected final Player shooter;
-    private boolean ticking = true;
+    protected final @Nullable Player shooter;
+
     private boolean hasDrag = true;
     private boolean hasGravityDrag = true;
-
 
     public BetterEntityProjectile(@Nullable Player shooter, @NotNull EntityType entityType) {
         super(entityType);
 
         this.shooter = shooter;
-        this.hasPhysics = false;
+        super.hasPhysics = false;
     }
 
-    public void collidePlayer(Point pos, Player player) {
+    public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
     }
 
-    public void collideBlock(Point pos) {
+    public void collideBlock(@NotNull Point pos) {
     }
 
     @Override
     protected void updateVelocity(boolean wasOnGround, boolean flying, Pos positionBeforeMove, Vec newVelocity) {
-        EntitySpawnType type = entityType.registry().spawnType();
-        final double airDrag = type == EntitySpawnType.LIVING || type == EntitySpawnType.PLAYER ? 0.91 : 0.98;
+        EntitySpawnType type = super.entityType.registry().spawnType();
+        double airDrag = type == EntitySpawnType.LIVING || type == EntitySpawnType.PLAYER ? 0.91 : 0.98;
+
         double drag;
         if (wasOnGround) {
-            final Chunk chunk = ChunkUtils.retrieve(instance, currentChunk, position);
+            Chunk chunk = ChunkUtils.retrieve(super.instance, super.currentChunk, super.position);
             synchronized (chunk) {
                 drag = chunk.getBlock(positionBeforeMove.sub(0, 0.5000001, 0)).registry().friction() * airDrag;
             }
@@ -53,22 +53,22 @@ public class BetterEntityProjectile extends LivingEntity {
             drag = airDrag;
         }
 
-        double gravity = flying ? 0 : gravityAcceleration;
+        double gravity = flying ? 0 : super.gravityAcceleration;
         double gravityDrag;
 
-        if (!hasGravityDrag) {
+        if (!this.hasGravityDrag) {
             gravityDrag = 1.0;
         } else {
-            gravityDrag = flying ? 0.6 : (1 - gravityDragPerTick);
+            gravityDrag = flying ? 0.6 : (1 - super.gravityDragPerTick);
         }
-        if (!hasDrag) drag = 1.0;
+        if (!this.hasDrag) drag = 1.0;
 
         double finalDrag = drag;
-        this.velocity = newVelocity
+        super.velocity = newVelocity
                 // Apply gravity and drag
                 .apply((x, y, z) -> new Vec(
                         x * finalDrag,
-                        !hasNoGravity() ? (y - gravity) * gravityDrag : y,
+                        !super.hasNoGravity() ? (y - gravity) * gravityDrag : y,
                         z * finalDrag
                 ))
                 // Convert from block/tick to block/sec
@@ -79,14 +79,14 @@ public class BetterEntityProjectile extends LivingEntity {
 
     @Override
     public void tick(long time) {
-        final Pos posBefore = getPosition();
+        Pos posBefore = super.getPosition();
         super.tick(time);
-        final Pos posNow = getPosition();
+        Pos posNow = super.getPosition();
 
         Vec diff = Vec.fromPoint(posNow.sub(posBefore));
         PhysicsResult result = CollisionUtils.handlePhysics(
-                instance, this.getChunk(),
-                this.getBoundingBox(),
+                super.instance, super.getChunk(),
+                super.getBoundingBox(),
                 posBefore, diff,
                 null, true
         );
@@ -98,10 +98,13 @@ public class BetterEntityProjectile extends LivingEntity {
 //            cooldown = System.currentTimeMillis();
 //        }
 
-        PhysicsResult collided = CollisionUtils.checkEntityCollisions(instance, this.getBoundingBox(), posBefore, diff, 3, (e) -> e instanceof Player && e != shooter, result);
-        if (collided != null && collided.collisionShapes()[0] != shooter) {
-            if (collided.collisionShapes()[0] instanceof Player player) {
-                collidePlayer(collided.newPosition(), player);
+        PhysicsResult collided = CollisionUtils.checkEntityCollisions(super.instance, super.getBoundingBox(), posBefore, diff, 3,
+                entity -> entity instanceof Player && entity != this.shooter, result);
+
+        Shape shape = collided != null ? collided.collisionShapes()[0] : null;
+        if (collided != null && shape != this.shooter) {
+            if (shape instanceof Player player) {
+                this.collidePlayer(collided.newPosition(), player);
 
 //                var e = new ProjectileCollideWithEntityEvent(this, collided.newPosition(), player);
 //                MinecraftServer.getGlobalEventHandler().call(e);
@@ -110,24 +113,27 @@ public class BetterEntityProjectile extends LivingEntity {
         }
 
         if (result.hasCollision()) {
+            Shape[] shapes = result.collisionShapes();
+            Point[] points = result.collisionPoints();
+
             Block hitBlock = null;
             Point hitPoint = null;
-            if (result.collisionShapes()[0] instanceof ShapeImpl block) {
+            if (shapes[0] instanceof ShapeImpl block) {
                 hitBlock = block.block();
-                hitPoint = result.collisionPoints()[0];
+                hitPoint = points[0];
             }
-            if (result.collisionShapes()[1] instanceof ShapeImpl block) {
+            if (shapes[1] instanceof ShapeImpl block) {
                 hitBlock = block.block();
-                hitPoint = result.collisionPoints()[1];
+                hitPoint = points[1];
             }
-            if (result.collisionShapes()[2] instanceof ShapeImpl block) {
+            if (shapes[2] instanceof ShapeImpl block) {
                 hitBlock = block.block();
-                hitPoint = result.collisionPoints()[2];
+                hitPoint = points[2];
             }
 
             if (hitBlock == null) return;
 
-            collideBlock(hitPoint);
+            this.collideBlock(hitPoint);
 
 //            var e = new ProjectileCollideWithBlockEvent(this, Pos.fromPoint(hitPoint), hitBlock);
 //            MinecraftServer.getGlobalEventHandler().call(e);
@@ -138,23 +144,7 @@ public class BetterEntityProjectile extends LivingEntity {
         this.hasDrag = drag;
     }
 
-    public boolean hasDrag(boolean drag) {
-        return this.hasDrag;
-    }
-
     public void setGravityDrag(boolean drag) {
         this.hasGravityDrag = drag;
-    }
-
-    public boolean hasGravityDrag(boolean drag) {
-        return this.hasGravityDrag;
-    }
-
-    public void setTicking(boolean ticking) {
-        this.ticking = ticking;
-    }
-
-    public boolean isTicking() {
-        return this.ticking;
     }
 }

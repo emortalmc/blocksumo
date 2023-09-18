@@ -22,9 +22,11 @@ public final class SpawnProtectionManager {
     }
 
     private long getProtectionTime(@NotNull Player player) {
-        long time = player.getTag(PlayerTags.SPAWN_PROTECTION_TIME);
-        if (time == 0 || System.currentTimeMillis() > time) return 0;
-        return time - System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+        long start = player.getTag(PlayerTags.SPAWN_PROTECTION_TIME);
+
+        if (start == 0 || now > start) return 0;
+        return start - now;
     }
 
     private void setProtectionTime(@NotNull Player player, long time) {
@@ -34,7 +36,8 @@ public final class SpawnProtectionManager {
 
     public void startProtection(@NotNull Player player, long time) {
         this.setProtectionTime(player, time);
-        Task task = player.scheduler().buildTask(() -> playProtectionEndSound(player))
+        Task task = player.scheduler()
+                .buildTask(() -> this.playProtectionEndSound(player))
                 .delay(TaskSchedule.millis(time))
                 .schedule();
         this.protectionIndicatorTasks.put(player.getUuid(), task);

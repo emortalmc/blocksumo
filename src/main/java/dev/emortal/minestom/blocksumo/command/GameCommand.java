@@ -14,6 +14,7 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentLiteral;
 import net.minestom.server.command.builder.arguments.ArgumentWord;
+import net.minestom.server.command.builder.condition.Conditions;
 import net.minestom.server.command.builder.suggestion.Suggestion;
 import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
@@ -28,12 +29,12 @@ public final class GameCommand extends Command {
         super("game");
         this.gameProvider = gameProvider;
 
-        this.setCondition((sender, commandString) -> sender.hasPermission("command.game.blocksumo"));
+        this.setCondition((sender, cmd) -> Conditions.playerOnly(sender, cmd) && sender.hasPermission("command.game.blocksumo"));
 
         ArgumentLiteral start = new ArgumentLiteral("start");
         ArgumentLiteral event = new ArgumentLiteral("event");
         ArgumentWord eventType = new ArgumentWord("eventType");
-        eventType.setSuggestionCallback((sender, context, suggestion) -> suggestEvents(sender, suggestion));
+        eventType.setSuggestionCallback((sender, context, suggestion) -> this.suggestEvents(sender, suggestion));
 
         this.addSyntax(this::executeStartEvent, start, event);
         this.addSyntax(this::executeStartEvent, start, event, eventType);
@@ -41,19 +42,14 @@ public final class GameCommand extends Command {
         ArgumentLiteral give = new ArgumentLiteral("give");
         ArgumentLiteral powerup = new ArgumentLiteral("powerup");
         ArgumentWord powerUpType = new ArgumentWord("powerUpType");
-        powerUpType.setSuggestionCallback((sender, context, suggestion) -> suggestPowerUps(sender, suggestion));
+        powerUpType.setSuggestionCallback((sender, context, suggestion) -> this.suggestPowerUps(sender, suggestion));
 
         this.addSyntax(this::executeGivePowerUp, give, powerup);
         this.addSyntax(this::executeGivePowerUp, give, powerup, powerUpType);
     }
 
     private @Nullable BlockSumoGame getGame(@NotNull CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("You must be a player to use this command!");
-            return null;
-        }
-
-        Game game = this.gameProvider.findGame(player);
+        Game game = this.gameProvider.findGame((Player) sender);
         if (game == null) {
             sender.sendMessage("You are not in a game!");
             return null;
@@ -104,8 +100,7 @@ public final class GameCommand extends Command {
     }
 
     private void executeGivePowerUp(@NotNull CommandSender sender, @NotNull CommandContext context) {
-        Player player = (Player) sender;
-        BlockSumoGame game = getGame(sender);
+        BlockSumoGame game = this.getGame(sender);
         if (game == null) return;
 
         String powerUpName = context.has("powerUpType") ? context.get("powerUpType") : null;
@@ -122,7 +117,7 @@ public final class GameCommand extends Command {
             powerUp = powerUpManager.findRandomPowerUp();
         }
 
-        powerUpManager.givePowerUp(player, powerUp);
+        powerUpManager.givePowerUp((Player) sender, powerUp);
         sender.sendMessage(Component.text("Give power up " + powerUp.getName() + "!", NamedTextColor.GREEN));
     }
 }

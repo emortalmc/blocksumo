@@ -4,10 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import dev.emortal.minestom.blocksumo.utils.RandomStringGenerator;
-import dev.emortal.minestom.blocksumo.utils.gson.PosAdapter;
 import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
@@ -28,10 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public final class MapManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MapManager.class);
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(MapData.class, new MapData.Adapter())
-            .registerTypeAdapter(Pos.class, new PosAdapter())
-            .create();
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(MapData.class, new MapData.Adapter()).create();
 
     private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
             .skylightEnabled(true)

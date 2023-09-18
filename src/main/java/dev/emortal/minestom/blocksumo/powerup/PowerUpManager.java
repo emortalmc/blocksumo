@@ -88,7 +88,11 @@ public final class PowerUpManager {
 
         if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
         target.setTag(PlayerTags.CAN_BE_HIT, false);
-        target.scheduler().buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
+
+        target.scheduler()
+                .buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true))
+                .delay(TaskSchedule.tick(10))
+                .schedule();
 
         target.damage(DamageType.fromPlayer(shooter), 0);
         HitAnimationPacket hitAnimationPacket = new HitAnimationPacket(target.getEntityId(), entity.getPosition().yaw());
@@ -111,8 +115,8 @@ public final class PowerUpManager {
         this.registry.registerPowerUp(new Slimeball(this.game));
         this.registry.registerPowerUp(new Snowball(this.game));
         this.registry.registerPowerUp(new EnderPearl(this.game));
-        this.registry.registerPowerUp(new TNT(this.game));
-        this.registry.registerPowerUp(new AntiGravityTNT(this.game));
+        this.registry.registerPowerUp(new Tnt(this.game));
+        this.registry.registerPowerUp(new AntiGravityTnt(this.game));
         this.registry.registerPowerUp(new KnockbackStick(this.game));
         this.registry.registerPowerUp(new Fireball(this.game));
         this.registry.registerPowerUp(new Switcheroo(this.game));

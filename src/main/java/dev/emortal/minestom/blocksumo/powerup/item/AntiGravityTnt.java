@@ -18,13 +18,13 @@ import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
-public final class AntiGravityTNT extends PowerUp {
+public final class AntiGravityTnt extends PowerUp {
     private static final Component NAME = Component.text("Anti-Gravity TNT", NamedTextColor.AQUA);
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.CYAN_CONCRETE_POWDER, NAME, ItemRarity.UNCOMMON);
 
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 35, 5.5, true);
 
-    public AntiGravityTNT(@NotNull BlockSumoGame game) {
+    public AntiGravityTnt(@NotNull BlockSumoGame game) {
         super(game, "anti_gravity_tnt", ITEM_INFO, SpawnLocation.ANYWHERE);
     }
 

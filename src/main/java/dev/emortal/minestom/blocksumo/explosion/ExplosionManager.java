@@ -41,6 +41,7 @@ public final class ExplosionManager {
 
     public @NotNull Entity spawnTnt(@NotNull Point origin, int fuseTime, @NotNull ExplosionData data, @Nullable Player placer) {
         Entity tnt = new Entity(EntityType.TNT);
+
         PrimedTntMeta meta = (PrimedTntMeta) tnt.getEntityMeta();
         meta.setFuseTime(fuseTime);
 

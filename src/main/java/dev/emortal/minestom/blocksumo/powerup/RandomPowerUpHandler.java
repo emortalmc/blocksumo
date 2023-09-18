@@ -74,8 +74,8 @@ public final class RandomPowerUpHandler {
 
     private void spawnRandomCenterPowerUp() {
         ItemStack powerUp = this.powerUpManager.findRandomPowerUp(SpawnLocation.CENTER).createItemStack();
-
         ItemEntity entity = new ItemEntity(powerUp);
+
         ItemEntityMeta meta = entity.getEntityMeta();
         meta.setItem(powerUp);
         meta.setCustomName(powerUp.getDisplayName());

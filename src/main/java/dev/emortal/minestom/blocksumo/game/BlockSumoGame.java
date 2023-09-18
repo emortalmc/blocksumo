@@ -61,17 +61,15 @@ public class BlockSumoGame extends Game {
     private final @NotNull PowerUpManager powerUpManager;
     private final @NotNull InitialSpawnPointSelector initialSpawnPointSelector;
     private final @NotNull ExplosionManager explosionManager;
-    private final @NotNull Instance instance;
-    private final @NotNull MapData mapData;
+    private final @NotNull LoadedMap map;
 
     private @Nullable Task countdownTask;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map) {
         super(creationInfo);
-        this.instance = map.instance();
-        this.mapData = map.mapData();
+        this.map = map;
 
-        List<Pos> mapSpawns = List.copyOf(this.mapData.spawns());
+        List<Pos> mapSpawns = List.copyOf(this.map.data().spawns());
         PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, mapSpawns);
 
         this.playerManager = new PlayerManager(this, respawnHandler, 49);
@@ -126,7 +124,7 @@ public class BlockSumoGame extends Game {
         };
 
         Set<ServerPacket> packets = new HashSet<>();
-        for (Pos spawn : this.mapData.spawns()) {
+        for (Pos spawn : this.map.data().spawns()) {
             ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
                     spawn.x(), spawn.y(), spawn.z(),
                     0, 0, 0,
@@ -141,11 +139,11 @@ public class BlockSumoGame extends Game {
     public void start() {
         this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
-        this.countdownTask = this.instance.scheduler().submitTask(new Supplier<>() {
+        this.countdownTask = this.map.instance().scheduler().submitTask(new Supplier<>() {
             int i = 3;
 
             @Override
-            public TaskSchedule get() {
+            public @NotNull TaskSchedule get() {
                 if (this.i == 0) {
                     BlockSumoGame.this.showGameStartTitle();
                     BlockSumoGame.this.startGame();
@@ -193,7 +191,7 @@ public class BlockSumoGame extends Game {
     }
 
     private void removeLockingEntities() {
-        for (Entity entity : this.instance.getEntities()) {
+        for (Entity entity : this.map.instance().getEntities()) {
             if (entity.getEntityType() == EntityType.AREA_EFFECT_CLOUD) entity.remove();
         }
     }
@@ -214,7 +212,7 @@ public class BlockSumoGame extends Game {
 
     private void setSpawnBlockToWool(@NotNull Player player) {
         Pos pos = player.getPosition();
-        this.instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
+        this.map.instance().setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), Block.WHITE_WOOL);
     }
 
     public void cancelCountdown() {
@@ -241,18 +239,18 @@ public class BlockSumoGame extends Game {
             }
         }
 
-        this.instance.scheduler().buildTask(this::finish).delay(TaskSchedule.seconds(6)).schedule();
+        this.map.instance().scheduler().buildTask(this::finish).delay(TaskSchedule.seconds(6)).schedule();
     }
 
     @Override
     public void cleanUp() {
-        this.instance.scheduleNextTick(MinecraftServer.getInstanceManager()::unregisterInstance);
+        this.map.instance().scheduleNextTick(MinecraftServer.getInstanceManager()::unregisterInstance);
         this.playerManager.cleanUp();
     }
 
     @Override
     public @NotNull Instance getSpawningInstance() {
-        return this.instance;
+        return this.map.instance();
     }
 
     public @NotNull EventManager getEventManager() {
@@ -271,7 +269,7 @@ public class BlockSumoGame extends Game {
         return this.spawnProtectionManager;
     }
 
-    public @NotNull MapData getMapData() {
-        return mapData;
+    public @NotNull MapData mapData() {
+        return this.map.data();
     }
 }

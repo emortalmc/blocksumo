@@ -13,13 +13,13 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
-public final class TNT extends PowerUp {
+public final class Tnt extends PowerUp {
     private static final Component NAME = Component.text("TNT", NamedTextColor.RED);
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.TNT, NAME, ItemRarity.COMMON);
 
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 35, 5.5, true);
 
-    public TNT(@NotNull BlockSumoGame game) {
+    public Tnt(@NotNull BlockSumoGame game) {
         super(game, "tnt", ITEM_INFO, SpawnLocation.ANYWHERE);
     }
 

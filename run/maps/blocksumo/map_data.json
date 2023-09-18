@@ -2,5 +2,8 @@
   "name": "BlockSumo",
   "time": 0,
   "spawnRadius": 14,
-  "credits": "emortaldev\niternalplayer"
+  "credits": [
+    "emortaldev",
+    "iternalplayer"
+  ]
 }

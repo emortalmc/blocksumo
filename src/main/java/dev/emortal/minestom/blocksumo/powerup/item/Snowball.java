@@ -37,7 +37,7 @@ public final class Snowball extends PowerUp {
     private void shootProjectile(@NotNull Player thrower) {
         EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
 
-        snowball.setTag(PowerUp.NAME, name);
+        snowball.setTag(PowerUp.NAME, super.name);
         snowball.setBoundingBox(0.1, 0.1, 0.1);
         snowball.setVelocity(thrower.getPosition().direction().mul(30.0));
 

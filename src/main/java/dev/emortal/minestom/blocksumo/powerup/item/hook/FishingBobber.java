@@ -50,8 +50,8 @@ final class FishingBobber extends EntityProjectile {
         return false;
     }
 
-    @Nullable Player getHooked() {
-        return this.hooked;
+    boolean hasHooked() {
+        return this.hooked != null;
     }
 
     void setHooked(@Nullable Player hooked) {
@@ -64,6 +64,6 @@ final class FishingBobber extends EntityProjectile {
     }
 
     private @NotNull FishingHookMeta meta() {
-        return (FishingHookMeta) this.entityMeta;
+        return (FishingHookMeta) super.entityMeta;
     }
 }

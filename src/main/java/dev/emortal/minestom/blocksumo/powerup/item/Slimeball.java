@@ -47,7 +47,7 @@ public final class Slimeball extends PowerUp {
         EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
         ((SnowballMeta) snowball.getEntityMeta()).setItem(SLIME_ITEM);
 
-        snowball.setTag(PowerUp.NAME, name);
+        snowball.setTag(PowerUp.NAME, super.name);
         snowball.setTag(POSITION_X_TAG, thrower.getPosition().x());
         snowball.setTag(POSITION_Y_TAG, thrower.getPosition().y());
         snowball.setTag(POSITION_Z_TAG, thrower.getPosition().z());

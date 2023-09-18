@@ -65,16 +65,15 @@ public final class PlayerBlockHandler {
             return;
         }
 
-        PowerUp heldPowerup = this.game.getPowerUpManager().getHeldPowerUp(player, event.getHand());
-
         if (!this.withinLegalRange(player, pos)) {
             event.setCancelled(true);
             return;
         }
 
+        PowerUp heldPowerUp = this.game.getPowerUpManager().getHeldPowerUp(player, event.getHand());
         // Handle powerups before height limit check. It can be aggravating
-        if (heldPowerup != null) {
-            this.handlePowerUp(heldPowerup, event);
+        if (heldPowerUp != null) {
+            this.handlePowerUp(heldPowerUp, event);
             return;
         }
 
@@ -93,8 +92,11 @@ public final class PlayerBlockHandler {
         Task removedTask = this.centerBlockBreakTasks.remove(event.getBlockPosition());
         if (removedTask != null) removedTask.cancel();
 
-        String blockName = event.getBlock().name().toLowerCase(Locale.ROOT);
-        if (!blockName.contains("wool")) event.setCancelled(true);
+        if (!this.isWool(event.getBlock())) event.setCancelled(true);
+    }
+
+    private boolean isWool(@NotNull Block block) {
+        return block.name().toLowerCase(Locale.ROOT).contains("wool");
     }
 
     private boolean nextToBarrier(@NotNull Point blockPos) {

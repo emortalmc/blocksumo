@@ -41,7 +41,7 @@ public final class GrapplingHook extends PowerUp {
     @Override
     public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
         FishingBobber bobber = (FishingBobber) entity;
-        if (bobber.getHooked() == null) {
+        if (!bobber.hasHooked()) {
             bobber.setHooked(target);
             this.bobberManager.setHooked(shooter, target);
         }

@@ -1,15 +1,19 @@
 package dev.emortal.minestom.blocksumo.map;
 
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import net.minestom.server.coordinate.Pos;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
-public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, String credits) {
+public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, @NotNull List<String> credits) {
     public static final @NotNull Pos CENTER = new Pos(0.5, 65, 0.5);
 
     // Gson parser
@@ -22,7 +26,7 @@ public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, 
             String name = json.get("name").getAsString();
             int time = json.get("time").getAsInt();
             int spawnRadius = json.get("spawnRadius").getAsInt();
-            String credits = json.get("credits").getAsString();
+            List<String> credits = context.deserialize(json.get("credits"), List.class);
 
             return new MapData(name, time, this.createSpawns(spawnRadius), credits);
         }

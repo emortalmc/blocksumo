@@ -2,5 +2,10 @@
   "name": "Castle",
   "time": 0,
   "spawnRadius": 14,
-  "credits": "purpleskittleo\n8bitbunnie\npuckslayer\nezshroom"
+  "credits": [
+    "purpleskittleo",
+    "8bitbunnie",
+    "puckslayer",
+    "ezshroom"
+  ]
 }

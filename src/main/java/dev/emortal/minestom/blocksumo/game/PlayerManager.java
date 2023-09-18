@@ -22,6 +22,10 @@ import net.minestom.server.scoreboard.Sidebar;
 import org.jetbrains.annotations.NotNull;
 
 public final class PlayerManager {
+    private static final Component SCOREBOARD_FOOTER = Component.text()
+            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
+            .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
+            .build();
 
     private final @NotNull BlockSumoGame game;
     private final @NotNull PlayerRespawnHandler respawnHandler;
@@ -73,8 +77,10 @@ public final class PlayerManager {
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
         this.respawnHandler.prepareSpawn(pos);
+        this.createLockingEntity(this.game.getSpawningInstance(), player, pos);
+    }
 
-        Instance instance = this.game.getSpawningInstance();
+    private void createLockingEntity(@NotNull Instance instance, @NotNull Player player, @NotNull Pos pos) {
         Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
         ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
         entity.setNoGravity(true);
@@ -92,14 +98,7 @@ public final class PlayerManager {
     public void setupWaitingScoreboard() {
         this.scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
         this.scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine(
-                "ipLine",
-                Component.text()
-                        .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
-                        .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
-                        .build(),
-                -9
-        ));
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine("ipLine", SCOREBOARD_FOOTER, -9));
     }
 
     private void selectTeam(@NotNull Player player) {

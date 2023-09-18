@@ -28,6 +28,8 @@ import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Supplier;
+
 public final class Fireball extends PowerUp {
     private static final Component NAME = Component.text("Fireball", NamedTextColor.GOLD);
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.FIRE_CHARGE, NAME, ItemRarity.COMMON);
@@ -49,26 +51,7 @@ public final class Fireball extends PowerUp {
 
         this.playShootingSound(player.getPosition());
 
-        fireball.scheduler().submitTask(() -> {
-            if (fireball.getAliveTicks() > 5L * MinecraftServer.TICK_PER_SECOND) {
-                fireball.remove();
-                return TaskSchedule.stop();
-            }
-
-            if (!fireball.getVelocity().sameBlock(originalVelocity)) {
-                this.collide(fireball);
-                return TaskSchedule.stop();
-            }
-
-            Player firstCollider = this.findFirstCollider(fireball, player);
-            if (firstCollider != null) {
-                this.collide(fireball);
-                return TaskSchedule.stop();
-            }
-
-            this.showCollisionParticle(fireball);
-            return TaskSchedule.nextTick();
-        });
+        fireball.scheduler().submitTask(new CleanupTask(fireball, player, originalVelocity));
     }
 
     private @NotNull Entity shootFireball(@NotNull Player shooter) {
@@ -99,25 +82,6 @@ public final class Fireball extends PowerUp {
         throw new IllegalStateException("Shooter " + shooterName + " not found!");
     }
 
-    private @Nullable Player findFirstCollider(@NotNull Entity fireball, @NotNull Player shooter) {
-        for (Player player : this.game.getPlayers()) {
-            if (player == shooter) continue;
-
-            Pos position = player.getPosition();
-            BoundingBox box = player.getBoundingBox();
-            if (box.intersectEntity(position, fireball)) return player;
-        }
-        return null;
-    }
-
-    private void showCollisionParticle(@NotNull Entity fireball) {
-        double posX = fireball.getPosition().x();
-        double posY = fireball.getPosition().y();
-        double posZ = fireball.getPosition().z();
-        ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
-        this.game.sendGroupedPacket(packet);
-    }
-
     @Override
     public void onUseOnBlock(@NotNull Player player, @NotNull Player.Hand hand) {
         this.onUse(player, hand);
@@ -133,7 +97,7 @@ public final class Fireball extends PowerUp {
         this.onUse(player, hand);
     }
 
-    private class FireballEntity extends BetterEntityProjectile {
+    private final class FireballEntity extends BetterEntityProjectile {
 
         public FireballEntity(Player player) {
             super(player, EntityType.FIREBALL);
@@ -142,19 +106,77 @@ public final class Fireball extends PowerUp {
             setGravityDrag(false);
             setNoGravity(true);
             setBoundingBox(0.6, 0.6, 0.6);
-            setTag(PowerUp.NAME, name);
-            setTag(SHOOTER, shooter.getUsername());
+            setTag(PowerUp.NAME, Fireball.super.name);
+            setTag(SHOOTER, super.shooter.getUsername());
         }
 
         @Override
-        public void collideBlock(Point pos) {
-            collide(this);
+        public void collideBlock(@NotNull Point pos) {
+            Fireball.this.collide(this);
         }
 
         @Override
-        public void collidePlayer(Point pos, Player player) {
-            collide(this);
+        public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
+            Fireball.this.collide(this);
         }
     }
 
+    private final class CleanupTask implements Supplier<TaskSchedule> {
+
+        private final @NotNull Entity fireball;
+        private final @NotNull Player shooter;
+        private final @NotNull Vec originalVelocity;
+
+        CleanupTask(@NotNull Entity fireball, @NotNull Player shooter, @NotNull Vec originalVelocity) {
+            this.fireball = fireball;
+            this.shooter = shooter;
+            this.originalVelocity = originalVelocity;
+        }
+
+        @Override
+        public @NotNull TaskSchedule get() {
+            if (this.fireball.getAliveTicks() > 5L * MinecraftServer.TICK_PER_SECOND) {
+                this.fireball.remove();
+                return TaskSchedule.stop();
+            }
+
+            if (this.hasChangedVelocity()) {
+                Fireball.this.collide(this.fireball);
+                return TaskSchedule.stop();
+            }
+
+            Player firstCollider = this.findFirstCollider(this.fireball, this.shooter);
+            if (firstCollider != null) {
+                Fireball.this.collide(fireball);
+                return TaskSchedule.stop();
+            }
+
+            this.showCollisionParticle(fireball);
+            return TaskSchedule.nextTick();
+        }
+
+        private boolean hasChangedVelocity() {
+            return !this.fireball.getVelocity().sameBlock(this.originalVelocity);
+        }
+
+        private @Nullable Player findFirstCollider(@NotNull Entity fireball, @NotNull Player shooter) {
+            for (Player player : Fireball.this.game.getPlayers()) {
+                if (player == shooter) continue;
+
+                Pos position = player.getPosition();
+                BoundingBox box = player.getBoundingBox();
+                if (box.intersectEntity(position, fireball)) return player;
+            }
+            return null;
+        }
+
+        private void showCollisionParticle(@NotNull Entity fireball) {
+            double posX = fireball.getPosition().x();
+            double posY = fireball.getPosition().y();
+            double posZ = fireball.getPosition().z();
+
+            ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
+            Fireball.this.game.sendGroupedPacket(packet);
+        }
+    }
 }
