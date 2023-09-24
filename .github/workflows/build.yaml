@@ -18,4 +18,5 @@ jobs:
     steps:
       - uses: "emortalmc/actions/k8s-sync@main"
         with:
-          manifest-path: "fleet.yaml"
+          deployment-name: "blocksumo"
+          values-path: "values/servers/blocksumo.yaml"
