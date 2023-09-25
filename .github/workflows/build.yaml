@@ -20,4 +20,4 @@ jobs:
         with:
           deployment-name: "blocksumo"
           values-path: "values/servers/blocksumo.yaml"
-          deployments-repo-token: "${{ secrets.DEPLOYMENT_REPO_TOKEN }}"
+          deployments-repo-token: "${{ secrets.DEPLOYMENTS_REPO_TOKEN }}"
