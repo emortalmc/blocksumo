@@ -14,9 +14,8 @@ jobs:
 
   deploy:
     needs: "build"
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: "emortalmc/actions/k8s-sync@main"
-        with:
-          deployment-name: "blocksumo"
-          values-path: "values/servers/blocksumo.yaml"
+    uses: "emortalmc/argocd-deployments/.github/workflows/sync.yaml@main"
+    with:
+      deployment-name: "blocksumo"
+      version: "${{ github.sha }}"
+      values-path: "values/servers/blocksumo.yaml"
