@@ -1,59 +1,53 @@
 package dev.emortal.minestom.blocksumo.spawning;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import dev.emortal.minestom.blocksumo.game.PlayerTags;
-import net.minestom.server.MinecraftServer;
+import dev.emortal.minestom.blocksumo.map.MapData;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 final class RespawnPointSelector {
+    private static final double TWO_PI = Math.PI * 2;
+    private static final double CHECK_OFFSET = TWO_PI / 150;
 
     private final @NotNull BlockSumoGame game;
-    private final @NotNull List<Pos> availableSpawns;
+    private final int spawnRadius;
 
-    private final @NotNull Set<Pos> allocatedSpawns = Collections.synchronizedSet(new HashSet<>());
-
-    RespawnPointSelector(@NotNull BlockSumoGame game, @NotNull List<Pos> availableSpawns) {
+    RespawnPointSelector(@NotNull BlockSumoGame game, int spawnRadius) {
         this.game = game;
-        this.availableSpawns = availableSpawns;
+        this.spawnRadius = spawnRadius;
     }
 
     public @NotNull Pos select() {
-        Pos bestPos = this.availableSpawns.get(0);
-        double distanceHighscore = Double.MIN_VALUE; // min value so total distance is above highscore on first iteration
+        double distanceHighscore = 0;
+        Pos bestPosition = Pos.ZERO;
 
-        for (Pos spawnPos : this.availableSpawns) {
-            double totalDistance = 0.0;
+        for (double i = 0.0; i < TWO_PI; i += CHECK_OFFSET) {
+            Pos pos = new Pos(Math.cos(i) * spawnRadius, 0, Math.sin(i) * spawnRadius);
 
-            for (Player player : this.game.getPlayers()) {
-                if (player.getTag(PlayerTags.DEAD)) continue;
-                totalDistance += player.getPosition().distanceSquared(spawnPos);
-            }
-
-            for (Pos allocatedSpawn : this.allocatedSpawns) {
-                totalDistance += allocatedSpawn.distanceSquared(spawnPos);
-            }
-
-            if (totalDistance > distanceHighscore) {
-                distanceHighscore = totalDistance;
-                bestPos = spawnPos;
+            double distanceToPlayers = sumOfPlayerDistances(pos);
+            if (distanceHighscore < distanceToPlayers) {
+                distanceHighscore = distanceToPlayers;
+                bestPosition = pos;
             }
         }
 
-        this.allocatedSpawns.add(bestPos);
-        Pos finalBestPos = bestPos;
-        this.game.getSpawningInstance().scheduler()
-                .buildTask(() -> this.allocatedSpawns.remove(finalBestPos))
-                .delay(TaskSchedule.tick(MinecraftServer.TICK_PER_SECOND * 6))
-                .schedule();
+        return MapData.CENTER.add(floorPos(bestPosition));
+    }
 
-        return bestPos;
+    private @NotNull Pos floorPos(Pos pos) {
+        return new Pos(pos.blockX(), pos.blockY(), pos.blockZ());
+    }
+
+    private double sumOfPlayerDistances(Point pos) {
+        double distance = 0;
+        for (Player player : game.getPlayers()) {
+            if (player.getGameMode() == GameMode.SPECTATOR) continue;
+
+            distance += player.getDistanceSquared(pos);
+        }
+        return distance;
     }
 }

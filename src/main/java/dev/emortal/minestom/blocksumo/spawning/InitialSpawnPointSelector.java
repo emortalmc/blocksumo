@@ -1,63 +1,42 @@
 package dev.emortal.minestom.blocksumo.spawning;
 
+import dev.emortal.minestom.blocksumo.map.MapData;
 import net.minestom.server.coordinate.Pos;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 public final class InitialSpawnPointSelector {
+    private static final double TWO_PI = Math.PI * 2;
 
-    private final @NotNull List<Pos> availableSpawns;
+    private final Queue<Pos> spawns;
 
-    private final Set<Pos> usedSpawns = new HashSet<>();
-
-    public InitialSpawnPointSelector(@NotNull List<Pos> availableSpawns) {
-        this.availableSpawns = availableSpawns;
+    public InitialSpawnPointSelector(int playerCount, int spawnRadius) {
+        this.spawns = this.generateSpawns(playerCount, spawnRadius);
     }
 
-    // We synchronize this to avoid all issues with multiple players joining at around the same time
-    public synchronized @NotNull Pos select() {
-        if (this.usedSpawns.isEmpty()) {
-            return this.firstPos();
-        }
-        if (this.usedSpawns.size() == 1) {
-            return this.secondPos();
-        }
+    private @NotNull Queue<Pos> generateSpawns(int playerCount, int spawnRadius) {
+        double playerOffset = TWO_PI / Math.max(playerCount, 1); // Fixes 0 player count on local testing
 
-        Pos bestPos = this.availableSpawns.get(0);
-        double distanceHighscore = Double.MIN_VALUE; // min value so total distance is above highscore on first iteration
+        Queue<Pos> spawns = new ArrayDeque<>();
+        for (int i = 0; i <= playerCount; i++) {
+            Pos pos = floorPos(new Pos(Math.cos(playerOffset * i) * spawnRadius, 0, Math.sin(playerOffset * i) * spawnRadius));
 
-        for (Pos spawnPos : this.availableSpawns) {
-            double totalDistance = 0.0;
-
-            for (Pos used : this.usedSpawns) {
-                totalDistance += used.distanceSquared(spawnPos);
-            }
-
-            if (totalDistance > distanceHighscore) {
-                distanceHighscore = totalDistance;
-                bestPos = spawnPos;
-            }
+            spawns.add(MapData.CENTER.add(pos));
         }
 
-        return this.useSpawn(bestPos);
+        return spawns;
     }
 
-    private @NotNull Pos firstPos() {
-        // For the first pos we always get the first spawn
-        return this.useSpawn(this.availableSpawns.get(0));
+    private @NotNull Pos floorPos(Pos pos) {
+        return new Pos(pos.blockX(), pos.blockY(), pos.blockZ());
     }
 
-    private @NotNull Pos secondPos() {
-        // For the second pos we always get the one in the middle of the list, which will always be opposite the first pos
-        int index = this.availableSpawns.size() / 2;
-        return this.useSpawn(this.availableSpawns.get(index));
+    public @NotNull Pos select() {
+        Pos spawn = this.spawns.poll();
+        if (spawn == null) return MapData.CENTER; // Happens during local testing
+        return spawn;
     }
 
-    private @NotNull Pos useSpawn(@NotNull Pos pos) {
-        this.usedSpawns.add(pos);
-        return pos;
-    }
 }

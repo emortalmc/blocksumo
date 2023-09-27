@@ -2,7 +2,6 @@ package dev.emortal.minestom.blocksumo.spawning;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
-import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.SoundStop;
@@ -28,8 +27,6 @@ import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,9 +39,9 @@ public final class PlayerRespawnHandler {
 
     private final Map<UUID, Task> respawnTasks = new ConcurrentHashMap<>();
 
-    public PlayerRespawnHandler(@NotNull BlockSumoGame game, @NotNull List<Pos> spawns) {
+    public PlayerRespawnHandler(@NotNull BlockSumoGame game, int spawnRadius) {
         this.game = game;
-        this.respawnPointSelector = new RespawnPointSelector(game, spawns);
+        this.respawnPointSelector = new RespawnPointSelector(game, spawnRadius);
     }
 
     public void scheduleRespawn(@NotNull Player player, @NotNull Runnable afterRespawnAction) {
@@ -205,10 +202,8 @@ public final class PlayerRespawnHandler {
             Instance instance = PlayerRespawnHandler.this.game.getSpawningInstance();
             MinecraftServer.getSchedulerManager()
                     .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock.isAir() ? Block.WHITE_WOOL : replacedBlock))
-                    .delay(restoreDelay, ChronoUnit.SECONDS)
+                    .delay(TaskSchedule.tick(restoreDelay * MinecraftServer.TICK_PER_SECOND))
                     .schedule();
-
-            // TODO: Spawn protection
         }
 
         private void giveWoolAndShears() {

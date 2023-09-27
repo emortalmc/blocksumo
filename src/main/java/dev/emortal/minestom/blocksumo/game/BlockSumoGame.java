@@ -5,11 +5,10 @@ import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
-import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.spawning.InitialSpawnPointSelector;
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
-import dev.emortal.minestom.gamesdk.MinestomGameServer;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
 import net.kyori.adventure.key.Key;
@@ -30,23 +29,14 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.metadata.LeatherArmorMeta;
-import net.minestom.server.network.packet.server.ServerPacket;
-import net.minestom.server.particle.Particle;
-import net.minestom.server.particle.ParticleCreator;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
-import net.minestom.server.utils.PacketUtils;
-import net.minestom.server.utils.binary.BinaryWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
@@ -69,8 +59,7 @@ public class BlockSumoGame extends Game {
         super(creationInfo);
         this.map = map;
 
-        List<Pos> mapSpawns = List.copyOf(this.map.data().spawns());
-        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, mapSpawns);
+        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, this.map.data().spawnRadius());
 
         this.playerManager = new PlayerManager(this, respawnHandler, 49);
         this.spawnProtectionManager = new SpawnProtectionManager();
@@ -81,19 +70,11 @@ public class BlockSumoGame extends Game {
 
         this.powerUpManager = new PowerUpManager(this);
         this.powerUpManager.registerDefaultPowerUps();
-        this.initialSpawnPointSelector = new InitialSpawnPointSelector(mapSpawns);
+        this.initialSpawnPointSelector = new InitialSpawnPointSelector(creationInfo.playerIds().size(), this.map.data().spawnRadius());
         this.explosionManager = new ExplosionManager(this);
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
         this.playerManager.setupWaitingScoreboard();
-
-        if (MinestomGameServer.TEST_MODE) {
-            MinecraftServer.getSchedulerManager()
-                    .buildTask(this::sendSpawnPacketsToPlayers)
-                    .delay(3, ChronoUnit.SECONDS)
-                    .repeat(1, ChronoUnit.SECONDS)
-                    .schedule();
-        }
     }
 
     @Override
@@ -106,33 +87,6 @@ public class BlockSumoGame extends Game {
     @Override
     public void onLeave(@NotNull Player player) {
         this.disconnectHandler.onDisconnect(player);
-    }
-
-    private void sendSpawnPacketsToPlayers() {
-        Set<ServerPacket> packets = this.createSpawnPackets();
-        for (ServerPacket packet : packets) {
-            PacketUtils.sendGroupedPacket(this.getPlayers(), packet);
-        }
-    }
-
-    private Set<ServerPacket> createSpawnPackets() {
-        Consumer<BinaryWriter> extraDataWriter = writer -> {
-            writer.writeFloat(1);
-            writer.writeFloat(0);
-            writer.writeFloat(0);
-            writer.writeFloat(1.5F);
-        };
-
-        Set<ServerPacket> packets = new HashSet<>();
-        for (Pos spawn : this.map.data().spawns()) {
-            ServerPacket packet = ParticleCreator.createParticlePacket(Particle.DUST, true,
-                    spawn.x(), spawn.y(), spawn.z(),
-                    0, 0, 0,
-                    0, 1, extraDataWriter);
-            packets.add(packet);
-        }
-
-        return packets;
     }
 
     @Override

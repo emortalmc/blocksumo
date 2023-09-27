@@ -1,19 +1,13 @@
 package dev.emortal.minestom.blocksumo.map;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import net.minestom.server.coordinate.Pos;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
-public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, @NotNull List<String> credits) {
+public record MapData(@NotNull String name, int time, int spawnRadius, @NotNull List<String> credits) {
     public static final @NotNull Pos CENTER = new Pos(0.5, 65, 0.5);
 
     // Gson parser
@@ -28,32 +22,8 @@ public record MapData(@NotNull String name, int time, @NotNull Set<Pos> spawns, 
             int spawnRadius = json.get("spawnRadius").getAsInt();
             List<String> credits = context.deserialize(json.get("credits"), List.class);
 
-            return new MapData(name, time, this.createSpawns(spawnRadius), credits);
+            return new MapData(name, time, spawnRadius, credits);
         }
 
-        private @NotNull Set<Pos> createSpawns(int spawnRadius) {
-            // Preserve ordering with LinkedHashSet so spawns align to corners
-            Set<Pos> spawns = new LinkedHashSet<>();
-
-            // radius is of a circle
-            Pos previousPos = null;
-            for (double i = 0; i <= 2 * Math.PI; i += 0.01) {
-                double c1 = spawnRadius * Math.cos(i);
-                double c2 = spawnRadius * Math.sin(i);
-
-                Pos pos = new Pos(CENTER.x() + c1, CENTER.y(), CENTER.z() + c2);
-                Pos blockPos = new Pos(pos.blockX(), pos.blockY(), pos.blockZ());
-                pos = blockPos.add(0.5, 0, 0.5)
-                        .withLookAt(CENTER)
-                        .withPitch(0);
-
-                if (pos.equals(previousPos)) continue;
-
-                spawns.add(pos);
-                previousPos = pos;
-            }
-
-            return spawns;
-        }
     }
 }
