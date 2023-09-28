@@ -8,10 +8,7 @@ import net.minestom.server.collision.ShapeImpl;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.EntitySpawnType;
-import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.LivingEntity;
-import net.minestom.server.entity.Player;
+import net.minestom.server.entity.*;
 import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.utils.chunk.ChunkUtils;
@@ -99,7 +96,7 @@ public class BetterEntityProjectile extends LivingEntity {
 //        }
 
         PhysicsResult collided = CollisionUtils.checkEntityCollisions(super.instance, super.getBoundingBox(), posBefore, diff, 3,
-                entity -> entity instanceof Player && entity != this.shooter, result);
+                entity -> entity instanceof Player player && player != this.shooter && player.getGameMode() != GameMode.SPECTATOR, result);
 
         Shape shape = collided != null ? collided.collisionShapes()[0] : null;
         if (collided != null && shape != this.shooter) {
