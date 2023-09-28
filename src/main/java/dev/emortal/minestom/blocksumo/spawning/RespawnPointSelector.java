@@ -6,7 +6,11 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 final class RespawnPointSelector {
     private static final double TWO_PI = Math.PI * 2;
@@ -14,10 +18,12 @@ final class RespawnPointSelector {
 
     private final @NotNull BlockSumoGame game;
     private final int spawnRadius;
+    private final @NotNull Set<Point> queuedPoints;
 
     RespawnPointSelector(@NotNull BlockSumoGame game, int spawnRadius) {
         this.game = game;
         this.spawnRadius = spawnRadius;
+        this.queuedPoints = new HashSet<>();
     }
 
     public @NotNull Pos select() {
@@ -39,6 +45,9 @@ final class RespawnPointSelector {
 
         pos = pos.withDirection(direction);
 
+        queuedPoints.add(pos);
+        removeQueuedPointAfterDelay(pos);
+
         return MapData.CENTER.add(pos);
     }
 
@@ -53,6 +62,15 @@ final class RespawnPointSelector {
 
             distance += player.getDistanceSquared(pos);
         }
+        for (Point queuedPoint : queuedPoints) {
+            distance += queuedPoint.distanceSquared(pos);
+        }
         return distance;
+    }
+
+    private void removeQueuedPointAfterDelay(Pos queuedPoint) {
+        game.getSpawningInstance().scheduler().buildTask(() -> queuedPoints.remove(queuedPoint))
+                .delay(TaskSchedule.tick(5))
+                .schedule();
     }
 }
