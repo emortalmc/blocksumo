@@ -1,6 +1,5 @@
 package dev.emortal.minestom.blocksumo.powerup.item.hook;
 
-import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
@@ -42,7 +41,7 @@ final class FishingBobber extends EntityProjectile {
     private boolean shouldStopFishing(@NotNull Player caster) {
         boolean holdingFishingRod = caster.getItemInMainHand().material() == Material.FISHING_ROD ||
                 caster.getItemInOffHand().material() == Material.FISHING_ROD;
-        if (caster.getTag(PlayerTags.DEAD) || !holdingFishingRod) return true;
+        if (caster.getGameMode() == GameMode.SPECTATOR || !holdingFishingRod) return true;
 
         if (this.hooked != null) {
             return this.hooked.isRemoved() || this.hooked.getGameMode() != GameMode.SURVIVAL;
