@@ -41,14 +41,12 @@ final class RespawnPointSelector {
         }
 
         Pos pos = floorPos(bestPosition);
-        Pos direction = MapData.CENTER.sub(pos.x(), 0, pos.z());
-
-        pos = pos.withDirection(direction);
+        Pos direction = MapData.CENTER.sub(pos.x() + 0.5, MapData.CENTER.y(), pos.z() + 0.5);
 
         queuedPoints.add(pos);
         removeQueuedPointAfterDelay(pos);
 
-        return MapData.CENTER.add(pos);
+        return MapData.CENTER.add(pos).withDirection(direction);
     }
 
     private @NotNull Pos floorPos(Pos pos) {
