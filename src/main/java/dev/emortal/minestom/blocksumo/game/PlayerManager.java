@@ -89,7 +89,6 @@ public final class PlayerManager {
 
     public void addInitialTags(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
-        player.setTag(PlayerTags.DEAD, false);
         player.setTag(PlayerTags.LIVES, (byte) 5);
         player.setTag(PlayerTags.CAN_BE_HIT, true);
         player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, 0L);
@@ -119,7 +118,6 @@ public final class PlayerManager {
         player.removeTag(PlayerTags.TEAM_COLOR);
         player.removeTag(PlayerTags.LIVES);
         player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
-        player.removeTag(PlayerTags.DEAD);
         player.removeTag(PlayerTags.CAN_BE_HIT);
 
         this.scoreboard.removeViewer(player);

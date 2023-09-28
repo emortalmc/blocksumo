@@ -2,8 +2,8 @@ package dev.emortal.minestom.blocksumo.damage;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
-import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
@@ -22,6 +23,8 @@ import net.minestom.server.entity.damage.EntityProjectileDamage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerTickEvent;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
+import net.minestom.server.scoreboard.Team;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +34,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class PlayerDeathHandler {
+    private static final Team DEAD_TEAM = MinecraftServer.getTeamManager().createBuilder("dead")
+            .teamColor(NamedTextColor.GRAY)
+            .prefix(Component.text("☠ ", NamedTextColor.GRAY))
+            .nameTagVisibility(TeamsPacket.NameTagVisibility.NEVER)
+            .updateTeamPacket()
+            .build();
 
     private final @NotNull BlockSumoGame game;
     private final @NotNull PlayerManager playerManager;
@@ -95,11 +104,12 @@ public final class PlayerDeathHandler {
     }
 
     public boolean isDead(@NotNull Player player) {
-        return player.getTag(PlayerTags.DEAD);
+        return player.getTeam() == DEAD_TEAM;
     }
 
     public void kill(@NotNull Player player, @Nullable Entity killer) {
-        player.setTag(PlayerTags.DEAD, true);
+        Team beforeTeam = player.getTeam();
+        player.setTeam(DEAD_TEAM);
 
         this.makeSpectator(player);
         this.playDeathSound(player);
@@ -121,7 +131,7 @@ public final class PlayerDeathHandler {
         }
 
         this.playerManager.updateRemainingLives(player, remainingLives);
-        this.respawnHandler.scheduleRespawn(player, () -> player.setTag(PlayerTags.DEAD, false));
+        this.respawnHandler.scheduleRespawn(player, () -> player.setTeam(beforeTeam));
     }
 
     private void checkForWinner() {
