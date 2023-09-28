@@ -22,6 +22,9 @@ public final class InitialSpawnPointSelector {
         Queue<Pos> spawns = new ArrayDeque<>();
         for (int i = 0; i <= playerCount; i++) {
             Pos pos = floorPos(new Pos(Math.cos(playerOffset * i) * spawnRadius, 0, Math.sin(playerOffset * i) * spawnRadius));
+            Pos direction = MapData.CENTER.sub(pos.x(), 0, pos.z());
+
+            pos = pos.withDirection(direction);
 
             spawns.add(MapData.CENTER.add(pos));
         }

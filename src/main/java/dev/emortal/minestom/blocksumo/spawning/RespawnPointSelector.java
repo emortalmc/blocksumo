@@ -34,7 +34,12 @@ final class RespawnPointSelector {
             }
         }
 
-        return MapData.CENTER.add(floorPos(bestPosition));
+        Pos pos = floorPos(bestPosition);
+        Pos direction = MapData.CENTER.sub(pos.x(), 0, pos.z());
+
+        pos = pos.withDirection(direction);
+
+        return MapData.CENTER.add(pos);
     }
 
     private @NotNull Pos floorPos(Pos pos) {
