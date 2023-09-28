@@ -126,7 +126,6 @@ public final class PlayerManager {
 
     public void removeDeadPlayer(@NotNull Player player) {
         this.scoreboard.removeLine(player.getUuid().toString());
-        player.setTeam(null);
         this.teamManager.resetTeam(player);
     }
 
