@@ -126,7 +126,6 @@ public final class PlayerManager {
 
     public void removeDeadPlayer(@NotNull Player player) {
         this.scoreboard.removeLine(player.getUuid().toString());
-        this.teamManager.resetTeam(player);
     }
 
     public void updateRemainingLives(@NotNull Player player, int lives) {
