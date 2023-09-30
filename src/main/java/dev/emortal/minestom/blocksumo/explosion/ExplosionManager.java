@@ -104,7 +104,8 @@ public final class ExplosionManager {
     }
 
     private boolean canBeHarmedBySource(@NotNull Player target, @Nullable UUID sourceId, @Nullable TeamColor sourceColor) {
-        return !this.game.getSpawnProtectionManager().isProtected(target) && // Target does not have spawn protection
+        return target.getUuid().equals(sourceId) ||
+                !this.game.getSpawnProtectionManager().isProtected(target) && // Target does not have spawn protection
                 target.getTag(PlayerTags.TEAM_COLOR) != sourceColor; // Target is not on the same team as source
     }
 
