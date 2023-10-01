@@ -27,7 +27,7 @@ final class RespawnPointSelector {
     }
 
     public @NotNull Pos select() {
-        double distanceHighscore = 0;
+        double distanceHighscore = -1;
         Pos bestPosition = Pos.ZERO;
 
         for (double i = 0.0; i < TWO_PI; i += CHECK_OFFSET) {
