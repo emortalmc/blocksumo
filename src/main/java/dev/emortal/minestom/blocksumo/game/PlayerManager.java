@@ -20,6 +20,7 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.scoreboard.Sidebar;
+import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
 public final class PlayerManager {
@@ -103,7 +104,7 @@ public final class PlayerManager {
 
     private void selectTeam(@NotNull Player player) {
         this.teamManager.allocateTeam(player);
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), getScoreboardComponent(player), 5));
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), getScoreboardComponent(player, player.getTeam().getTeamColor()), 5));
     }
 
     public void cleanUp() {
@@ -129,15 +130,15 @@ public final class PlayerManager {
         this.scoreboard.removeLine(player.getUuid().toString());
     }
 
-    public void updateRemainingLives(@NotNull Player player, int lives) {
+    public void updateRemainingLives(@NotNull Player player, @NotNull Team beforeTeam, int lives) {
         this.teamManager.updateTeamLives(player, lives);
 
         String lineName = player.getUuid().toString();
-        this.scoreboard.updateLineContent(lineName, getScoreboardComponent(player));
+        this.scoreboard.updateLineContent(lineName, getScoreboardComponent(player, beforeTeam.getTeamColor()));
         this.scoreboard.updateLineScore(lineName, lives);
     }
 
-    public Component getScoreboardComponent(@NotNull Player player) {
+    public Component getScoreboardComponent(@NotNull Player player, @NotNull NamedTextColor teamColor) {
         Byte lives = player.getTag(PlayerTags.LIVES);
         TextColor livesColor;
         if (lives == 5) {
@@ -147,7 +148,7 @@ public final class PlayerManager {
         }
 
         return Component.text()
-                .append(Component.text(player.getUsername(), player.getTeam().getTeamColor()))
+                .append(Component.text(player.getUsername(), teamColor))
                 .append(Component.text(" - ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build();

@@ -130,7 +130,7 @@ public final class PlayerDeathHandler {
             return;
         }
 
-        this.playerManager.updateRemainingLives(player, remainingLives);
+        this.playerManager.updateRemainingLives(player, beforeTeam, remainingLives);
         this.respawnHandler.scheduleRespawn(player, () -> player.setTeam(beforeTeam));
     }
 
