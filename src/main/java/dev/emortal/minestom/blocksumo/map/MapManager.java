@@ -3,6 +3,7 @@ package dev.emortal.minestom.blocksumo.map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import dev.emortal.minestom.blocksumo.utils.ChunkCopyingChunkLoader;
 import dev.emortal.minestom.blocksumo.utils.RandomStringGenerator;
 import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
@@ -27,6 +28,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class MapManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(MapManager.class);
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(MapData.class, new MapData.Adapter()).create();
+
+    private static final int CHUNK_LOADING_RADIUS = 5;
 
     private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
             .skylightEnabled(true)
@@ -95,7 +98,7 @@ public final class MapManager {
             return null;
         }
 
-        return map.mapData();
+        return map.getMapData();
     }
 
     public @NotNull LoadedMap getRandomMap() {
@@ -105,20 +108,40 @@ public final class MapManager {
         return map.load();
     }
 
-    private record PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
+    private class PreLoadedMap {
+
+        private final InstanceContainer parentInstance;
+        private final MapData mapData;
+        public PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
+            this.parentInstance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, chunkLoader, generateDimensionId());
+
+            this.parentInstance.enableAutoChunkLoad(false);
+            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
+                for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
+                    this.parentInstance.loadChunk(x, z);
+                }
+            }
+
+            this.mapData = mapData;
+            MinecraftServer.getInstanceManager().registerInstance(this.parentInstance);
+        }
 
         @NotNull LoadedMap load() {
-            InstanceContainer instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, this.chunkLoader(), generateDimensionId());
+            InstanceContainer instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
             MinecraftServer.getInstanceManager().registerInstance(instance);
 
-//            instance.enableAutoChunkLoad(false);
-//            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
-//                for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-//                    instance.loadChunk(x, z);
-//                }
-//            }
+            instance.enableAutoChunkLoad(false);
+            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
+                for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
+                    instance.loadChunk(x, z);
+                }
+            }
 
-            return new LoadedMap(instance, this.mapData());
+            return new LoadedMap(instance, this.mapData);
+        }
+
+        public MapData getMapData() {
+            return mapData;
         }
 
         private static @NotNull NamespaceID generateDimensionId() {
