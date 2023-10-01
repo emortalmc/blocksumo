@@ -7,6 +7,7 @@ import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.attribute.Attribute;
 import net.minestom.server.coordinate.Pos;
@@ -102,7 +103,7 @@ public final class PlayerManager {
 
     private void selectTeam(@NotNull Player player) {
         this.teamManager.allocateTeam(player);
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), player.getDisplayName(), 5));
+        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), getScoreboardComponent(player), 5));
     }
 
     public void cleanUp() {
@@ -132,7 +133,23 @@ public final class PlayerManager {
         this.teamManager.updateTeamLives(player, lives);
 
         String lineName = player.getUuid().toString();
-        this.scoreboard.updateLineContent(lineName, player.getDisplayName());
+        this.scoreboard.updateLineContent(lineName, getScoreboardComponent(player));
         this.scoreboard.updateLineScore(lineName, lives);
+    }
+
+    public Component getScoreboardComponent(@NotNull Player player) {
+        Byte lives = player.getTag(PlayerTags.LIVES);
+        TextColor livesColor;
+        if (lives == 5) {
+            livesColor = NamedTextColor.GREEN;
+        } else {
+            livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
+        }
+
+        return Component.text()
+                .append(Component.text(player.getUsername(), player.getTeam().getTeamColor()))
+                .append(Component.text(" - ", NamedTextColor.GRAY))
+                .append(Component.text(lives, livesColor, TextDecoration.BOLD))
+                .build();
     }
 }

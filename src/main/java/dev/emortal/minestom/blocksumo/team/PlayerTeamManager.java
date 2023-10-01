@@ -7,16 +7,9 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
-import net.minestom.server.network.packet.server.play.TeamsPacket;
-import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public final class PlayerTeamManager {
     private static final List<TeamColor> COLORS = List.of(TeamColor.values());
@@ -33,13 +26,8 @@ public final class PlayerTeamManager {
 
         this.updateTeamLives(team, allocatedColor, player, 5);
         player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
-    }
 
-    public void resetTeam(@NotNull Player player) {
-        Team team = MinecraftServer.getTeamManager().createBuilder(player.getUsername() + "_default")
-                .collisionRule(TeamsPacket.CollisionRule.NEVER)
-                .build();
-        player.setTeam(team);
+        player.setTeam(team.getScoreboardTeam());
     }
 
     public void updateTeamLives(@NotNull Player player, int lives) {
@@ -65,13 +53,6 @@ public final class PlayerTeamManager {
                 .append(Component.text(" - ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build());
-
-        Component displayName = Component.text()
-                .append(Component.text(player.getUsername(), TextColor.color(teamColor.getColor())))
-                .append(Component.text(" - ", NamedTextColor.GRAY))
-                .append(Component.text(lives, livesColor, TextDecoration.BOLD))
-                .build();
-        player.setDisplayName(displayName);
     }
 
     private @NotNull TeamColor allocateTeamColor() {
