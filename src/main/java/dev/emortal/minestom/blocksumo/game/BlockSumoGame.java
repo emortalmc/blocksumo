@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 public class BlockSumoGame extends Game {
@@ -52,6 +53,8 @@ public class BlockSumoGame extends Game {
     private final @NotNull InitialSpawnPointSelector initialSpawnPointSelector;
     private final @NotNull ExplosionManager explosionManager;
     private final @NotNull LoadedMap map;
+
+    private final AtomicBoolean ended = new AtomicBoolean(false);
 
     private @Nullable Task countdownTask;
 
@@ -174,6 +177,9 @@ public class BlockSumoGame extends Game {
     }
 
     public void victory(@NotNull Set<Player> winners) {
+        if (ended.get()) return;
+        ended.set(true);
+
         Title victoryTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY!</bold></gradient>"),
                 Component.empty(),
