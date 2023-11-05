@@ -81,6 +81,7 @@ public final class PlayerDiamondBlockHandler {
 
         @Override
         public TaskSchedule get() {
+            if (game.getEnded().get()) return TaskSchedule.stop();
             if (this.secondsLeft == 0) {
                 this.game.victory(Set.of(this.player));
                 return TaskSchedule.stop();

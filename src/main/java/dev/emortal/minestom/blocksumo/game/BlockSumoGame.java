@@ -239,4 +239,8 @@ public class BlockSumoGame extends Game {
     public @NotNull MapData mapData() {
         return this.map.data();
     }
+
+    public AtomicBoolean getEnded() {
+        return ended;
+    }
 }
