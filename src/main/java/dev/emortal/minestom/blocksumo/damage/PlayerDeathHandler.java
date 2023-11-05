@@ -113,6 +113,7 @@ public final class PlayerDeathHandler {
 
         this.makeSpectator(player);
         this.playDeathSound(player);
+        if (killer instanceof Player playerKiller) this.playKillSound(playerKiller);
 
         player.setCanPickupItem(false);
         player.getInventory().clear();
@@ -157,6 +158,9 @@ public final class PlayerDeathHandler {
 
     private void playDeathSound(final @NotNull Player player) {
         player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
+    }
+    private void playKillSound(final @NotNull Player killer) {
+        killer.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
     }
 
     private void sendKillMessage(@NotNull Player victim, @Nullable Entity killer, int remainingLives) {

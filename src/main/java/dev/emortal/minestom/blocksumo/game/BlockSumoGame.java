@@ -180,6 +180,10 @@ public class BlockSumoGame extends Game {
         if (ended.get()) return;
         ended.set(true);
 
+        Sound victorySound = Sound.sound(SoundEvent.ENTITY_VILLAGER_CELEBRATE, Sound.Source.MASTER, 1f, 1f);
+        Sound victorySound2 = Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP, Sound.Source.MASTER, 1f, 1f);
+        Sound defeatSound = Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.MASTER, 1f, 0.8f);
+
         Title victoryTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY!</bold></gradient>"),
                 Component.empty(),
@@ -194,8 +198,11 @@ public class BlockSumoGame extends Game {
         for (Player player : this.getPlayers()) {
             if (winners.contains(player)) {
                 player.showTitle(victoryTitle);
+                player.playSound(victorySound);
+                player.playSound(victorySound2);
             } else {
                 player.showTitle(defeatTitle);
+                player.playSound(defeatSound);
             }
         }
 
