@@ -64,6 +64,11 @@ public final class PlayerDeathHandler {
 
         Entity killer = this.determineKiller(player);
         if (this.isUnderMinAllowedHeight(player)) {
+            if (game.getEnded().get()) {
+                player.teleport(player.getRespawnPoint());
+                return;
+            }
+
             this.kill(player, killer);
         }
     }
