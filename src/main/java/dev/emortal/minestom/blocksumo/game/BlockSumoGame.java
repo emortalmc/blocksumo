@@ -177,8 +177,8 @@ public class BlockSumoGame extends Game {
     }
 
     public void victory(@NotNull Set<Player> winners) {
-        if (ended.get()) return;
-        ended.set(true);
+        if (this.hasEnded()) return;
+        this.ended.set(true);
 
         Sound victorySound = Sound.sound(SoundEvent.ENTITY_VILLAGER_CELEBRATE, Sound.Source.MASTER, 1f, 1f);
         Sound victorySound2 = Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP, Sound.Source.MASTER, 1f, 1f);
@@ -240,7 +240,7 @@ public class BlockSumoGame extends Game {
         return this.map.data();
     }
 
-    public AtomicBoolean getEnded() {
-        return ended;
+    public boolean hasEnded() {
+        return this.ended.get();
     }
 }

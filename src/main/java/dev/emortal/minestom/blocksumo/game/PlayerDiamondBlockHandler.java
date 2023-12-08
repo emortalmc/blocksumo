@@ -42,7 +42,7 @@ public final class PlayerDiamondBlockHandler {
 
     private void onPlayerMove(@NotNull PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!event.getNewPosition().sameBlock(SPAWN)) {
+        if (!event.getNewPosition().sameBlock(SPAWN) || this.game.hasEnded()) {
             this.stopStandingOnBlock(player);
             return;
         }
@@ -51,13 +51,19 @@ public final class PlayerDiamondBlockHandler {
         // player is now standing on the diamond block
         this.playerOnDiamondBlock = player;
 
-        this.diamondBlockTask = player.scheduler().submitTask(new DiamondBlockTask(this.game, player));
+        this.diamondBlockTask = player.scheduler().submitTask(new DiamondBlockTask(player));
     }
 
     private void stopStandingOnBlock(@NotNull Player player) {
         if (this.playerOnDiamondBlock != player) return;
 
-        this.playerOnDiamondBlock.setLevel(0);
+        this.stop();
+    }
+
+    private void stop() {
+        if (this.playerOnDiamondBlock != null) {
+            this.playerOnDiamondBlock.setLevel(0);
+        }
         this.playerOnDiamondBlock = null;
 
         if (this.diamondBlockTask != null) {
@@ -65,23 +71,26 @@ public final class PlayerDiamondBlockHandler {
         }
     }
 
-    private static final class DiamondBlockTask implements Supplier<TaskSchedule> {
+    private final class DiamondBlockTask implements Supplier<TaskSchedule> {
 
-        private final @NotNull BlockSumoGame game;
         private final @NotNull Player player;
         private final @NotNull TeamColor teamColor;
+        private final @NotNull BlockSumoGame game = PlayerDiamondBlockHandler.this.game;
 
         private int secondsLeft = DIAMOND_BLOCK_SECONDS;
 
-        DiamondBlockTask(@NotNull BlockSumoGame game, @NotNull Player player) {
-            this.game = game;
+        DiamondBlockTask(@NotNull Player player) {
             this.player = player;
             this.teamColor = player.getTag(PlayerTags.TEAM_COLOR);
         }
 
         @Override
         public TaskSchedule get() {
-            if (game.getEnded().get()) return TaskSchedule.stop();
+            if (this.game.hasEnded()) {
+                PlayerDiamondBlockHandler.this.stop();
+                return TaskSchedule.stop();
+            }
+
             if (this.secondsLeft == 0) {
                 this.game.victory(Set.of(this.player));
                 return TaskSchedule.stop();
