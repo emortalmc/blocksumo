@@ -187,12 +187,12 @@ public class BlockSumoGame extends Game {
 
         Title victoryTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY!</bold></gradient>"),
-                Component.text(GameWinLoseMessages.VICTORY.random()),
+                Component.text(GameWinLoseMessages.VICTORY.random(), NamedTextColor.GRAY),
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
         Title defeatTitle = Title.title(
                 MiniMessage.miniMessage().deserialize("<gradient:#ff474e:#ff0d0d><bold>DEFEAT!</bold></gradient>"),
-                Component.text(GameWinLoseMessages.DEFEAT.random()),
+                Component.text(GameWinLoseMessages.DEFEAT.random(), NamedTextColor.GRAY),
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
 
