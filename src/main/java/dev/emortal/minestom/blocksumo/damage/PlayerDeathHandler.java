@@ -118,7 +118,13 @@ public final class PlayerDeathHandler {
 
         this.makeSpectator(player);
         this.playDeathSound(player);
-        if (killer instanceof Player playerKiller) this.playKillSound(playerKiller);
+
+        if (killer instanceof Player playerKiller) {
+            this.playKillSound(playerKiller);
+
+            byte currentKills = playerKiller.getTag(PlayerTags.KILLS);
+            playerKiller.setTag(PlayerTags.KILLS, (byte) (currentKills + 1));
+        }
 
         player.setCanPickupItem(false);
         player.getInventory().clear();
@@ -131,6 +137,11 @@ public final class PlayerDeathHandler {
         this.sendVictimTitle(player, killer, remainingLives);
 
         if (remainingLives <= 0) {
+            if (killer instanceof Player playerKiller) {
+                byte currentFinalKills = playerKiller.getTag(PlayerTags.FINAL_KILLS);
+                playerKiller.setTag(PlayerTags.FINAL_KILLS, (byte) (currentFinalKills + 1));
+            }
+
             this.playerManager.removeDeadPlayer(player);
             this.checkForWinner();
             return;
