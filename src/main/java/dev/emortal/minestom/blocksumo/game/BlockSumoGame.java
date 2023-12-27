@@ -1,8 +1,10 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import com.google.protobuf.Message;
+import dev.emortal.api.model.gametracker.BlockSumoFinishData;
 import dev.emortal.api.model.gametracker.BlockSumoScoreboard;
 import dev.emortal.api.model.gametracker.BlockSumoUpdateData;
+import dev.emortal.api.model.gametracker.CommonGameFinishWinnerData;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
@@ -44,6 +46,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -64,6 +67,10 @@ public class BlockSumoGame extends Game {
     private final AtomicBoolean ended = new AtomicBoolean(false);
 
     private @Nullable Task countdownTask;
+
+    // end of game data used to pass to the game tracker
+    private Set<Player> winners;
+    private BlockSumoScoreboard endOfGameScoreboard;
 
     public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map) {
         super(creationInfo);
@@ -186,6 +193,8 @@ public class BlockSumoGame extends Game {
     public void victory(@NotNull Set<Player> winners) {
         if (this.hasEnded()) return;
         this.ended.set(true);
+        this.winners = winners;
+        this.endOfGameScoreboard = this.createScoreboard();
 
         Sound victorySound = Sound.sound(SoundEvent.ENTITY_VILLAGER_CELEBRATE, Sound.Source.MASTER, 1f, 1f);
         Sound victorySound2 = Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP, Sound.Source.MASTER, 1f, 1f);
@@ -221,6 +230,18 @@ public class BlockSumoGame extends Game {
         return List.of(
                 BlockSumoUpdateData.newBuilder()
                         .setScoreboard(this.createScoreboard())
+                        .build()
+        );
+    }
+
+    @Override
+    public @NotNull List<? extends Message> createGameFinishExtraData() {
+        return List.of(
+                BlockSumoFinishData.newBuilder().setScoreboard(this.endOfGameScoreboard).build(),
+                CommonGameFinishWinnerData.newBuilder()
+                        .addAllWinnerIds(this.winners.stream().map(Player::getUuid).map(UUID::toString).toList())
+                        .addAllLoserIds(this.getPlayers().stream().filter(player -> !this.winners.contains(player))
+                                .map(Player::getUuid).map(UUID::toString).toList())
                         .build()
         );
     }
