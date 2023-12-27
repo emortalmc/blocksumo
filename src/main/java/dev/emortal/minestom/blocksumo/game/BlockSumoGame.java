@@ -16,7 +16,6 @@ import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
-import dev.emortal.minestom.gamesdk.util.BasicGamePlayerConverter;
 import dev.emortal.minestom.gamesdk.util.GameWinLoseMessages;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -43,10 +42,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -247,10 +243,9 @@ public class BlockSumoGame extends Game {
     }
 
     private @NotNull BlockSumoScoreboard createScoreboard() {
-        List<BlockSumoScoreboard.Entry> entries = new ArrayList<>();
+        Map<String, BlockSumoScoreboard.Entry> entries = new HashMap<>();
         for (Player player : this.getPlayers()) {
-            entries.add(BlockSumoScoreboard.Entry.newBuilder()
-                    .setPlayer(BasicGamePlayerConverter.fromMinestomPlayer(player))
+            entries.put(player.getUuid().toString(), BlockSumoScoreboard.Entry.newBuilder()
                     .setKills(player.getTag(PlayerTags.KILLS))
                     .setFinalKills(player.getTag(PlayerTags.FINAL_KILLS))
                     .setRemainingLives(player.getTag(PlayerTags.LIVES))
@@ -258,7 +253,7 @@ public class BlockSumoGame extends Game {
             );
         }
 
-        return BlockSumoScoreboard.newBuilder().addAllEntries(entries).build();
+        return BlockSumoScoreboard.newBuilder().putAllEntries(entries).build();
     }
 
     @Override

@@ -20,7 +20,7 @@ dependencies {
     implementation("dev.emortal.minestom:game-sdk:08edba4") {
         exclude(group = "dev.emortal.api", module = "common-proto-sdk")
     }
-    implementation("dev.emortal.api:common-proto-sdk:519634c")
+    implementation("dev.emortal.api:common-proto-sdk:aee00da")
 
     implementation("dev.emortal:rayfast:e6ebf1f")
     implementation("com.github.emortaldev:Particable:f7212f39fb")
