@@ -5,6 +5,7 @@ import dev.emortal.minestom.blocksumo.game.PlayerManager;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
+import dev.emortal.minestom.gamesdk.game.GameUpdateRequestEvent;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -140,11 +141,15 @@ public final class PlayerDeathHandler {
             if (killer instanceof Player playerKiller) {
                 int currentFinalKills = playerKiller.getTag(PlayerTags.FINAL_KILLS);
                 playerKiller.setTag(PlayerTags.FINAL_KILLS, currentFinalKills + 1);
+                GameUpdateRequestEvent.trigger(this.game); // Trigger after kills, lives and final kills have been updated.
             }
 
             this.playerManager.removeDeadPlayer(player);
             this.checkForWinner();
             return;
+        } else {
+            // Trigger after kills and lives have been updated - here final kills are not updated.
+            GameUpdateRequestEvent.trigger(this.game);
         }
 
         this.playerManager.updateRemainingLives(player, beforeTeam, remainingLives);

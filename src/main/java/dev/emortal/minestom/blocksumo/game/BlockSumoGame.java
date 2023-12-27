@@ -243,8 +243,13 @@ public class BlockSumoGame extends Game {
     }
 
     private @NotNull BlockSumoScoreboard createScoreboard() {
-        Map<String, BlockSumoScoreboard.Entry> entries = new HashMap<>();
-        for (Player player : this.getPlayers()) {
+        Map<String, BlockSumoScoreboard.Entry> entries = new LinkedHashMap<>();
+
+        // Copy the players and sort them by remaining lives (descending)
+        List<Player> playersCopy = new ArrayList<>(this.getPlayers());
+        playersCopy.sort(Comparator.comparingInt(player -> -player.getTag(PlayerTags.LIVES)));
+
+        for (Player player : playersCopy) {
             entries.put(player.getUuid().toString(), BlockSumoScoreboard.Entry.newBuilder()
                     .setKills(player.getTag(PlayerTags.KILLS))
                     .setFinalKills(player.getTag(PlayerTags.FINAL_KILLS))
