@@ -55,7 +55,7 @@ final class FishingBobberManager {
         FishingBobber bobber = new FishingBobber(this, caster);
 
         bobber.setTag(PowerUp.NAME, "grappling_hook");
-        bobber.setInstance(this.game.getSpawningInstance(), castPos);
+        bobber.setInstance(this.game.getInstance(), castPos);
 
         this.bobbers.put(caster.getUuid(), bobber);
         return bobber;

@@ -36,7 +36,7 @@ public final class ExplosionManager {
 
     public ExplosionManager(@NotNull BlockSumoGame game) {
         this.game = game;
-        this.instance = game.getSpawningInstance();
+        this.instance = game.getInstance();
     }
 
     public @NotNull Entity spawnTnt(@NotNull Point origin, int fuseTime, @NotNull ExplosionData data, @Nullable Player placer) {

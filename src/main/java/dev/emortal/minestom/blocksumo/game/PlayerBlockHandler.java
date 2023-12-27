@@ -102,7 +102,7 @@ public final class PlayerBlockHandler {
     private boolean nextToBarrier(@NotNull Point blockPos) {
         for (Direction direction : DIRECTIONS) {
             Point offsetPos = blockPos.add(direction.normalX(), direction.normalY(), direction.normalZ());
-            Block offsetBlock = this.game.getSpawningInstance().getBlock(offsetPos, Block.Getter.Condition.TYPE);
+            Block offsetBlock = this.game.getInstance().getBlock(offsetPos, Block.Getter.Condition.TYPE);
             if (offsetBlock == Block.BARRIER) return true;
         }
 
@@ -124,7 +124,7 @@ public final class PlayerBlockHandler {
     }
 
     private void scheduleCenterBlockBreak(@NotNull Point blockPos, @NotNull Block block) {
-        Instance instance = this.game.getSpawningInstance();
+        Instance instance = this.game.getInstance();
         Task task = instance.scheduler()
                 .buildTask(() -> {
                     instance.setBlock(blockPos, Block.AIR);

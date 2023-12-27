@@ -122,8 +122,8 @@ public final class PlayerDeathHandler {
         if (killer instanceof Player playerKiller) {
             this.playKillSound(playerKiller);
 
-            byte currentKills = playerKiller.getTag(PlayerTags.KILLS);
-            playerKiller.setTag(PlayerTags.KILLS, (byte) (currentKills + 1));
+            int currentKills = playerKiller.getTag(PlayerTags.KILLS);
+            playerKiller.setTag(PlayerTags.KILLS, currentKills + 1);
         }
 
         player.setCanPickupItem(false);
@@ -138,8 +138,8 @@ public final class PlayerDeathHandler {
 
         if (remainingLives <= 0) {
             if (killer instanceof Player playerKiller) {
-                byte currentFinalKills = playerKiller.getTag(PlayerTags.FINAL_KILLS);
-                playerKiller.setTag(PlayerTags.FINAL_KILLS, (byte) (currentFinalKills + 1));
+                int currentFinalKills = playerKiller.getTag(PlayerTags.FINAL_KILLS);
+                playerKiller.setTag(PlayerTags.FINAL_KILLS, currentFinalKills + 1);
             }
 
             this.playerManager.removeDeadPlayer(player);
@@ -175,6 +175,7 @@ public final class PlayerDeathHandler {
     private void playDeathSound(final @NotNull Player player) {
         player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
     }
+
     private void playKillSound(final @NotNull Player killer) {
         killer.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
     }

@@ -1,5 +1,8 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import com.google.protobuf.Message;
+import dev.emortal.api.model.gametracker.BlockSumoScoreboard;
+import dev.emortal.api.model.gametracker.BlockSumoUpdateData;
 import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
@@ -11,6 +14,7 @@ import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
+import dev.emortal.minestom.gamesdk.util.BasicGamePlayerConverter;
 import dev.emortal.minestom.gamesdk.util.GameWinLoseMessages;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -37,6 +41,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -211,13 +217,41 @@ public class BlockSumoGame extends Game {
     }
 
     @Override
+    public @NotNull List<? extends Message> createGameUpdateExtraData() {
+        return List.of(
+                BlockSumoUpdateData.newBuilder()
+                        .setScoreboard(this.createScoreboard())
+                        .build()
+        );
+    }
+
+    private @NotNull BlockSumoScoreboard createScoreboard() {
+        List<BlockSumoScoreboard.Entry> entries = new ArrayList<>();
+        for (Player player : this.getPlayers()) {
+            entries.add(BlockSumoScoreboard.Entry.newBuilder()
+                    .setPlayer(BasicGamePlayerConverter.fromMinestomPlayer(player))
+                    .setKills(player.getTag(PlayerTags.KILLS))
+                    .setFinalKills(player.getTag(PlayerTags.FINAL_KILLS))
+                    .setRemainingLives(player.getTag(PlayerTags.LIVES))
+                    .build()
+            );
+        }
+
+        return BlockSumoScoreboard.newBuilder().addAllEntries(entries).build();
+    }
+
+    @Override
     public void cleanUp() {
         this.map.instance().scheduleNextTick(MinecraftServer.getInstanceManager()::unregisterInstance);
         this.playerManager.cleanUp();
     }
 
     @Override
-    public @NotNull Instance getSpawningInstance() {
+    public @NotNull Instance getSpawningInstance(@NotNull Player player) {
+        return this.map.instance();
+    }
+
+    public @NotNull Instance getInstance() {
         return this.map.instance();
     }
 

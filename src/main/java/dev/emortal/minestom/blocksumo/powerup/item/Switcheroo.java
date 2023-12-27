@@ -68,7 +68,7 @@ public final class Switcheroo extends PowerUp {
                     other.getGameMode() == GameMode.SURVIVAL &&
                     other != player;
 
-        RaycastContext context = new RaycastContext(this.game.getSpawningInstance(), eyePosition, direction, 60, predicate);
+        RaycastContext context = new RaycastContext(this.game.getInstance(), eyePosition, direction, 60, predicate);
         return RaycastUtil.raycast(context);
     }
 

@@ -79,7 +79,7 @@ public final class PlayerManager {
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
         this.respawnHandler.prepareSpawn(pos);
-        this.createLockingEntity(this.game.getSpawningInstance(), player, pos);
+        this.createLockingEntity(this.game.getSpawningInstance(player), player, pos);
     }
 
     private void createLockingEntity(@NotNull Instance instance, @NotNull Player player, @NotNull Pos pos) {
@@ -92,6 +92,8 @@ public final class PlayerManager {
     public void addInitialTags(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, 0L);
         player.setTag(PlayerTags.LIVES, (byte) 5);
+        player.setTag(PlayerTags.KILLS, 0);
+        player.setTag(PlayerTags.FINAL_KILLS, 0);
         player.setTag(PlayerTags.CAN_BE_HIT, true);
         player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, 0L);
     }

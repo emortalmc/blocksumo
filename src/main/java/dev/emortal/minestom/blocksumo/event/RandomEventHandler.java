@@ -15,7 +15,7 @@ public final class RandomEventHandler {
 
     public RandomEventHandler(@NotNull BlockSumoGame game, @NotNull EventManager eventManager) {
         this.eventManager = eventManager;
-        this.instance = game.getSpawningInstance();
+        this.instance = game.getInstance();
     }
 
     public void startRandomEventTask() {

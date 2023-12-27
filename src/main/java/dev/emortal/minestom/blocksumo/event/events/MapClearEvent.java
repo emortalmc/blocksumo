@@ -31,7 +31,7 @@ public final class MapClearEvent implements BlockSumoEvent {
 
     @Override
     public void start() {
-        Instance instance = this.game.getSpawningInstance();
+        Instance instance = this.game.getInstance();
         instance.scheduler().submitTask(new ClearMapTask(this.game, instance));
     }
 

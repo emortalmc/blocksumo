@@ -67,7 +67,7 @@ final class RespawnPointSelector {
     }
 
     private void removeQueuedPointAfterDelay(Pos queuedPoint) {
-        game.getSpawningInstance().scheduler().buildTask(() -> queuedPoints.remove(queuedPoint))
+        game.getInstance().scheduler().buildTask(() -> queuedPoints.remove(queuedPoint))
                 .delay(TaskSchedule.tick(5))
                 .schedule();
     }

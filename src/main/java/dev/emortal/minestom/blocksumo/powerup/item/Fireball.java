@@ -57,7 +57,7 @@ public final class Fireball extends PowerUp {
     private @NotNull Entity shootFireball(@NotNull Player shooter) {
         Entity fireball = new FireballEntity(shooter);
 
-        fireball.setInstance(this.game.getSpawningInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
+        fireball.setInstance(this.game.getInstance(), shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
 
         return fireball;
     }

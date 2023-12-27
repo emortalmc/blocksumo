@@ -25,7 +25,7 @@ public final class TntRainEvent implements BlockSumoEvent {
 
     @Override
     public void start() {
-        this.game.getSpawningInstance().scheduler().submitTask(new TntRainTask(this.game));
+        this.game.getInstance().scheduler().submitTask(new TntRainTask(this.game));
     }
 
     @Override

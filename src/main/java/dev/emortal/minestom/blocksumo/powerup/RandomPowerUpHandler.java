@@ -39,7 +39,7 @@ public final class RandomPowerUpHandler {
     }
 
     public void startRandomPowerUpTasks() {
-        Instance instance = game.getSpawningInstance();
+        Instance instance = game.getInstance();
 
         instance.scheduler().buildTask(this::spawnRandomCenterPowerUp)
                 .delay(TaskSchedule.seconds(10))
@@ -85,7 +85,7 @@ public final class RandomPowerUpHandler {
         entity.setMergeable(false);
         entity.setPickupDelay(5, TimeUnit.CLIENT_TICK);
         entity.setBoundingBox(0.5, 0.25, 0.5);
-        entity.setInstance(this.game.getSpawningInstance(), MapData.CENTER);
+        entity.setInstance(this.game.getInstance(), MapData.CENTER);
 
         this.notifySpawned(powerUp);
         this.displaySpawnedFirework();
@@ -123,7 +123,7 @@ public final class RandomPowerUpHandler {
     private void displaySpawnedFirework() {
         FireworkEffect effect = new FireworkEffect(false, false, FireworkEffectType.SMALL_BALL,
                 List.of(new Color(255, 100, 0)), List.of(new Color(255, 0, 255)));
-        FireworkUtil.showFirework(this.game.getPlayers(), this.game.getSpawningInstance(), FIREWORK_CENTER, List.of(effect));
+        FireworkUtil.showFirework(this.game.getPlayers(), this.game.getInstance(), FIREWORK_CENTER, List.of(effect));
     }
 
     private void playGivenSound() {
