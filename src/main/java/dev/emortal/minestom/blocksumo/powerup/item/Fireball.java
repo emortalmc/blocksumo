@@ -21,7 +21,6 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
-import net.minestom.server.particle.ParticleCreator;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
@@ -175,7 +174,7 @@ public final class Fireball extends PowerUp {
             double posY = fireball.getPosition().y();
             double posZ = fireball.getPosition().z();
 
-            ParticlePacket packet = ParticleCreator.createParticlePacket(Particle.LARGE_SMOKE, posX, posY, posZ, 0, 0, 0, 1);
+            ParticlePacket packet = new ParticlePacket(Particle.LARGE_SMOKE, true, posX, posY, posZ, 0f, 0f, 0f, 1, 1);
             Fireball.this.game.sendGroupedPacket(packet);
         }
     }

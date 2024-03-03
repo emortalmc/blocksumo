@@ -17,15 +17,14 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal.minestom:game-sdk:a3bc80a")
+    implementation("dev.emortal.minestom:game-sdk:8ef77c3")
 
-    implementation("dev.emortal:rayfast:e6ebf1f")
-    implementation("com.github.emortaldev:Particable:f7212f39fb")
+    implementation("dev.emortal:rayfast:9ce231a")
+//    implementation("com.github.emortaldev:Particable:f7212f39fb")
 
-    implementation("net.kyori:adventure-text-minimessage:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    implementation("dev.hollowcube:polar:1.3.1")
+    implementation("dev.hollowcube:polar:1.7.2")
 }
 
 java {

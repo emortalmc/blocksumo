@@ -4,7 +4,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.metadata.other.FireworkRocketMeta;
+import net.minestom.server.entity.metadata.projectile.FireworkRocketMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;

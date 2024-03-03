@@ -10,7 +10,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.metadata.other.PrimedTntMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.batch.AbsoluteBlockBatch;
@@ -93,7 +93,7 @@ public final class ExplosionManager {
             float yaw = PositionUtils.getLookYaw(direction.x(), direction.z());
             this.game.sendGroupedPacket(new HitAnimationPacket(player.getEntityId(), yaw));
 
-            player.damage(DamageType.fromEntity(entity), 0);
+            player.damage(Damage.fromEntity(entity, 0));
             Vec newVelocity = player.getPosition()
                     .sub(position.sub(0, 1, 0))
                     .asVec()

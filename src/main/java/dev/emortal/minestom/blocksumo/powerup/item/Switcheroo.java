@@ -5,11 +5,7 @@ import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpItemInfo;
 import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
-import dev.emortal.minestom.blocksumo.utils.raycast.EntityHitPredicate;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastContext;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastResult;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastResultType;
-import dev.emortal.minestom.blocksumo.utils.raycast.RaycastUtil;
+import dev.emortal.minestom.blocksumo.utils.raycast.*;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,14 +16,11 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import world.cepi.particle.AudienceExtensionsKt;
-import world.cepi.particle.Particle;
-import world.cepi.particle.ParticleType;
-import world.cepi.particle.data.OffsetAndSpeed;
-import world.cepi.particle.renderer.Renderer;
 
 import java.util.Objects;
 
@@ -73,11 +66,18 @@ public final class Switcheroo extends PowerUp {
     }
 
     private void showSwitchParticle(@NotNull Player player, @Nullable Vec hitPos, @NotNull Vec eyePosition) {
-        // This error is BS. IntelliJ is on crack here. Build it and you'll see.
-        // TODO: Replace this Particable usage with Minestom's ParticleCreator
-        Particle<?, ?> particle = Particle.particle(ParticleType.END_ROD, 1, new OffsetAndSpeed());
         Vec targetPos = hitPos != null ? hitPos : eyePosition.add(player.getPosition().direction().mul(20));
-        AudienceExtensionsKt.showParticle(this.game, particle, Renderer.INSTANCE.fixedLine(eyePosition, targetPos, 0.1));
+
+        double step = 0.1;
+        Vec direction = targetPos.sub(eyePosition).normalize().mul(step);
+
+        Vec currentPos = eyePosition;
+        for (int i = 0; i < eyePosition.distance(targetPos) * (1.0 / step); i++) {
+            currentPos = currentPos.add(direction);
+
+            ParticlePacket packet = new ParticlePacket(Particle.END_ROD, true, currentPos.x(), currentPos.y(), currentPos.z(), 0f, 0f, 0f, 0, 1);
+            this.game.sendGroupedPacket(packet);
+        }
     }
 
     private void doSwitcheroo(@NotNull Player player, @NotNull Entity target) {

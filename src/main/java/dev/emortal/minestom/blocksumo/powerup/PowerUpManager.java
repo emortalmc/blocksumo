@@ -6,7 +6,7 @@ import dev.emortal.minestom.blocksumo.powerup.item.*;
 import dev.emortal.minestom.blocksumo.powerup.item.hook.GrapplingHook;
 import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.projectile.ProjectileCollideWithBlockEvent;
@@ -94,7 +94,7 @@ public final class PowerUpManager {
                 .delay(TaskSchedule.tick(10))
                 .schedule();
 
-        target.damage(DamageType.fromPlayer(shooter), 0);
+        target.damage(Damage.fromPlayer(shooter, 0));
         HitAnimationPacket hitAnimationPacket = new HitAnimationPacket(target.getEntityId(), entity.getPosition().yaw());
         this.game.sendGroupedPacket(hitAnimationPacket);
 

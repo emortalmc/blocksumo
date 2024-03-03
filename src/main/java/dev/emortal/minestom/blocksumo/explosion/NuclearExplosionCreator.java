@@ -5,7 +5,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +53,7 @@ public final class NuclearExplosionCreator {
     }
 
     private void applyDangerEffects(@NotNull Player player) {
-        player.damage(DamageType.fromEntity(this.source), 0);
+        player.damage(Damage.fromEntity(this.source, 0));
     }
 
     private void applySevereEffects(@NotNull Player player) {

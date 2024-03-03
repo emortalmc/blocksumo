@@ -16,11 +16,10 @@ import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.DamageType;
-import net.minestom.server.entity.damage.EntityDamage;
-import net.minestom.server.entity.damage.EntityProjectileDamage;
+import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerTickEvent;
@@ -80,13 +79,17 @@ public final class PlayerDeathHandler {
 
     private @Nullable Entity determineKiller(@NotNull Player player) {
         Entity killer = null;
-        DamageType lastDamageSource = player.getLastDamageSource();
 
-        if (this.isValidDamageTimestamp(player) && lastDamageSource != null) {
-            if (lastDamageSource instanceof EntityDamage damage) {
-                killer = this.getKillerFromDamage(damage);
-            } else if (lastDamageSource instanceof EntityProjectileDamage damage) {
-                killer = damage.getShooter();
+        Damage lastDamage = player.getLastDamageSource();
+        if (lastDamage != null) {
+            Entity lastDamageSource = player.getLastDamageSource().getSource();
+
+            if (this.isValidDamageTimestamp(player) && lastDamageSource != null) {
+                if (lastDamageSource instanceof EntityProjectile damage) {
+                    killer = damage.getShooter();
+                } else {
+                    killer = lastDamageSource;
+                }
             }
         }
 
@@ -96,13 +99,6 @@ public final class PlayerDeathHandler {
     private boolean isValidDamageTimestamp(@NotNull Player player) {
         // Last damage time is only valid for 8 seconds after the damage.
         return this.getLastDamageTime(player) + 8000 > System.currentTimeMillis();
-    }
-
-    private @Nullable Entity getKillerFromDamage(@NotNull EntityDamage damage) {
-        Entity source = damage.getSource();
-        if (source instanceof Player player) return player;
-        // TODO: Check if the source is a power up.
-        return null;
     }
 
     private long getLastDamageTime(@NotNull Player player) {

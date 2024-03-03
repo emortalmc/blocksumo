@@ -9,7 +9,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
@@ -56,7 +56,7 @@ public final class PlayerDamageHandler {
         if (!this.withinLegalRange(attacker, victim)) return;
         victim.setTag(PlayerTags.CAN_BE_HIT, false);
 
-        victim.damage(DamageType.fromPlayer(attacker), 0);
+        victim.damage(Damage.fromPlayer(attacker, 0));
         this.game.sendGroupedPacket(new HitAnimationPacket(victim.getEntityId(), attacker.getPosition().yaw()));
         KnockbackUtil.takeKnockback(attacker, victim);
 
