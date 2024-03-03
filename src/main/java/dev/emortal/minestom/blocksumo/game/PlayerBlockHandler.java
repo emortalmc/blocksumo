@@ -2,6 +2,7 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
+import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
@@ -12,6 +13,7 @@ import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.EffectPacket;
+import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.Direction;
@@ -85,6 +87,12 @@ public final class PlayerBlockHandler {
 
         if (this.isAroundCenter(pos)) {
             this.scheduleCenterBlockBreak(pos, event.getBlock());
+        }
+
+        // Play block place sound to other players
+        for (Player plr : event.getInstance().getPlayers()) {
+            if (plr == player) continue; // Sound is already played client side
+            plr.playSound(Sound.sound(SoundEvent.BLOCK_WOOL_PLACE, Sound.Source.MASTER, 1f, 0.8f), event.getBlockPosition().add(0.5));
         }
     }
 
