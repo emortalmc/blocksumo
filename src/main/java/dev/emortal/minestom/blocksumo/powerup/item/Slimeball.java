@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.powerup.item;
 
+import dev.emortal.minestom.blocksumo.entity.BetterEntityProjectile;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
@@ -9,8 +10,8 @@ import dev.emortal.minestom.blocksumo.utils.KnockbackUtil;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.metadata.item.SnowballMeta;
@@ -18,19 +19,13 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
-import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.time.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 public final class Slimeball extends PowerUp {
     private static final Component NAME = Component.text("Slimeball", NamedTextColor.GREEN);
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.SLIME_BALL, NAME, ItemRarity.COMMON, 8);
-
-    private static final Tag<Double> POSITION_X_TAG = Tag.Double("thrower_position_x");
-    private static final Tag<Double> POSITION_Y_TAG = Tag.Double("thrower_position_y");
-    private static final Tag<Double> POSITION_Z_TAG = Tag.Double("thrower_position_z");
-
-    private static final ItemStack SLIME_ITEM = ItemStack.of(Material.SLIME_BALL);
+    private static final ItemStack SLIMEBALL_ITEM = ItemStack.of(Material.SLIME_BALL);
 
     public Slimeball(@NotNull BlockSumoGame game) {
         super(game, "slimeball", ITEM_INFO, SpawnLocation.ANYWHERE);
@@ -43,21 +38,12 @@ public final class Slimeball extends PowerUp {
         this.playThrowSound(player);
     }
 
-    private void shootProjectile(@NotNull Player thrower) {
-        EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
-        ((SnowballMeta) snowball.getEntityMeta()).setItem(SLIME_ITEM);
+    private void shootProjectile(@NotNull Player shooter) {
+        SlimeballEntity snowball = new SlimeballEntity(shooter);
 
-        snowball.setTag(PowerUp.NAME, super.name);
-        snowball.setTag(POSITION_X_TAG, thrower.getPosition().x());
-        snowball.setTag(POSITION_Y_TAG, thrower.getPosition().y());
-        snowball.setTag(POSITION_Z_TAG, thrower.getPosition().z());
-
-        snowball.setBoundingBox(0.1, 0.1, 0.1);
-        snowball.setVelocity(thrower.getPosition().direction().mul(30.0));
-
-        Instance instance = thrower.getInstance();
+        Instance instance = shooter.getInstance();
         snowball.scheduleRemove(10, TimeUnit.SECOND);
-        snowball.setInstance(instance, thrower.getPosition().add(0, thrower.getEyeHeight(), 0));
+        snowball.setInstance(instance, shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
     }
 
     private void playThrowSound(@NotNull Player thrower) {
@@ -66,9 +52,30 @@ public final class Slimeball extends PowerUp {
         this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
-    @Override
-    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
-        Pos throwerPos = new Pos(entity.getTag(POSITION_X_TAG), entity.getTag(POSITION_Y_TAG), entity.getTag(POSITION_Z_TAG));
-        KnockbackUtil.takeKnockback(target, throwerPos, -1);
+    private final class SlimeballEntity extends BetterEntityProjectile {
+        private final Player shooter;
+        public SlimeballEntity(@NotNull Player shooter) {
+            super(shooter, EntityType.SNOWBALL);
+
+            this.shooter = shooter;
+
+            ((SnowballMeta)entityMeta).setItem(SLIMEBALL_ITEM);
+
+            setTag(PowerUp.NAME, Slimeball.super.name);
+            setBoundingBox(0.25, 0.25, 0.25);
+            setVelocity(shooter.getPosition().direction().mul(30.0));
+        }
+
+        @Override
+        public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
+            KnockbackUtil.takeKnockback(player, pos, -1);
+            Slimeball.super.game.getPlayerManager().getDamageHandler().damage(player, shooter, false);
+            remove();
+        }
+
+        @Override
+        public void collideBlock(@NotNull Point pos) {
+            remove();
+        }
     }
 }

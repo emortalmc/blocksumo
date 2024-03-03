@@ -10,10 +10,8 @@ import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minestom.server.MinecraftServer;
-import net.minestom.server.collision.BoundingBox;
+import net.minestom.server.ServerFlag;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -22,10 +20,8 @@ import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
-import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -34,7 +30,6 @@ public final class Fireball extends PowerUp {
     private static final PowerUpItemInfo ITEM_INFO = new PowerUpItemInfo(Material.FIRE_CHARGE, NAME, ItemRarity.COMMON);
 
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 35, 5.5, true);
-    public static final @NotNull Tag<String> SHOOTER = Tag.String("shooter");
 
     public Fireball(@NotNull BlockSumoGame game) {
         super(game, "fireball", ITEM_INFO, SpawnLocation.ANYWHERE);
@@ -50,7 +45,7 @@ public final class Fireball extends PowerUp {
 
         this.playShootingSound(player.getPosition());
 
-        fireball.scheduler().submitTask(new CleanupTask(fireball, player, originalVelocity));
+        fireball.scheduler().submitTask(new CleanupTask(fireball));
     }
 
     private @NotNull Entity shootFireball(@NotNull Player shooter) {
@@ -66,19 +61,9 @@ public final class Fireball extends PowerUp {
         this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
-    private void collide(@NotNull Entity entity) {
-        Player shooter = this.findShooter(entity);
+    private void collide(@NotNull Entity entity, @NotNull Player shooter) {
         this.game.getExplosionManager().explode(entity.getPosition(), EXPLOSION, shooter, entity);
         entity.remove();
-    }
-
-    private @NotNull Player findShooter(@NotNull Entity entity) {
-        String shooterName = entity.getTag(SHOOTER);
-
-        for (Player player : this.game.getPlayers()) {
-            if (player.getUsername().equals(shooterName)) return player;
-        }
-        throw new IllegalStateException("Shooter " + shooterName + " not found!");
     }
 
     @Override
@@ -98,78 +83,51 @@ public final class Fireball extends PowerUp {
 
     private final class FireballEntity extends BetterEntityProjectile {
 
-        public FireballEntity(Player player) {
-            super(player, EntityType.FIREBALL);
+        private final Player shooter;
+
+        public FireballEntity(Player shooter) {
+            super(shooter, EntityType.FIREBALL);
+
+            this.shooter = shooter;
 
             setDrag(false);
             setGravityDrag(false);
             setNoGravity(true);
             setBoundingBox(0.6, 0.6, 0.6);
             setTag(PowerUp.NAME, Fireball.super.name);
-            setTag(SHOOTER, super.shooter.getUsername());
         }
 
         @Override
         public void collideBlock(@NotNull Point pos) {
-            Fireball.this.collide(this);
+            Fireball.this.collide(this, shooter);
         }
 
         @Override
         public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
-            Fireball.this.collide(this);
+            Fireball.this.collide(this, player);
         }
     }
 
     private final class CleanupTask implements Supplier<TaskSchedule> {
 
         private final @NotNull Entity fireball;
-        private final @NotNull Player shooter;
-        private final @NotNull Vec originalVelocity;
 
-        CleanupTask(@NotNull Entity fireball, @NotNull Player shooter, @NotNull Vec originalVelocity) {
+        CleanupTask(@NotNull Entity fireball) {
             this.fireball = fireball;
-            this.shooter = shooter;
-            this.originalVelocity = originalVelocity;
         }
 
         @Override
         public @NotNull TaskSchedule get() {
-            if (this.fireball.getAliveTicks() > 5L * MinecraftServer.TICK_PER_SECOND) {
+            if (this.fireball.getAliveTicks() > 5L * ServerFlag.SERVER_TICKS_PER_SECOND) { // Remove if alive for longer than 5 seconds
                 this.fireball.remove();
                 return TaskSchedule.stop();
             }
 
-            if (this.hasChangedVelocity()) {
-                Fireball.this.collide(this.fireball);
-                return TaskSchedule.stop();
-            }
-
-            Player firstCollider = this.findFirstCollider(this.fireball, this.shooter);
-            if (firstCollider != null) {
-                Fireball.this.collide(fireball);
-                return TaskSchedule.stop();
-            }
-
-            this.showCollisionParticle(fireball);
+            this.showTrailParticle(fireball);
             return TaskSchedule.nextTick();
         }
 
-        private boolean hasChangedVelocity() {
-            return !this.fireball.getVelocity().sameBlock(this.originalVelocity);
-        }
-
-        private @Nullable Player findFirstCollider(@NotNull Entity fireball, @NotNull Player shooter) {
-            for (Player player : Fireball.this.game.getPlayers()) {
-                if (player == shooter) continue;
-
-                Pos position = player.getPosition();
-                BoundingBox box = player.getBoundingBox();
-                if (box.intersectEntity(position, fireball)) return player;
-            }
-            return null;
-        }
-
-        private void showCollisionParticle(@NotNull Entity fireball) {
+        private void showTrailParticle(@NotNull Entity fireball) {
             double posX = fireball.getPosition().x();
             double posY = fireball.getPosition().y();
             double posZ = fireball.getPosition().z();

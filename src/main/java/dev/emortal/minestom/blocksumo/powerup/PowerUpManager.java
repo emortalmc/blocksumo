@@ -1,22 +1,15 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.powerup.item.*;
 import dev.emortal.minestom.blocksumo.powerup.item.hook.GrapplingHook;
-import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
-import net.minestom.server.event.entity.projectile.ProjectileCollideWithBlockEvent;
-import net.minestom.server.event.entity.projectile.ProjectileCollideWithEntityEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.network.packet.server.play.HitAnimationPacket;
 import net.minestom.server.tag.TagReadable;
-import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,8 +33,8 @@ public final class PowerUpManager {
         eventNode.addListener(PlayerUseItemEvent.class, this::onItemUse);
         eventNode.addListener(PlayerUseItemOnBlockEvent.class, this::onItemUseOnBlock);
 
-        eventNode.addListener(ProjectileCollideWithBlockEvent.class, this::onCollideWithBlock);
-        eventNode.addListener(ProjectileCollideWithEntityEvent.class, this::onCollideWithEntity);
+//        eventNode.addListener(ProjectileCollideWithBlockEvent.class, this::onCollideWithBlock);
+//        eventNode.addListener(ProjectileCollideWithEntityEvent.class, this::onCollideWithEntity);
 
         this.randomPowerUpHandler.registerListeners(eventNode);
     }
@@ -64,47 +57,47 @@ public final class PowerUpManager {
         if (heldPowerUp != null) heldPowerUp.onUseOnBlock(player, hand);
     }
 
-    private void onCollideWithBlock(@NotNull ProjectileCollideWithBlockEvent event) {
-        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
-        if (!(entity.getShooter() instanceof Player shooter)) return;
-
-        String powerUpName = this.getPowerUpName(entity);
-        PowerUp powerUp = this.findNamedPowerUp(powerUpName);
-        if (powerUp == null) return;
-
-        powerUp.onCollideWithBlock(shooter, event.getCollisionPosition());
-        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
-    }
-
-    private void onCollideWithEntity(@NotNull ProjectileCollideWithEntityEvent event) {
-        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
-        if (!(entity.getShooter() instanceof Player shooter)) return;
-        if (!(event.getTarget() instanceof Player target)) return;
-
-        if (this.game.getSpawnProtectionManager().isProtected(target)) {
-            this.game.getSpawnProtectionManager().notifyProtected(shooter, target);
-            return;
-        }
-
-        if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
-        target.setTag(PlayerTags.CAN_BE_HIT, false);
-
-        target.scheduler()
-                .buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true))
-                .delay(TaskSchedule.tick(10))
-                .schedule();
-
-        target.damage(Damage.fromPlayer(shooter, 0));
-        HitAnimationPacket hitAnimationPacket = new HitAnimationPacket(target.getEntityId(), entity.getPosition().yaw());
-        this.game.sendGroupedPacket(hitAnimationPacket);
-
-        String powerUpName = this.getPowerUpName(entity);
-        PowerUp powerUp = this.findNamedPowerUp(powerUpName);
-        if (powerUp == null) return;
-
-        powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
-        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
-    }
+//    private void onCollideWithBlock(@NotNull ProjectileCollideWithBlockEvent event) {
+//        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
+//        if (!(entity.getShooter() instanceof Player shooter)) return;
+//
+//        String powerUpName = this.getPowerUpName(entity);
+//        PowerUp powerUp = this.findNamedPowerUp(powerUpName);
+//        if (powerUp == null) return;
+//
+//        powerUp.onCollideWithBlock(shooter, event.getCollisionPosition());
+//        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
+//    }
+//
+//    private void onCollideWithEntity(@NotNull ProjectileCollideWithEntityEvent event) {
+//        if (!(event.getEntity() instanceof EntityProjectile entity)) return;
+//        if (!(entity.getShooter() instanceof Player shooter)) return;
+//        if (!(event.getTarget() instanceof Player target)) return;
+//
+//        if (this.game.getSpawnProtectionManager().isProtected(target)) {
+//            this.game.getSpawnProtectionManager().notifyProtected(shooter, target);
+//            return;
+//        }
+//
+//        if (!target.getTag(PlayerTags.CAN_BE_HIT)) return;
+//        target.setTag(PlayerTags.CAN_BE_HIT, false);
+//
+//        target.scheduler()
+//                .buildTask(() -> target.setTag(PlayerTags.CAN_BE_HIT, true))
+//                .delay(TaskSchedule.tick(10))
+//                .schedule();
+//
+//        target.damage(Damage.fromPlayer(shooter, 0));
+//        HitAnimationPacket hitAnimationPacket = new HitAnimationPacket(target.getEntityId(), entity.getPosition().yaw());
+//        this.game.sendGroupedPacket(hitAnimationPacket);
+//
+//        String powerUpName = this.getPowerUpName(entity);
+//        PowerUp powerUp = this.findNamedPowerUp(powerUpName);
+//        if (powerUp == null) return;
+//
+//        powerUp.onCollideWithEntity(entity, shooter, target, event.getCollisionPosition());
+//        if (powerUp.shouldRemoveEntityOnCollision()) entity.remove();
+//    }
 
     public void startRandomPowerUpTasks() {
         this.randomPowerUpHandler.startRandomPowerUpTasks();
@@ -172,4 +165,5 @@ public final class PowerUpManager {
     public @NotNull Collection<String> getPowerUpIds() {
         return this.registry.getPowerUpNames();
     }
+
 }

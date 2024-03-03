@@ -34,7 +34,7 @@ public final class PlayerDamageHandler {
     private void onAttack(@NotNull EntityAttackEvent event) {
         Entity target = event.getTarget();
         if (target.getEntityType() == EntityType.FIREBALL) {
-            this.normalizeFireballVelocity(target);
+            this.normalizeFireballVelocity(target); // TODO: Check if functional
         }
 
         Entity entity = event.getEntity();
@@ -54,16 +54,11 @@ public final class PlayerDamageHandler {
 
         if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return;
         if (!this.withinLegalRange(attacker, victim)) return;
-        victim.setTag(PlayerTags.CAN_BE_HIT, false);
 
-        victim.damage(Damage.fromPlayer(attacker, 0));
-        this.game.sendGroupedPacket(new HitAnimationPacket(victim.getEntityId(), attacker.getPosition().yaw()));
-        KnockbackUtil.takeKnockback(attacker, victim);
+        damage(victim, attacker, true); // Needs to be before doing powerup things (breaks puncher)
 
         PowerUp heldPowerUp = this.game.getPowerUpManager().getHeldPowerUp(attacker, Player.Hand.MAIN);
         if (heldPowerUp != null) heldPowerUp.onAttack(attacker, victim);
-
-        victim.scheduler().buildTask(() -> victim.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
     }
 
     private void onDamage(@NotNull EntityDamageEvent event) {
@@ -92,4 +87,16 @@ public final class PlayerDamageHandler {
     private void updateLastDamageTime(@NotNull Player player) {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, System.currentTimeMillis());
     }
+
+    public void damage(@NotNull Player victim, @NotNull Player attacker, boolean knockback) {
+        if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return;
+        victim.setTag(PlayerTags.CAN_BE_HIT, false);
+
+        victim.damage(Damage.fromPlayer(attacker, 0));
+        this.game.sendGroupedPacket(new HitAnimationPacket(victim.getEntityId(), attacker.getPosition().yaw()));
+        if (knockback) KnockbackUtil.takeKnockback(attacker, victim);
+
+        victim.scheduler().buildTask(() -> victim.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
+    }
+
 }

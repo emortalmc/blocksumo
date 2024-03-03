@@ -1,7 +1,7 @@
 package dev.emortal.minestom.blocksumo.utils;
 
-import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Pos;
+import net.minestom.server.ServerFlag;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.Player;
@@ -12,14 +12,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public final class KnockbackUtil {
-    private static final int TPS = MinecraftServer.TICK_PER_SECOND;
+    private static final int TPS = ServerFlag.SERVER_TICKS_PER_SECOND;
     private static final double HORIZONTAL_KNOCKBACK = 0.4 * TPS;
     private static final double VERTICAL_KNOCKBACK = HORIZONTAL_KNOCKBACK;
     private static final double EXTRA_HORIZONTAL_KNOCKBACK = 0.5 * TPS;
     private static final double EXTRA_VERTICAL_KNOCKBACK = 0.1 * TPS;
     private static final double LIMIT_VERTICAL_KNOCKBACK = 0.5 * TPS;
 
-    public static void takeKnockback(@NotNull Entity target, @NotNull Pos position, double strength) {
+    public static void takeKnockback(@NotNull Entity target, @NotNull Point position, double strength) {
         double horizontalKnockback = 0.25 * TPS;
 
         double d0 = position.x() - target.getPosition().x();

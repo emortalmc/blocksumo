@@ -4,8 +4,6 @@ import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemMeta;
 import net.minestom.server.item.ItemStack;
@@ -41,19 +39,6 @@ public abstract class PowerUp {
     }
 
     public void onAttack(@NotNull Player attacker, @NotNull Player victim) {
-        // Do nothing by default
-    }
-
-    public boolean shouldRemoveEntityOnCollision() {
-        return true;
-    }
-
-    public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
-        // Do nothing by default
-    }
-
-    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
-                                    @NotNull Pos collisionPos) {
         // Do nothing by default
     }
 

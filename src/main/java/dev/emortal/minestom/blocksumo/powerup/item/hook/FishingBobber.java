@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.powerup.item.hook;
 
-import net.minestom.server.entity.EntityProjectile;
+import dev.emortal.minestom.blocksumo.entity.BetterEntityProjectile;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
@@ -11,23 +12,24 @@ import org.jetbrains.annotations.Nullable;
 
 // Thanks to
 // https://github.com/Bloepiloepi/MinestomPvP/blob/master/src/main/java/io/github/bloepiloepi/pvp/projectile/FishingBobber.java
-final class FishingBobber extends EntityProjectile {
+public final class FishingBobber extends BetterEntityProjectile {
 
-    private final @NotNull FishingBobberManager manager;
     private final @NotNull Player caster;
 
     private @Nullable Player hooked;
 
-    FishingBobber(@NotNull FishingBobberManager manager, @NotNull Player caster) {
+    FishingBobber(@NotNull Player caster) {
         super(caster, EntityType.FISHING_BOBBER);
-        this.manager = manager;
         this.caster = caster;
         this.setOwner(caster);
     }
 
     @Override
     public void update(long time) {
-        if (this.shouldStopFishing(this.caster)) this.remove();
+        if (this.shouldStopFishing(this.caster)) {
+            this.remove();
+            GrapplingHook.PLAYER_BOBBER_MAP.remove(caster.getUuid());
+        }
     }
 
     @Override
@@ -35,7 +37,6 @@ final class FishingBobber extends EntityProjectile {
         super.remove();
         this.hooked = null;
         this.setOwner(null);
-        this.manager.removeBobber(this.caster);
     }
 
     private boolean shouldStopFishing(@NotNull Player caster) {
@@ -49,13 +50,17 @@ final class FishingBobber extends EntityProjectile {
         return false;
     }
 
-    boolean hasHooked() {
+    public boolean hasHooked() {
         return this.hooked != null;
     }
 
-    void setHooked(@Nullable Player hooked) {
+    public void setHooked(@Nullable Player hooked) {
         this.meta().setHookedEntity(hooked);
         this.hooked = hooked;
+    }
+
+    public @Nullable Player getHooked() {
+        return hooked;
     }
 
     private void setOwner(@Nullable Player owner) {
@@ -64,5 +69,13 @@ final class FishingBobber extends EntityProjectile {
 
     private @NotNull FishingHookMeta meta() {
         return (FishingHookMeta) super.entityMeta;
+    }
+
+    @Override
+    public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
+        if (!hasHooked()) {
+            setHooked(player);
+
+        }
     }
 }

@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.powerup.item;
 
+import dev.emortal.minestom.blocksumo.entity.BetterEntityProjectile;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
@@ -9,8 +10,8 @@ import dev.emortal.minestom.blocksumo.utils.KnockbackUtil;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
@@ -34,16 +35,12 @@ public final class Snowball extends PowerUp {
         this.playThrowSound(player);
     }
 
-    private void shootProjectile(@NotNull Player thrower) {
-        EntityProjectile snowball = new EntityProjectile(thrower, EntityType.SNOWBALL);
+    private void shootProjectile(@NotNull Player shooter) {
+        SnowballEntity snowball = new SnowballEntity(shooter);
 
-        snowball.setTag(PowerUp.NAME, super.name);
-        snowball.setBoundingBox(0.1, 0.1, 0.1);
-        snowball.setVelocity(thrower.getPosition().direction().mul(30.0));
-
-        Instance instance = thrower.getInstance();
+        Instance instance = shooter.getInstance();
         snowball.scheduleRemove(10, TimeUnit.SECOND);
-        snowball.setInstance(instance, thrower.getPosition().add(0, thrower.getEyeHeight(), 0));
+        snowball.setInstance(instance, shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
     }
 
     private void playThrowSound(@NotNull Player thrower) {
@@ -52,8 +49,28 @@ public final class Snowball extends PowerUp {
         this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
-    @Override
-    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target, @NotNull Pos collisionPos) {
-        KnockbackUtil.takeKnockback(target, collisionPos, 1);
+    private final class SnowballEntity extends BetterEntityProjectile {
+        private final Player shooter;
+        public SnowballEntity(@NotNull Player shooter) {
+            super(shooter, EntityType.SNOWBALL);
+
+            this.shooter = shooter;
+
+            setTag(PowerUp.NAME, Snowball.super.name);
+            setBoundingBox(0.25, 0.25, 0.25);
+            setVelocity(shooter.getPosition().direction().mul(30.0));
+        }
+
+        @Override
+        public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
+            KnockbackUtil.takeKnockback(player, pos, 1);
+            Snowball.super.game.getPlayerManager().getDamageHandler().damage(player, shooter, false);
+            remove();
+        }
+
+        @Override
+        public void collideBlock(@NotNull Point pos) {
+            remove();
+        }
     }
 }

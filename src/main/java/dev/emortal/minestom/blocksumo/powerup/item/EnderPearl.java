@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.powerup.item;
 
+import dev.emortal.minestom.blocksumo.entity.BetterEntityProjectile;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
@@ -8,8 +9,8 @@ import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.EntityProjectile;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
@@ -32,18 +33,11 @@ public final class EnderPearl extends PowerUp {
         this.playThrowSound(player);
     }
 
-    private void shootProjectile(@NotNull Player thrower) {
-        EntityProjectile pearl = new EntityProjectile(thrower, EntityType.ENDER_PEARL);
+    private void shootProjectile(@NotNull Player shooter) {
+        EnderPearlEntity pearl = new EnderPearlEntity(shooter);
 
-        pearl.setTag(PowerUp.NAME, super.name);
-        pearl.setBoundingBox(0.1, 0.1, 0.1);
-        pearl.setVelocity(thrower.getPosition().direction().mul(35.0));
-        pearl.setGravity(0.04, 0.04);
-
-        Instance instance = thrower.getInstance();
-        pearl.setInstance(instance, thrower.getPosition().add(0, thrower.getEyeHeight(), 0));
-
-        // TODO: Schedule cleanup task
+        Instance instance = shooter.getInstance();
+        pearl.setInstance(instance, shooter.getPosition().add(0, shooter.getEyeHeight(), 0));
     }
 
     private void playThrowSound(@NotNull Player thrower) {
@@ -52,18 +46,34 @@ public final class EnderPearl extends PowerUp {
         this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
-    private void onCollide(@NotNull Player shooter, @NotNull Pos collisionPosition) {
-        shooter.teleport(collisionPosition);
+    private void onCollide(@NotNull Player shooter, @NotNull Point collisionPosition) {
+        shooter.teleport(Pos.fromPoint(collisionPosition));
     }
 
-    @Override
-    public void onCollideWithBlock(@NotNull Player shooter, @NotNull Pos collisionPosition) {
-        this.onCollide(shooter, collisionPosition.add(0, 1, 0));
+    private final class EnderPearlEntity extends BetterEntityProjectile {
+        private final Player shooter;
+        public EnderPearlEntity(@NotNull Player shooter) {
+            super(shooter, EntityType.ENDER_PEARL);
+
+            this.shooter = shooter;
+
+            setTag(PowerUp.NAME, EnderPearl.super.name);
+            setBoundingBox(0.25, 0.25, 0.25);
+            setVelocity(shooter.getPosition().direction().mul(35.0));
+            setGravity(0.04, 0.04);
+        }
+
+        @Override
+        public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
+            onCollide(shooter, pos);
+            remove();
+        }
+
+        @Override
+        public void collideBlock(@NotNull Point pos) {
+            onCollide(shooter, pos.add(0, 1, 0));
+            remove();
+        }
     }
 
-    @Override
-    public void onCollideWithEntity(@NotNull EntityProjectile entity, @NotNull Player shooter, @NotNull Player target,
-                                    @NotNull Pos collisionPos) {
-        this.onCollide(shooter, collisionPos);
-    }
 }

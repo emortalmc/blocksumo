@@ -276,6 +276,10 @@ public class BlockSumoGame extends Game {
         return this.map.instance();
     }
 
+    public @NotNull PlayerManager getPlayerManager() {
+        return this.playerManager;
+    }
+
     public @NotNull EventManager getEventManager() {
         return this.eventManager;
     }

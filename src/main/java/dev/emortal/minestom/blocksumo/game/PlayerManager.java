@@ -155,4 +155,8 @@ public final class PlayerManager {
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build();
     }
+
+    public @NotNull PlayerDamageHandler getDamageHandler() {
+        return this.damageHandler;
+    }
 }
