@@ -10,6 +10,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -43,7 +44,11 @@ public final class PlayerDiamondBlockHandler {
 
     private boolean isValidMove(@NotNull PlayerMoveEvent event) {
         if (this.game.hasEnded()) return false;
-        if (event.getPlayer().getTeam() == PlayerDeathHandler.DEAD_TEAM) return false;
+
+        Player player = event.getPlayer();
+        if (player.getTeam() == PlayerDeathHandler.DEAD_TEAM) return false;
+        if (player.getGameMode() != GameMode.SURVIVAL) return false;
+
         return event.getNewPosition().sameBlock(SPAWN);
     }
 
