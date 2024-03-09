@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.game;
 
+import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
@@ -40,9 +41,15 @@ public final class PlayerDiamondBlockHandler {
         eventNode.addListener(PlayerMoveEvent.class, this::onPlayerMove);
     }
 
+    private boolean isValidMove(@NotNull PlayerMoveEvent event) {
+        if (this.game.hasEnded()) return false;
+        if (event.getPlayer().getTeam() == PlayerDeathHandler.DEAD_TEAM) return false;
+        return event.getNewPosition().sameBlock(SPAWN);
+    }
+
     private void onPlayerMove(@NotNull PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!event.getNewPosition().sameBlock(SPAWN) || this.game.hasEnded()) {
+        if (!isValidMove(event)) {
             this.stopStandingOnBlock(player);
             return;
         }

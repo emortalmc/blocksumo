@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class PlayerDeathHandler {
-    private static final Team DEAD_TEAM = MinecraftServer.getTeamManager().createBuilder("dead")
+    public static final Team DEAD_TEAM = MinecraftServer.getTeamManager().createBuilder("dead")
             .teamColor(NamedTextColor.GRAY)
             .prefix(Component.text("☠ ", NamedTextColor.GRAY))
             .nameTagVisibility(TeamsPacket.NameTagVisibility.NEVER)
