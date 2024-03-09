@@ -15,7 +15,7 @@ import net.minestom.server.utils.chunk.ChunkUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BetterEntityProjectile extends LivingEntity {
+public class BetterEntityProjectile extends Entity {
 
     protected final @Nullable Player shooter;
 
