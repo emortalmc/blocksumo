@@ -86,7 +86,7 @@ public final class PlayerManager {
         Entity entity = new Entity(EntityType.AREA_EFFECT_CLOUD);
         ((AreaEffectCloudMeta) entity.getEntityMeta()).setRadius(0);
         entity.setNoGravity(true);
-        entity.setInstance(instance, pos).thenRun(() -> entity.addPassenger(player));
+        entity.setInstance(instance, pos.add(0, 0.1, 0)).thenRun(() -> entity.addPassenger(player));
     }
 
     public void addInitialTags(@NotNull Player player) {
