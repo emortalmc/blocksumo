@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
+import it.unimi.dsi.fastutil.Pair;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,8 +40,11 @@ public final class ScoreboardManager implements Viewable {
 
     public void updateScoreboard(@NotNull Set<Player> players) {
         Set<Player> newScores = players.stream()
-                .sorted(Comparator.<Player, Byte>comparing(player -> player.getTag(PlayerTags.LIVES)).reversed())
+                .map(player -> Pair.of(player, player.getTag(PlayerTags.LIVES)))
+                .filter(pair -> pair.second() > 0)
+                .sorted(Comparator.<Pair<Player, Byte>, Byte>comparing(Pair::second).reversed())
                 .limit(MAX_LINES)
+                .map(Pair::first)
                 .collect(Collectors.toSet());
 
         if (this.scores == null) {
