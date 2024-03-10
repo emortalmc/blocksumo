@@ -126,7 +126,7 @@ public final class PlayerManager {
         this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }
 
-    public void updateRemainingLives(@NotNull Player player, @NotNull Team beforeTeam, int lives) {
+    public void updateRemainingLives(@NotNull Player player, int lives) {
         this.teamManager.updateTeamLives(player, lives);
         this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }

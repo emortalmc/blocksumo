@@ -110,6 +110,11 @@ public final class PlayerDeathHandler {
     }
 
     public void kill(@NotNull Player player, @Nullable Entity killer) {
+        int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
+        player.setTag(PlayerTags.LIVES, (byte) remainingLives);
+
+        this.playerManager.updateRemainingLives(player, remainingLives);
+
         Team beforeTeam = player.getTeam();
         player.setTeam(DEAD_TEAM);
 
@@ -126,9 +131,6 @@ public final class PlayerDeathHandler {
         player.setCanPickupItem(false);
         player.getInventory().clear();
         player.setVelocity(new Vec(0, 40, 0));
-
-        int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
-        player.setTag(PlayerTags.LIVES, (byte) remainingLives);
 
         this.sendKillMessage(player, killer, remainingLives);
         this.sendVictimTitle(player, killer, remainingLives);
@@ -148,7 +150,6 @@ public final class PlayerDeathHandler {
             GameUpdateRequestEvent.trigger(this.game);
         }
 
-        this.playerManager.updateRemainingLives(player, beforeTeam, remainingLives);
         this.respawnHandler.scheduleRespawn(player, () -> player.setTeam(beforeTeam));
     }
 
