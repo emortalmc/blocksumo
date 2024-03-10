@@ -140,7 +140,7 @@ public final class PlayerDeathHandler {
                 GameUpdateRequestEvent.trigger(this.game); // Trigger after kills, lives and final kills have been updated.
             }
 
-            this.playerManager.removeDeadPlayer(player);
+            this.playerManager.removeDeadPlayer();
             this.checkForWinner();
             return;
         } else {
