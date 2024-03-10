@@ -53,4 +53,8 @@ tasks {
     build {
         dependsOn(shadowJar)
     }
+
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+    }
 }

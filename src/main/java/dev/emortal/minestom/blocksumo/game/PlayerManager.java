@@ -2,6 +2,8 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.damage.PlayerDamageHandler;
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
+import dev.emortal.minestom.blocksumo.scoreboard.Scoreboard;
+import dev.emortal.minestom.blocksumo.scoreboard.ScoreboardManager;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
@@ -19,7 +21,6 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.scoreboard.Sidebar;
 import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,23 +32,22 @@ public final class PlayerManager {
 
     private final @NotNull BlockSumoGame game;
     private final @NotNull PlayerRespawnHandler respawnHandler;
+    private final @NotNull ScoreboardManager scoreboardManager;
     private final @NotNull PlayerDeathHandler deathHandler;
     private final @NotNull PlayerTeamManager teamManager;
     private final @NotNull PlayerDamageHandler damageHandler;
     private final @NotNull PlayerBlockHandler blockHandler;
     private final @NotNull PlayerDiamondBlockHandler diamondBlockHandler;
 
-    private final @NotNull Sidebar scoreboard;
-
-    public PlayerManager(@NotNull BlockSumoGame game, @NotNull PlayerRespawnHandler respawnHandler, int minAllowedHeight) {
+    public PlayerManager(@NotNull BlockSumoGame game, @NotNull PlayerRespawnHandler respawnHandler, @NotNull ScoreboardManager scoreboardManager, int minAllowedHeight) {
         this.game = game;
         this.respawnHandler = respawnHandler;
+        this.scoreboardManager = scoreboardManager;
         this.deathHandler = new PlayerDeathHandler(game, this, respawnHandler, minAllowedHeight);
         this.teamManager = new PlayerTeamManager();
         this.damageHandler = new PlayerDamageHandler(game);
         this.blockHandler = new PlayerBlockHandler(game);
         this.diamondBlockHandler = new PlayerDiamondBlockHandler(game);
-        this.scoreboard = new Sidebar(BlockSumoGame.TITLE);
     }
 
     public void registerPreGameListeners(@NotNull EventNode<Event> eventNode) {
@@ -65,7 +65,7 @@ public final class PlayerManager {
         Player player = event.getPlayer();
         this.prepareInitialSpawn(player, player.getRespawnPoint());
         this.selectTeam(player);
-        this.scoreboard.addViewer(player);
+        this.scoreboardManager.addViewer(player);
         this.updateLivesInHealth(player);
     }
 
@@ -98,15 +98,9 @@ public final class PlayerManager {
         player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, 0L);
     }
 
-    public void setupWaitingScoreboard() {
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine("headerSpace", Component.empty(), 99));
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine("footerSpacer", Component.empty(), -8));
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine("ipLine", SCOREBOARD_FOOTER, -9));
-    }
-
     private void selectTeam(@NotNull Player player) {
         this.teamManager.allocateTeam(player);
-        this.scoreboard.createLine(new Sidebar.ScoreboardLine(player.getUuid().toString(), getScoreboardComponent(player, player.getTeam().getTeamColor()), 5));
+        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }
 
     public void cleanUp() {
@@ -124,36 +118,17 @@ public final class PlayerManager {
         player.removeTag(PlayerTags.LAST_DAMAGE_TIME);
         player.removeTag(PlayerTags.CAN_BE_HIT);
 
-        this.scoreboard.removeViewer(player);
-        this.scoreboard.removeLine(player.getUuid().toString());
+        this.scoreboardManager.removeViewer(player);
+        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }
 
-    public void removeDeadPlayer(@NotNull Player player) {
-        this.scoreboard.removeLine(player.getUuid().toString());
+    public void removeDeadPlayer() {
+        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }
 
-    public void updateRemainingLives(@NotNull Player player, @NotNull Team beforeTeam, int lives) {
+    public void updateRemainingLives(@NotNull Player player, int lives) {
         this.teamManager.updateTeamLives(player, lives);
-
-        String lineName = player.getUuid().toString();
-        this.scoreboard.updateLineContent(lineName, getScoreboardComponent(player, beforeTeam.getTeamColor()));
-        this.scoreboard.updateLineScore(lineName, lives);
-    }
-
-    public Component getScoreboardComponent(@NotNull Player player, @NotNull NamedTextColor teamColor) {
-        Byte lives = player.getTag(PlayerTags.LIVES);
-        TextColor livesColor;
-        if (lives == 5) {
-            livesColor = NamedTextColor.GREEN;
-        } else {
-            livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
-        }
-
-        return Component.text()
-                .append(Component.text(player.getUsername(), teamColor))
-                .append(Component.text(" - ", NamedTextColor.GRAY))
-                .append(Component.text(lives, livesColor, TextDecoration.BOLD))
-                .build();
+        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
     }
 
     public @NotNull PlayerDamageHandler getDamageHandler() {

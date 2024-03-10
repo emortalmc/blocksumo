@@ -10,6 +10,7 @@ import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
+import dev.emortal.minestom.blocksumo.scoreboard.ScoreboardManager;
 import dev.emortal.minestom.blocksumo.spawning.InitialSpawnPointSelector;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.spawning.SpawnProtectionManager;
@@ -74,7 +75,7 @@ public class BlockSumoGame extends Game {
 
         PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, this.map.data().spawnRadius());
 
-        this.playerManager = new PlayerManager(this, respawnHandler, 49);
+        this.playerManager = new PlayerManager(this, respawnHandler, new ScoreboardManager(), 49);
         this.spawnProtectionManager = new SpawnProtectionManager();
         this.disconnectHandler = new PlayerDisconnectHandler(this, this.playerManager, respawnHandler, this.spawnProtectionManager);
 
@@ -87,7 +88,6 @@ public class BlockSumoGame extends Game {
         this.explosionManager = new ExplosionManager(this);
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
-        this.playerManager.setupWaitingScoreboard();
     }
 
     @Override
