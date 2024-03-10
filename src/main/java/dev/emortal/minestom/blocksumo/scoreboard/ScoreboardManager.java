@@ -38,8 +38,8 @@ public final class ScoreboardManager implements Viewable {
         this.scoreboard.createLine(new Scoreboard.ScoreboardLine("footer", FOOTER, -9));
     }
 
-    public void updateScoreboard(@NotNull Set<Player> players) {
-        Set<Player> newScores = players.stream()
+    public void updateScoreboard() {
+        Set<Player> newScores = this.getViewers().stream()
                 .map(player -> Pair.of(player, player.getTag(PlayerTags.LIVES)))
                 .filter(pair -> pair.second() > 0)
                 .sorted(Comparator.<Pair<Player, Byte>, Byte>comparing(Pair::second).reversed())

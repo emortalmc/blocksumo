@@ -64,8 +64,9 @@ public final class PlayerManager {
     private void onSpawn(@NotNull PlayerSpawnEvent event) {
         Player player = event.getPlayer();
         this.prepareInitialSpawn(player, player.getRespawnPoint());
-        this.selectTeam(player);
+        this.teamManager.allocateTeam(player);
         this.scoreboardManager.addViewer(player);
+        this.scoreboardManager.updateScoreboard();
         this.updateLivesInHealth(player);
     }
 
@@ -98,11 +99,6 @@ public final class PlayerManager {
         player.setTag(PlayerTags.SPAWN_PROTECTION_TIME, 0L);
     }
 
-    private void selectTeam(@NotNull Player player) {
-        this.teamManager.allocateTeam(player);
-        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
-    }
-
     public void cleanUp() {
         this.teamManager.removeAllTeams();
         this.respawnHandler.stopAllScheduledRespawns();
@@ -119,16 +115,16 @@ public final class PlayerManager {
         player.removeTag(PlayerTags.CAN_BE_HIT);
 
         this.scoreboardManager.removeViewer(player);
-        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
+        this.scoreboardManager.updateScoreboard();
     }
 
     public void removeDeadPlayer() {
-        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
+        this.scoreboardManager.updateScoreboard();
     }
 
     public void updateRemainingLives(@NotNull Player player, int lives) {
         this.teamManager.updateTeamLives(player, lives);
-        this.scoreboardManager.updateScoreboard(this.game.getPlayers());
+        this.scoreboardManager.updateScoreboard();
     }
 
     public @NotNull PlayerDamageHandler getDamageHandler() {
