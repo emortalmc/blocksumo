@@ -30,6 +30,9 @@ public final class EventManager {
     public void registerDefaultEvents() {
         this.registry.registerEvent("TNT_RAIN", TntRainEvent::new);
         this.registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
+        // this can't be done for now because of a minestom bug.
+        // see https://github.com/Minestom/Minestom/issues/289
+//        this.registry.registerEvent("INSTA_BREAK", InstaBreakEvent::new);
 //        this.registry.registerEvent("MOTHERLOAD", MotherloadEvent::new);
     }
 

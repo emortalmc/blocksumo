@@ -9,6 +9,7 @@ import dev.emortal.minestom.blocksumo.event.EventManager;
 import dev.emortal.minestom.blocksumo.explosion.ExplosionManager;
 import dev.emortal.minestom.blocksumo.map.LoadedMap;
 import dev.emortal.minestom.blocksumo.map.MapData;
+import dev.emortal.minestom.blocksumo.metrics.BlockSumoMetrics;
 import dev.emortal.minestom.blocksumo.powerup.PowerUpManager;
 import dev.emortal.minestom.blocksumo.scoreboard.ScoreboardManager;
 import dev.emortal.minestom.blocksumo.spawning.InitialSpawnPointSelector;
@@ -18,6 +19,7 @@ import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.config.GameCreationInfo;
 import dev.emortal.minestom.gamesdk.game.Game;
 import dev.emortal.minestom.gamesdk.util.GameWinLoseMessages;
+import io.micrometer.core.instrument.Metrics;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -88,6 +90,8 @@ public class BlockSumoGame extends Game {
         this.explosionManager = new ExplosionManager(this);
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
+
+        new BlockSumoMetrics(this).bindTo(Metrics.globalRegistry);
     }
 
     @Override

@@ -16,8 +16,7 @@ import java.util.function.Supplier;
 public final class MapClearEvent implements BlockSumoEvent {
     private static final Component START_MESSAGE = Component.text()
             .append(Component.text("Uh oh...", NamedTextColor.RED))
-            .append(Component.text(" the map is being cleared", NamedTextColor.YELLOW))
-            .append(Component.text("!", NamedTextColor.GRAY))
+            .append(Component.text(" the map is being cleared!", NamedTextColor.YELLOW))
             .build();
     private static final int MAP_SIZE = 19;
     private static final int MAX_CLEAR_HEIGHT = 80;

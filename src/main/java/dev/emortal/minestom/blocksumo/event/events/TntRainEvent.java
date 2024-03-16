@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public final class TntRainEvent implements BlockSumoEvent {
     private static final Component START_MESSAGE = MiniMessage.miniMessage()
-            .deserialize("<red>Uh oh... <gray>prepare for <italic>lots</italic> of explosions; <yellow>the TNT rain event just started");
+            .deserialize("<red>Uh oh... <gray>prepare for <i>lots</i> of explosions; <yellow>the TNT rain event just started");
     private static final ExplosionData EXPLOSION = new ExplosionData(3, 33, 5, true);
 
     private final @NotNull BlockSumoGame game;
