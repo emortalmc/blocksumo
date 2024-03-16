@@ -8,6 +8,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 
     maven("https://repo.emortal.dev/snapshots")
     maven("https://repo.emortal.dev/releases")
@@ -17,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal.minestom:game-sdk:8ef77c3")
+    implementation("dev.emortal.minestom:game-sdk:fe89a3a")
 
     implementation("dev.emortal:rayfast:9ce231a")
 //    implementation("com.github.emortaldev:Particable:f7212f39fb")

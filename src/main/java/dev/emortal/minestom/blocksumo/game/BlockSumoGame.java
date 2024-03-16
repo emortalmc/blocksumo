@@ -91,7 +91,7 @@ public class BlockSumoGame extends Game {
 
         this.playerManager.registerPreGameListeners(super.getEventNode());
 
-        new BlockSumoMetrics(this).bindTo(Metrics.globalRegistry);
+        super.meters.addAll(new BlockSumoMetrics(this).register(Metrics.globalRegistry));
     }
 
     @Override
