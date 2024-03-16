@@ -86,11 +86,10 @@ public final class ScoreboardManager implements Viewable {
             livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
         }
 
-        Team team = player.getTeam();
-        if (team == null) throw new IllegalStateException("Player " + player.getUsername() + " has no team!");
+        if (!player.hasTag(PlayerTags.TEAM_COLOR)) throw new IllegalStateException("Player " + player.getUsername() + " has no team!");
 
         return Component.text()
-                .append(Component.text(player.getUsername(), team.getTeamColor()))
+                .append(Component.text(player.getUsername(), player.getTag(PlayerTags.TEAM_COLOR).getColor()))
                 .append(Component.text(" - ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build();
