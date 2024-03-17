@@ -23,7 +23,10 @@ import io.micrometer.core.instrument.Metrics;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
@@ -211,6 +214,8 @@ public class BlockSumoGame extends Game {
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(4))
         );
 
+        this.sendMessage(createVictoryMessage(winners));
+
         for (Player player : this.getPlayers()) {
             if (winners.contains(player)) {
                 player.showTitle(victoryTitle);
@@ -263,6 +268,51 @@ public class BlockSumoGame extends Game {
         }
 
         return BlockSumoScoreboard.newBuilder().putAllEntries(entries).build();
+    }
+
+    private Component createVictoryMessage(@NotNull Set<Player> winners) {
+        TextComponent.Builder message = Component.text();
+
+        message.append(Component.text(" ".repeat(61), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH));
+        message.append(Component.newline());
+        message.append(Component.newline());
+
+        message.append(MiniMessage.miniMessage().deserialize("<gradient:#ffc570:gold><bold>VICTORY</bold></gradient>"));
+        int i = 0;
+        for (Player winner : winners) {
+            if (i > 0) message.append(Component.text(","));
+            message.append(Component.space());
+            message.append(Component.text(winner.getUsername()));
+            i++;
+        }
+
+        message.append(Component.text("\n\nKill leaderboard:\n", NamedTextColor.WHITE));
+
+        // Copy the players and sort them by kills (descending)
+        List<Player> playersCopy = new ArrayList<>(this.getPlayers());
+        playersCopy.sort(Comparator.comparingInt(player -> -player.getTag(PlayerTags.KILLS)));
+
+        int j = 0;
+        for (Player player : playersCopy) {
+            j++;
+            Style style = switch (j) {
+                case 1: yield Style.style(NamedTextColor.GOLD);
+                case 2: yield Style.style(TextColor.color(210, 210, 210));
+                case 3: yield Style.style(TextColor.color(205, 127, 50));
+                default: yield Style.style(TextColor.color(140, 140, 140));
+            };
+
+            message.append(Component.text(j + ". ", j <= 3 ? NamedTextColor.WHITE : NamedTextColor.GRAY));
+            message.append(Component.text(player.getUsername(), style));
+            message.append(Component.text(" - ", NamedTextColor.DARK_GRAY));
+            message.append(Component.text(player.getTag(PlayerTags.KILLS), j <= 3 ? NamedTextColor.LIGHT_PURPLE : NamedTextColor.WHITE));
+            message.append(Component.newline());
+        }
+
+        message.append(Component.newline());
+        message.append(Component.text(" ".repeat(61), NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH));
+
+        return message.build();
     }
 
     @Override
