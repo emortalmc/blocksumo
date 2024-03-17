@@ -5,23 +5,23 @@ import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
 import it.unimi.dsi.fastutil.Pair;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.Viewable;
 import net.minestom.server.entity.Player;
-import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class ScoreboardManager implements Viewable {
 
     private static final @NotNull Component FOOTER = Component.text()
-            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
+            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev "), NamedTextColor.DARK_GRAY))
             .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
             .build();
 

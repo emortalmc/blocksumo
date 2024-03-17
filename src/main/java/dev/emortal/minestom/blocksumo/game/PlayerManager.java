@@ -2,15 +2,9 @@ package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.damage.PlayerDamageHandler;
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
-import dev.emortal.minestom.blocksumo.scoreboard.Scoreboard;
 import dev.emortal.minestom.blocksumo.scoreboard.ScoreboardManager;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
-import dev.emortal.minestom.blocksumo.utils.text.TextUtil;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.attribute.Attribute;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -21,14 +15,9 @@ import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
 public final class PlayerManager {
-    private static final Component SCOREBOARD_FOOTER = Component.text()
-            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
-            .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
-            .build();
 
     private final @NotNull BlockSumoGame game;
     private final @NotNull PlayerRespawnHandler respawnHandler;
