@@ -119,4 +119,8 @@ public final class PlayerManager {
     public @NotNull PlayerDamageHandler getDamageHandler() {
         return this.damageHandler;
     }
+
+    public @NotNull PlayerDeathHandler getDeathHandler() {
+        return deathHandler;
+    }
 }

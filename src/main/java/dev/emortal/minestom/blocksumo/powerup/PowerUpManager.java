@@ -114,6 +114,9 @@ public final class PowerUpManager {
         this.registry.registerPowerUp(new Fireball(this.game));
         this.registry.registerPowerUp(new Switcheroo(this.game));
         this.registry.registerPowerUp(new GrapplingHook(this.game));
+
+        // Unobtainable
+        this.registry.registerPowerUp(new HotPotato(this.game));
     }
 
     public @Nullable PowerUp findNamedPowerUp(@NotNull String id) {

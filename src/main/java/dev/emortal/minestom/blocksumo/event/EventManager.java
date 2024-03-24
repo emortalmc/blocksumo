@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.event;
 
 import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
+import dev.emortal.minestom.blocksumo.event.events.HotPotatoEvent;
 import dev.emortal.minestom.blocksumo.event.events.MapClearEvent;
 import dev.emortal.minestom.blocksumo.event.events.TntRainEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
@@ -30,6 +31,7 @@ public final class EventManager {
     public void registerDefaultEvents() {
         this.registry.registerEvent("TNT_RAIN", TntRainEvent::new);
         this.registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
+        this.registry.registerEvent("HOT_POTATO", HotPotatoEvent::new);
         // this can't be done for now because of a minestom bug.
         // see https://github.com/Minestom/Minestom/issues/289
 //        this.registry.registerEvent("INSTA_BREAK", InstaBreakEvent::new);

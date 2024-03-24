@@ -3,6 +3,7 @@ package dev.emortal.minestom.blocksumo.damage;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerManager;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
+import dev.emortal.minestom.blocksumo.powerup.item.HotPotato;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.game.GameUpdateRequestEvent;
@@ -112,6 +113,7 @@ public final class PlayerDeathHandler {
     public void kill(@NotNull Player player, @Nullable Entity killer) {
         int remainingLives = player.getTag(PlayerTags.LIVES) - 1;
         player.setTag(PlayerTags.LIVES, (byte) remainingLives);
+        player.removeTag(HotPotato.HOT_POTATO_HOLDER_TAG);
 
         this.playerManager.updateRemainingLives(player, remainingLives);
 
