@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
+import dev.emortal.minestom.blocksumo.entity.BetterEntity;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
@@ -8,10 +9,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
-import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
+import net.minestom.server.entity.metadata.display.TextDisplayMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerMoveEvent;
@@ -21,18 +24,20 @@ import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.Set;
 import java.util.function.Supplier;
 
 public final class PlayerDiamondBlockHandler {
-    private static final Point SPAWN = MapData.CENTER.sub(0.5, 0, 0.5);
     private static final int DIAMOND_BLOCK_SECONDS = 20;
 
     private final @NotNull BlockSumoGame game;
 
     private @Nullable Player playerOnDiamondBlock = null;
     private @Nullable Task diamondBlockTask = null;
+
+    private @Nullable BetterEntity textEntity = null;
+    private @Nullable BetterEntity countdownEntity = null;
+
 
     public PlayerDiamondBlockHandler(@NotNull BlockSumoGame game) {
         this.game = game;
@@ -49,7 +54,7 @@ public final class PlayerDiamondBlockHandler {
         if (player.getTeam() == PlayerDeathHandler.DEAD_TEAM) return false;
         if (player.getGameMode() != GameMode.SURVIVAL) return false;
 
-        return event.getNewPosition().sameBlock(SPAWN);
+        return event.getNewPosition().sameBlock(MapData.CENTER);
     }
 
     private void onPlayerMove(@NotNull PlayerMoveEvent event) {
@@ -76,10 +81,20 @@ public final class PlayerDiamondBlockHandler {
         if (this.playerOnDiamondBlock != null) {
             this.playerOnDiamondBlock.setLevel(0);
         }
+        this.playerOnDiamondBlock.setGlowing(false);
         this.playerOnDiamondBlock = null;
 
         if (this.diamondBlockTask != null) {
             this.diamondBlockTask.cancel();
+        }
+
+        if (textEntity != null) {
+            textEntity.remove();
+            textEntity = null;
+        }
+        if (countdownEntity != null) {
+            countdownEntity.remove();
+            countdownEntity = null;
         }
     }
 
@@ -104,6 +119,7 @@ public final class PlayerDiamondBlockHandler {
             }
 
             if (this.secondsLeft == 0) {
+                PlayerDiamondBlockHandler.this.stop();
                 this.game.victory(Set.of(this.player));
                 return TaskSchedule.stop();
             }
@@ -111,6 +127,18 @@ public final class PlayerDiamondBlockHandler {
             this.player.setLevel(this.secondsLeft);
             this.player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.MASTER, 1f, 1.5f), Sound.Emitter.self());
 
+            if (this.secondsLeft == 10) {
+                spawnCountdownTexts();
+            }
+            if (this.secondsLeft < 10) {
+                countdownEntity.editEntityMeta(TextDisplayMeta.class, meta -> {
+                    meta.setText(Component.text(this.secondsLeft, NamedTextColor.RED, TextDecoration.BOLD));
+                });
+            }
+
+            if (this.secondsLeft == 5) {
+                player.setGlowing(true);
+            }
             if (this.secondsLeft <= 5) {
                 this.notifyFinalCountdown();
             }
@@ -120,6 +148,35 @@ public final class PlayerDiamondBlockHandler {
 
             this.secondsLeft--;
             return TaskSchedule.seconds(1);
+        }
+
+        private void spawnCountdownTexts() {
+            textEntity = new BetterEntity(EntityType.TEXT_DISPLAY);
+            textEntity.editEntityMeta(TextDisplayMeta.class, meta -> {
+                meta.setText(Component.text()
+                        .append(Component.text(player.getUsername(), NamedTextColor.WHITE))
+                        .append(Component.text(" wins in", NamedTextColor.GRAY))
+                        .build());
+                meta.setScale(new Vec(1.2, 1, 1.2));
+                meta.setSeeThrough(true);
+                meta.setShadow(true);
+                meta.setBackgroundColor(0);
+                meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.VERTICAL);
+            });
+            textEntity.setTicking(false);
+            textEntity.setInstance(game.getInstance(), MapData.CENTER.add(0, 5, 0));
+
+            countdownEntity = new BetterEntity(EntityType.TEXT_DISPLAY);
+            countdownEntity.editEntityMeta(TextDisplayMeta.class, meta -> {
+                meta.setText(Component.text(this.secondsLeft, NamedTextColor.RED, TextDecoration.BOLD));
+                meta.setScale(new Vec(5.5));
+                meta.setSeeThrough(true);
+                meta.setShadow(true);
+                meta.setBackgroundColor(0);
+                meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.VERTICAL);
+            });
+            countdownEntity.setTicking(false);
+            countdownEntity.setInstance(game.getInstance(), MapData.CENTER.add(0, 3.5, 0));
         }
 
         private void notifyCountdown() {
@@ -139,13 +196,6 @@ public final class PlayerDiamondBlockHandler {
         }
 
         private void notifyFinalCountdown() {
-            TextColor titleColor = TextColor.lerp(this.secondsLeft / 5f, NamedTextColor.RED, NamedTextColor.GREEN);
-            this.game.showTitle(Title.title(
-                    Component.text(this.secondsLeft, titleColor, TextDecoration.BOLD),
-                    Component.empty(),
-                    Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
-            ));
-
             this.game.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 1f, 0.8f), Sound.Emitter.self());
         }
     }
