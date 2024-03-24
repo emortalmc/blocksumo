@@ -69,6 +69,7 @@ public final class MapClearEvent implements BlockSumoEvent {
         private void removeBlocksInRange(@NotNull AbsoluteBlockBatch batch, int currentIteration) {
             for (int x = -MAP_SIZE; x <= MAP_SIZE; x++) {
                 for (int z = -MAP_SIZE; z <= MAP_SIZE; z++) {
+                    if (instance.getBlock(x, 81 - currentIteration, z, Block.Getter.Condition.TYPE).compare(Block.BARRIER)) continue;
                     batch.setBlock(x, 81 - currentIteration, z, Block.AIR);
                     batch.setBlock(x, 82 - currentIteration, z, Block.AIR);
                     batch.setBlock(x, 83 - currentIteration, z, Block.AIR);
