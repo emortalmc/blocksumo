@@ -123,4 +123,8 @@ public final class PlayerManager {
     public @NotNull PlayerDeathHandler getDeathHandler() {
         return deathHandler;
     }
+
+    public PlayerBlockHandler getBlockHandler() {
+        return blockHandler;
+    }
 }

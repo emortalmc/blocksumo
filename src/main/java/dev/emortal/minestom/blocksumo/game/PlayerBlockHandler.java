@@ -117,17 +117,17 @@ public final class PlayerBlockHandler {
         return false;
     }
 
-    private boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
+    public boolean withinLegalRange(@NotNull Player player, @NotNull Point blockPos) {
         float range = player.isSneaking() ? SNEAKING_RANGE : NON_SNEAKING_RANGE;
 
         return blockPos.distanceSquared(player.getPosition().add(0, 1, 0)) <= range * range;
     }
 
-    private boolean withinWorldLimits(@NotNull Point blockPos) {
+    public boolean withinWorldLimits(@NotNull Point blockPos) {
         return blockPos.y() <= 77 && blockPos.y() >= 51.5;
     }
 
-    private boolean isAroundCenter(@NotNull Point blockPos) {
+    public boolean isAroundCenter(@NotNull Point blockPos) {
         return blockPos.distanceSquared(SPAWN) < 3 * 3 && blockPos.blockY() > (SPAWN.blockY() - 1);
     }
 

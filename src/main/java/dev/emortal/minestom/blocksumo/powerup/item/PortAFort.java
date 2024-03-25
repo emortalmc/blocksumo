@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.powerup.item;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import dev.emortal.minestom.blocksumo.game.PlayerBlockHandler;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.powerup.ItemRarity;
 import dev.emortal.minestom.blocksumo.powerup.PowerUp;
@@ -38,7 +39,11 @@ public final class PortAFort extends PowerUp {
 
     @Override
     public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
-        this.removeOneItemFromPlayer(player, hand);
+        if (!withinWorldLimits(clickedPos)) {
+            player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_NO, Sound.Source.MASTER, 1f, 1f), Sound.Emitter.self());
+            player.sendActionBar(Component.text("Port-A-Fort goes out of bounds!", NamedTextColor.RED));
+            return;
+        }
 
         Block woolBlock = player.getTag(PlayerTags.TEAM_COLOR).getWoolItem().material().registry().block();
 
@@ -47,7 +52,13 @@ public final class PortAFort extends PowerUp {
         AbsoluteBlockBatch bottomLayer = new AbsoluteBlockBatch();
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
-                bottomLayer.setBlock(clickedPos.add(x, -1, z), woolBlock);
+                Point blockPos = clickedPos.add(x, -1, z);
+                if (game.getInstance().getBlock(blockPos, Block.Getter.Condition.TYPE).compare(Block.BARRIER)) {
+                    player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_NO, Sound.Source.MASTER, 1f, 1f), Sound.Emitter.self());
+                    player.sendActionBar(Component.text("Port-A-Fort goes out of bounds!", NamedTextColor.RED));
+                    return;
+                }
+                bottomLayer.setBlock(blockPos, woolBlock);
             }
         }
         RelativeBlockBatch middleLayer = new RelativeBlockBatch();
@@ -62,11 +73,20 @@ public final class PortAFort extends PowerUp {
             for (int z = -3; z <= 3; z++) {
                 if (x != 3 && x != -3 && z != 3 && z != -3) continue;
                 if ((x == 3 && z == 3) || (x == 3 && z == -3) || (x == -3 && z == -3)|| (x == -3 && z == 3)) continue; // Remove corners
-                topLayer.setBlock(clickedPos.add(x, middleLayers, z), woolBlock);
+
+                Point blockPos = clickedPos.add(x, middleLayers, z);
+                if (game.getInstance().getBlock(blockPos, Block.Getter.Condition.TYPE).compare(Block.BARRIER)) {
+                    player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_NO, Sound.Source.MASTER, 1f, 1f), Sound.Emitter.self());
+                    player.sendActionBar(Component.text("Port-A-Fort goes out of bounds!", NamedTextColor.RED));
+                    return;
+                }
+                topLayer.setBlock(blockPos, woolBlock);
 
                 if (x % 2 == 0 || z % 2 == 0) topLayer.setBlock(clickedPos.add(x, middleLayers + 1, z), woolBlock);
             }
         }
+
+        this.removeOneItemFromPlayer(player, hand);
 
         this.game.getInstance().scheduler().submitTask(new Supplier<>() {
             int y = 0;
@@ -78,10 +98,6 @@ public final class PortAFort extends PowerUp {
                 }
                 if (y > 1 && y < middleLayers + 2) {
                     middleLayer.apply(game.getInstance(), clickedPos.add(0, y - 2, 0), null);
-                }
-                if ((clickedPos.blockY() + y) > 77) { // height limit
-                    game.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_NO, Sound.Source.MASTER, 1f, 0.8f), clickedPos.add(0, y - 1, 0));
-                    return TaskSchedule.stop();
                 }
                 if (y == middleLayers + 3) {
                     topLayer.apply(game.getInstance(), null);
@@ -98,4 +114,15 @@ public final class PortAFort extends PowerUp {
         });
         bottomLayer.unsafeApply(this.game.getInstance(), null);
     }
+
+    private boolean withinWorldLimits(Point clickedPos) {
+        PlayerBlockHandler blockHandler = this.game.getPlayerManager().getBlockHandler();
+
+        return blockHandler.withinWorldLimits(clickedPos.add(0, -1, 0)) &&
+                blockHandler.withinWorldLimits(clickedPos.add(4, 5, 4)) &&
+                blockHandler.withinWorldLimits(clickedPos.add(-4, 5, 4)) &&
+                blockHandler.withinWorldLimits(clickedPos.add(4, 5, -4)) &&
+                blockHandler.withinWorldLimits(clickedPos.add(-4, 5, -4));
+    }
+
 }
