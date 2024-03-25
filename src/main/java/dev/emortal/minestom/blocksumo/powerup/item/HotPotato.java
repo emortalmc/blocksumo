@@ -109,5 +109,13 @@ public final class HotPotato extends PowerUp {
             HotPotato.this.game.getPowerUpManager().givePowerUp(this.shooter, HotPotato.this);
             remove();
         }
+
+        @Override
+        public void tick(long time) {
+            super.tick(time);
+            if (this.position.y() < 45) {
+                collideBlock(this.position);
+            }
+        }
     }
 }
