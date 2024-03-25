@@ -35,23 +35,34 @@ public final class GameCommand extends Command {
 
         this.setCondition((sender, cmd) -> Conditions.playerOnly(sender, cmd) && sender.hasPermission("command.game.blocksumo"));
 
-        ArgumentLiteral start = new ArgumentLiteral("start");
         ArgumentLiteral event = new ArgumentLiteral("event");
+        ArgumentLiteral start = new ArgumentLiteral("start");
         ArgumentWord eventType = new ArgumentWord("eventType");
         Argument<Integer> count = new ArgumentInteger("count").min(1).setDefaultValue(1);
         Argument<Integer> delay = new ArgumentInteger("delay").min(1).setDefaultValue(1);
         eventType.setSuggestionCallback((sender, context, suggestion) -> this.suggestEvents(sender, suggestion));
 
-        this.addSyntax(this::executeStartEvent, start, event, count, delay);
-        this.addSyntax(this::executeStartEvent, start, event, eventType, count, delay);
+        // /game event start [count] [delay]
+        this.addSyntax(this::executeStartEvent, event, start, count, delay);
+        // /game event start <eventType> [count] [delay]
+        this.addSyntax(this::executeStartEvent, event, start, eventType, count, delay);
 
-        ArgumentLiteral give = new ArgumentLiteral("give");
         ArgumentLiteral powerup = new ArgumentLiteral("powerup");
+        ArgumentLiteral give = new ArgumentLiteral("give");
+        ArgumentLiteral giveAll = new ArgumentLiteral("giveall");
+        ArgumentLiteral spawn = new ArgumentLiteral("spawn");
         ArgumentWord powerUpType = new ArgumentWord("powerUpType");
         powerUpType.setSuggestionCallback((sender, context, suggestion) -> this.suggestPowerUps(sender, suggestion));
 
-        this.addSyntax(this::executeGivePowerUp, give, powerup);
-        this.addSyntax(this::executeGivePowerUp, give, powerup, powerUpType);
+        // /game powerup give [powerUpType]
+        this.addSyntax(this::executeGivePowerUp, powerup, give);
+        this.addSyntax(this::executeGivePowerUp, powerup, give, powerUpType);
+        // /game powerup giveall [powerUpType]
+        this.addSyntax(this::executeGiveAllPowerUp, powerup, giveAll);
+        this.addSyntax(this::executeGiveAllPowerUp, powerup, giveAll, powerUpType);
+        // /game powerup spawn [powerUpType]
+        this.addSyntax(this::executeSpawnPowerUp, powerup, spawn);
+        this.addSyntax(this::executeSpawnPowerUp, powerup, spawn, powerUpType);
     }
 
     private @Nullable BlockSumoGame getGame(@NotNull CommandSender sender) {
@@ -112,6 +123,18 @@ public final class GameCommand extends Command {
     }
 
     private void executeGivePowerUp(@NotNull CommandSender sender, @NotNull CommandContext context) {
+        this.giveOrSpawnPowerUp(sender, context, PowerUpAction.GIVE);
+    }
+
+    private void executeGiveAllPowerUp(@NotNull CommandSender sender, @NotNull CommandContext context) {
+        this.giveOrSpawnPowerUp(sender, context, PowerUpAction.GIVE_ALL);
+    }
+
+    private void executeSpawnPowerUp(@NotNull CommandSender sender, @NotNull CommandContext context) {
+        this.giveOrSpawnPowerUp(sender, context, PowerUpAction.SPAWN);
+    }
+
+    private void giveOrSpawnPowerUp(@NotNull CommandSender sender, @NotNull CommandContext context, @NotNull PowerUpAction action) {
         BlockSumoGame game = this.getGame(sender);
         if (game == null) return;
 
@@ -129,7 +152,17 @@ public final class GameCommand extends Command {
             powerUp = powerUpManager.findRandomPowerUp();
         }
 
-        powerUpManager.givePowerUp((Player) sender, powerUp);
-        sender.sendMessage(Component.text("Give power up " + powerUp.getName() + "!", NamedTextColor.GREEN));
+        switch (action) {
+            case GIVE -> powerUpManager.givePowerUp((Player) sender, powerUp);
+            case GIVE_ALL -> powerUpManager.givePowerUpToAll(powerUp);
+            case SPAWN -> powerUpManager.spawnPowerUp(powerUp);
+        }
+    }
+
+    private enum PowerUpAction {
+
+        GIVE,
+        GIVE_ALL,
+        SPAWN
     }
 }
