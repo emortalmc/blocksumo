@@ -79,6 +79,10 @@ public final class PortAFort extends PowerUp {
                 if (y > 1 && y < middleLayers + 2) {
                     middleLayer.apply(game.getInstance(), clickedPos.add(0, y - 2, 0), null);
                 }
+                if ((clickedPos.blockY() + y) > 77) { // height limit
+                    game.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_NO, Sound.Source.MASTER, 1f, 0.8f), clickedPos.add(0, y - 1, 0));
+                    return TaskSchedule.stop();
+                }
                 if (y == middleLayers + 3) {
                     topLayer.apply(game.getInstance(), null);
                     game.playSound(Sound.sound(SoundEvent.BLOCK_ANVIL_PLACE, Sound.Source.MASTER, 0.4f, 2f), clickedPos.add(0, y - 1, 0));
