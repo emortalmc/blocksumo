@@ -29,13 +29,16 @@ public final class KnockbackUtil {
         target.setVelocity(newVelocity);
     }
     public static void takeKnockback(@NotNull Entity target, @NotNull Point position, double strength) {
-        takeKnockback(target, Vec.fromPoint(target.getPosition().withY(0).sub(position.withY(0))).normalize(), strength);
+        Vec direction = Vec.fromPoint(target.getPosition().withY(0).sub(position.withY(0))).normalize();
+        if (Double.isNaN(direction.x())) direction = Vec.ZERO;
+        takeKnockback(target, direction, strength);
     }
     public static void takeKnockback(@NotNull Player source, @NotNull Player target) {
         Point sourceNoY = source.getPosition().withY(0);
         Point targetNoY = target.getPosition().withY(0);
 
         Vec direction = Vec.fromPoint(targetNoY.sub(sourceNoY)).normalize();
+        if (Double.isNaN(direction.x())) direction = source.getPosition().direction();
 
         double knockbackLevel = getKnockbackLevel(source);
         if (source.isSprinting()) {
