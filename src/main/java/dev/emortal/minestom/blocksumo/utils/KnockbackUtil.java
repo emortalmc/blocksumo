@@ -19,57 +19,36 @@ public final class KnockbackUtil {
     private static final double EXTRA_VERTICAL_KNOCKBACK = 0.1 * TPS;
     private static final double LIMIT_VERTICAL_KNOCKBACK = 0.5 * TPS;
 
-    public static void takeKnockback(@NotNull Entity target, @NotNull Point position, double strength) {
-        double horizontalKnockback = 0.25 * TPS;
+    public static void takeKnockback(@NotNull Entity target, @NotNull Vec direction, double strength) {
+        Vec newVelocity = target.getVelocity()
+                .mul(0.5)
+                .add(direction.mul(strength * HORIZONTAL_KNOCKBACK))
+                .add(0, VERTICAL_KNOCKBACK, 0)
+                .withY(y -> Math.min(y, LIMIT_VERTICAL_KNOCKBACK)); // cap Y at LIMIT_VERTICAL_KNOCKBACK;
 
-        double d0 = position.x() - target.getPosition().x();
-        double d1 = position.z() - target.getPosition().z();
-        double magnitude = Math.sqrt(d0 * d0 + d1 * d1) * strength;
-
-        Vec velocity = target.getVelocity();
-        double newVelocityX = magnitude != 0.0 ? ((velocity.x() / 2) - (d0 / magnitude * horizontalKnockback)) : velocity.x();
-        double newVelocityY = Math.min((velocity.y() / 2) + 8, 8);
-        double newVelocityZ = magnitude != 0.0 ? ((velocity.z() / 2) - (d1 / magnitude * horizontalKnockback)) : velocity.z();
-
-        if (newVelocityY > 8) {
-            newVelocityY = 8;
-        }
-        target.setVelocity(new Vec(newVelocityX, newVelocityY, newVelocityZ));
+        target.setVelocity(newVelocity);
     }
-
+    public static void takeKnockback(@NotNull Entity target, @NotNull Point position, double strength) {
+        takeKnockback(target, Vec.fromPoint(target.getPosition().withY(0).sub(position.withY(0))).normalize(), strength);
+    }
     public static void takeKnockback(@NotNull Player source, @NotNull Player target) {
-        double d0 = source.getPosition().x() - target.getPosition().x();
-        double d1 = source.getPosition().z() - target.getPosition().z();
-        while (d0 * d0 + d1 * d1 < 1.0E-4) {
-            d0 = (Math.random() - Math.random()) * 0.01;
-            d1 = (Math.random() - Math.random()) * 0.01;
-        }
+        Point sourceNoY = source.getPosition().withY(0);
+        Point targetNoY = target.getPosition().withY(0);
 
-        double magnitude = Math.sqrt(d0 * d0 + d1 * d1);
+        Vec direction = Vec.fromPoint(targetNoY.sub(sourceNoY)).normalize();
 
         double knockbackLevel = getKnockbackLevel(source);
         if (source.isSprinting()) {
             knockbackLevel += 1.0;
         }
 
-        Vec velocity = target.getVelocity();
-
-        double newVelocityX = (velocity.x() / 2) - (d0 / magnitude * HORIZONTAL_KNOCKBACK);
-        double newVelocityZ = (velocity.z() / 2) - (d1 / magnitude * HORIZONTAL_KNOCKBACK);
-
-        double newVelocityY = (velocity.y() / 2) + VERTICAL_KNOCKBACK;
-        if (newVelocityY > LIMIT_VERTICAL_KNOCKBACK) {
-            newVelocityY = LIMIT_VERTICAL_KNOCKBACK;
-        }
-
-        Vec newVelocity = new Vec(newVelocityX, newVelocityY, newVelocityZ);
-        if (knockbackLevel > 0) {
-            newVelocity = newVelocity.add(
-                    -Math.sin(Math.toRadians(source.getPosition().yaw())) * (knockbackLevel * EXTRA_HORIZONTAL_KNOCKBACK),
-                    EXTRA_VERTICAL_KNOCKBACK,
-                    Math.cos(Math.toRadians(source.getPosition().yaw())) * (knockbackLevel * EXTRA_HORIZONTAL_KNOCKBACK)
-            );
-        }
+        Vec newVelocity = target.getVelocity()
+                .mul(0.5)
+                .add(direction.mul(HORIZONTAL_KNOCKBACK))
+                .add(0, VERTICAL_KNOCKBACK, 0)
+                .withY(y -> Math.min(y, LIMIT_VERTICAL_KNOCKBACK)) // cap Y at LIMIT_VERTICAL_KNOCKBACK
+                .add(direction.mul(knockbackLevel * EXTRA_HORIZONTAL_KNOCKBACK))
+                .add(0, knockbackLevel > 0 ? EXTRA_VERTICAL_KNOCKBACK : 0, 0);
 
         target.setVelocity(newVelocity);
     }

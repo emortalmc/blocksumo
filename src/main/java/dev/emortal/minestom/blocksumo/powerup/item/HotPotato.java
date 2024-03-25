@@ -98,7 +98,7 @@ public final class HotPotato extends PowerUp {
             player.setTag(HOT_POTATO_HOLDER_TAG, true);
 
             sendWarningMessage(player);
-            KnockbackUtil.takeKnockback(player, pos, 0.5);
+            KnockbackUtil.takeKnockback(player, this.position.direction(), 0.2);
             HotPotato.this.game.getPowerUpManager().givePowerUp(player, HotPotato.this);
 
             remove();
