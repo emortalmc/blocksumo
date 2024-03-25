@@ -6,6 +6,7 @@ import dev.emortal.minestom.blocksumo.powerup.item.hook.GrapplingHook;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
+import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.item.ItemStack;
@@ -32,6 +33,7 @@ public final class PowerUpManager {
     public void registerListeners(@NotNull EventNode<Event> eventNode) {
         eventNode.addListener(PlayerUseItemEvent.class, this::onItemUse);
         eventNode.addListener(PlayerUseItemOnBlockEvent.class, this::onItemUseOnBlock);
+        eventNode.addListener(ItemDropEvent.class, e -> e.setCancelled(true));
 
 //        eventNode.addListener(ProjectileCollideWithBlockEvent.class, this::onCollideWithBlock);
 //        eventNode.addListener(ProjectileCollideWithEntityEvent.class, this::onCollideWithEntity);
