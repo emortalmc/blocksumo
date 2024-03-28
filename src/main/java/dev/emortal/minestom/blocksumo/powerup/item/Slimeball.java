@@ -68,8 +68,8 @@ public final class Slimeball extends PowerUp {
 
         @Override
         public void collidePlayer(@NotNull Point pos, @NotNull Player player) {
-            KnockbackUtil.takeKnockback(player, this.position.direction(), -1);
-            Slimeball.super.game.getPlayerManager().getDamageHandler().damage(player, shooter, false);
+            boolean successful = Slimeball.super.game.getPlayerManager().getDamageHandler().damage(player, shooter, false);
+            if (successful) KnockbackUtil.takeKnockback(player, this.position.direction(), -1);
             remove();
         }
 

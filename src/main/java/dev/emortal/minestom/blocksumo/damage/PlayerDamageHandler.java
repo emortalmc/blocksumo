@@ -88,8 +88,8 @@ public final class PlayerDamageHandler {
         player.setTag(PlayerTags.LAST_DAMAGE_TIME, System.currentTimeMillis());
     }
 
-    public void damage(@NotNull Player victim, @NotNull Player attacker, boolean knockback) {
-        if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return;
+    public boolean damage(@NotNull Player victim, @NotNull Player attacker, boolean knockback) {
+        if (!victim.getTag(PlayerTags.CAN_BE_HIT)) return false;
         victim.setTag(PlayerTags.CAN_BE_HIT, false);
 
         victim.damage(Damage.fromPlayer(attacker, 0));
@@ -97,6 +97,7 @@ public final class PlayerDamageHandler {
         if (knockback) KnockbackUtil.takeKnockback(attacker, victim);
 
         victim.scheduler().buildTask(() -> victim.setTag(PlayerTags.CAN_BE_HIT, true)).delay(TaskSchedule.tick(10)).schedule();
+        return true;
     }
 
 }
