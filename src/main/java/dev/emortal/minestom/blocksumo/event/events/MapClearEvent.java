@@ -63,7 +63,7 @@ public final class MapClearEvent implements BlockSumoEvent {
 
             this.playClearLayerSound();
             this.i++;
-            return TaskSchedule.millis(150);
+            return TaskSchedule.tick(4);
         }
 
         private void removeBlocksInRange(@NotNull AbsoluteBlockBatch batch, int currentIteration) {

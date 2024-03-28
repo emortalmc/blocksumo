@@ -11,6 +11,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.ServerFlag;
 import net.minestom.server.attribute.Attribute;
 import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
@@ -52,7 +53,7 @@ public final class PlayerRespawnHandler {
     public Block prepareSpawn(@NotNull Pos pos) {
         Instance instance = this.game.getInstance();
 
-        Block replacedBlock = instance.getBlock(pos.add(0, -1, 0));
+        Block replacedBlock = instance.getBlock(pos.add(0, -1, 0), Block.Getter.Condition.TYPE);
         instance.setBlock(pos.add(0, -1, 0), Block.BEDROCK);
         instance.setBlock(pos, Block.AIR);
         instance.setBlock(pos.add(0, 1, 0), Block.AIR);
@@ -202,7 +203,7 @@ public final class PlayerRespawnHandler {
             Instance instance = PlayerRespawnHandler.this.game.getInstance();
             MinecraftServer.getSchedulerManager()
                     .buildTask(() -> instance.setBlock(pos.blockX(), pos.blockY() - 1, pos.blockZ(), replacedBlock.isAir() ? Block.WHITE_WOOL : replacedBlock))
-                    .delay(TaskSchedule.tick(restoreDelay * MinecraftServer.TICK_PER_SECOND))
+                    .delay(TaskSchedule.tick(restoreDelay * ServerFlag.SERVER_TICKS_PER_SECOND))
                     .schedule();
         }
 

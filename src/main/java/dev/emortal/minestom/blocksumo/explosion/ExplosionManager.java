@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class ExplosionManager {
 
@@ -44,6 +45,8 @@ public final class ExplosionManager {
 
         PrimedTntMeta meta = (PrimedTntMeta) tnt.getEntityMeta();
         meta.setFuseTime(fuseTime);
+
+        tnt.setVelocity(new Vec(0.4, 4, 0).rotateAroundY(ThreadLocalRandom.current().nextDouble(Math.PI*2)));
 
         tnt.setInstance(this.instance, origin);
         this.playPrimedSound(tnt);

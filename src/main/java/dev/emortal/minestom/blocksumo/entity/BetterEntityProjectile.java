@@ -1,6 +1,6 @@
 package dev.emortal.minestom.blocksumo.entity;
 
-import net.minestom.server.MinecraftServer;
+import net.minestom.server.ServerFlag;
 import net.minestom.server.collision.CollisionUtils;
 import net.minestom.server.collision.PhysicsResult;
 import net.minestom.server.collision.Shape;
@@ -69,7 +69,7 @@ public class BetterEntityProjectile extends Entity {
                         z * finalDrag
                 ))
                 // Convert from block/tick to block/sec
-                .mul(MinecraftServer.TICK_PER_SECOND)
+                .mul(ServerFlag.SERVER_TICKS_PER_SECOND)
                 // Prevent infinitely decreasing velocity
                 .apply(Vec.Operator.EPSILON);
     }

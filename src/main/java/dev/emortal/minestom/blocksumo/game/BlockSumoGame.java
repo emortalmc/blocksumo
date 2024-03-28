@@ -113,13 +113,15 @@ public class BlockSumoGame extends Game {
 
     @Override
     public void start() {
-        this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
-
         this.countdownTask = this.map.instance().scheduler().submitTask(new Supplier<>() {
             int i = 5;
 
             @Override
             public @NotNull TaskSchedule get() {
+                if (this.i == 3) {
+                    BlockSumoGame.this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
+                }
+
                 if (this.i == 0) {
                     BlockSumoGame.this.showGameStartTitle();
                     BlockSumoGame.this.startGame();
