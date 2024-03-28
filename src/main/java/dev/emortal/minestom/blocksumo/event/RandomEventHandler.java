@@ -21,8 +21,8 @@ public final class RandomEventHandler {
     public void startRandomEventTask() {
         this.instance.scheduler()
                 .buildTask(this::startRandomEvent)
-                .delay(TaskSchedule.minutes(2))
-                .repeat(TaskSchedule.minutes(2))
+                .delay(TaskSchedule.tick(140 * 20)) // 2 minutes, 20 seconds
+                .repeat(TaskSchedule.tick(140 * 20)) // 2 minutes, 20 seconds
                 .schedule();
     }
 
