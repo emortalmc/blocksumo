@@ -3,11 +3,14 @@ package dev.emortal.minestom.blocksumo.spawning;
 import dev.emortal.minestom.blocksumo.map.MapData;
 import net.minestom.server.coordinate.Pos;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 
 public final class InitialSpawnPointSelector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InitialSpawnPointSelector.class);
     private static final double TWO_PI = Math.PI * 2;
 
     private final Queue<Pos> spawns;
@@ -36,7 +39,10 @@ public final class InitialSpawnPointSelector {
 
     public @NotNull Pos select() {
         Pos spawn = this.spawns.poll();
-        if (spawn == null) return MapData.CENTER; // Happens during local testing
+        if (spawn == null) {
+            LOGGER.error("Spawns exceeded initial spawn point queue size");
+            return MapData.CENTER.add(0, 1, 0); // Happens during local testing
+        }
         return spawn;
     }
 

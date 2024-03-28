@@ -53,7 +53,7 @@ public final class PlayerManager {
     private void onSpawn(@NotNull PlayerSpawnEvent event) {
         Player player = event.getPlayer();
         this.prepareInitialSpawn(player, player.getRespawnPoint());
-        this.teamManager.allocateTeam(player);
+        this.teamManager.setTeam(player);
         this.scoreboardManager.addViewer(player);
         this.scoreboardManager.updateScoreboard();
         this.updateLivesInHealth(player);
@@ -69,7 +69,9 @@ public final class PlayerManager {
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {
         this.respawnHandler.prepareSpawn(pos);
-        this.createLockingEntity(this.game.getSpawningInstance(player), player, pos);
+        if (!this.game.hasStarted()) { // Fix for players with McDonald's internet
+            this.createLockingEntity(this.game.getSpawningInstance(player), player, pos);
+        }
     }
 
     private void createLockingEntity(@NotNull Instance instance, @NotNull Player player, @NotNull Pos pos) {
@@ -124,7 +126,11 @@ public final class PlayerManager {
         return deathHandler;
     }
 
-    public PlayerBlockHandler getBlockHandler() {
+    public @NotNull PlayerBlockHandler getBlockHandler() {
         return blockHandler;
+    }
+
+    public @NotNull PlayerTeamManager getTeamManager() {
+        return teamManager;
     }
 }

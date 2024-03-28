@@ -66,6 +66,7 @@ public class BlockSumoGame extends Game {
     private final @NotNull ExplosionManager explosionManager;
     private final @NotNull LoadedMap map;
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
     private final AtomicBoolean ended = new AtomicBoolean(false);
 
     private @Nullable Task countdownTask;
@@ -102,6 +103,7 @@ public class BlockSumoGame extends Game {
         player.setRespawnPoint(this.initialSpawnPointSelector.select());
         player.setAutoViewable(true);
         this.playerManager.addInitialTags(player);
+        this.playerManager.getTeamManager().allocateTeam(player);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class BlockSumoGame extends Game {
         this.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.45f, 1.27f));
 
         this.countdownTask = this.map.instance().scheduler().submitTask(new Supplier<>() {
-            int i = 3;
+            int i = 5;
 
             @Override
             public @NotNull TaskSchedule get() {
@@ -132,6 +134,8 @@ public class BlockSumoGame extends Game {
     }
 
     private void startGame() {
+        started.set(true);
+
         this.playerManager.registerGameListeners(this.getEventNode());
         this.powerUpManager.registerListeners(this.getEventNode());
         this.removeLockingEntities();
@@ -356,5 +360,9 @@ public class BlockSumoGame extends Game {
 
     public boolean hasEnded() {
         return this.ended.get();
+    }
+
+    public boolean hasStarted() {
+        return this.started.get();
     }
 }

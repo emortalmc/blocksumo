@@ -20,12 +20,16 @@ public final class PlayerTeamManager {
 
     public void allocateTeam(@NotNull Player player) {
         TeamColor allocatedColor = this.allocateTeamColor();
+        player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
+    }
+
+    public void setTeam(@NotNull Player player) {
+        TeamColor allocatedColor = player.getTag(PlayerTags.TEAM_COLOR);
 
         SumoTeam team = new SumoTeam(allocatedColor.toString().toLowerCase(Locale.ROOT), allocatedColor);
         this.teams.put(allocatedColor, team);
 
         this.updateTeamLives(team, allocatedColor, player, 5);
-        player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
 
         player.setTeam(team.getScoreboardTeam());
     }
@@ -50,7 +54,7 @@ public final class PlayerTeamManager {
         }
 
         team.setSuffix(Component.text()
-                .append(Component.text(" - ", NamedTextColor.GRAY))
+                .append(Component.text(" • ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build());
     }
