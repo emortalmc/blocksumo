@@ -85,6 +85,9 @@ public final class ScoreboardManager implements Viewable {
         } else {
             livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
         }
+        if (lives > 5) {
+            livesColor = NamedTextColor.LIGHT_PURPLE;
+        }
 
         if (!player.hasTag(PlayerTags.TEAM_COLOR)) throw new IllegalStateException("Player " + player.getUsername() + " has no team!");
 

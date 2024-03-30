@@ -9,6 +9,7 @@ import dev.emortal.minestom.blocksumo.powerup.SpawnLocation;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.Material;
@@ -27,9 +28,18 @@ public final class ExtraLife extends PowerUp {
     public boolean shouldHandleBlockPlace() {
         return true;
     }
+    @Override
+    public void onBlockPlace(@NotNull Player player, @NotNull Player.Hand hand, @NotNull Point clickedPos) {
+        use(player, hand);
+    }
+
 
     @Override
     public void onUse(@NotNull Player player, Player.@NotNull Hand hand) {
+        use(player, hand);
+    }
+
+    public void use(@NotNull Player player, Player.@NotNull Hand hand) {
         this.removeOneItemFromPlayer(player, hand);
         this.playExtraLifeSound(player);
 
