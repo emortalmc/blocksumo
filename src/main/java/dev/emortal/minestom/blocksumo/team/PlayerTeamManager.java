@@ -52,6 +52,9 @@ public final class PlayerTeamManager {
         } else {
             livesColor = TextColor.lerp((lives - 1) / 4F, NamedTextColor.RED, NamedTextColor.GREEN);
         }
+        if (lives > 5) {
+            livesColor = NamedTextColor.LIGHT_PURPLE;
+        }
 
         team.setSuffix(Component.text()
                 .append(Component.text(" • ", NamedTextColor.GRAY))
