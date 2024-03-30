@@ -43,12 +43,12 @@ public final class RandomPowerUpHandler {
 
         instance.scheduler().buildTask(this::spawnRandomCenterPowerUp)
                 .delay(TaskSchedule.seconds(10))
-                .repeat(TaskSchedule.seconds(30))
+                .repeat(TaskSchedule.seconds(25))
                 .schedule();
 
         instance.scheduler().buildTask(this::giveRandomPowerUpToAll)
                 .delay(TaskSchedule.seconds(5))
-                .repeat(TaskSchedule.seconds(45))
+                .repeat(TaskSchedule.seconds(37))
                 .schedule();
     }
 
