@@ -24,6 +24,11 @@ public final class ExtraLife extends PowerUp {
     }
 
     @Override
+    public boolean shouldHandleBlockPlace() {
+        return true;
+    }
+
+    @Override
     public void onUse(@NotNull Player player, Player.@NotNull Hand hand) {
         this.removeOneItemFromPlayer(player, hand);
         this.playExtraLifeSound(player);
