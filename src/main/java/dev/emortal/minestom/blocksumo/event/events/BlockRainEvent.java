@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.event.events;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.coordinate.Pos;
@@ -9,6 +10,7 @@ import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.metadata.other.FallingBlockMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
@@ -85,6 +87,7 @@ public final class BlockRainEvent implements BlockSumoEvent {
             super.tick(time);
             if (isOnGround()) {
                 getInstance().setBlock(getPosition(), block);
+                getInstance().playSound(Sound.sound(SoundEvent.BLOCK_METAL_PLACE, Sound.Source.MASTER, 1f, 1f), getPosition());
                 remove();
             }
         }
