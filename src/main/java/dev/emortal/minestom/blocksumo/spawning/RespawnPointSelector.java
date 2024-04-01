@@ -12,12 +12,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
-final class RespawnPointSelector {
+public final class RespawnPointSelector {
     private static final double TWO_PI = Math.PI * 2;
     private static final double CHECK_OFFSET = TWO_PI / 150;
 
     private final @NotNull BlockSumoGame game;
-    private final int spawnRadius;
+    private int spawnRadius;
     private final @NotNull Set<Point> queuedPoints;
 
     RespawnPointSelector(@NotNull BlockSumoGame game, int spawnRadius) {
@@ -70,5 +70,13 @@ final class RespawnPointSelector {
         game.getInstance().scheduler().buildTask(() -> queuedPoints.remove(queuedPoint))
                 .delay(TaskSchedule.tick(5))
                 .schedule();
+    }
+
+    public int getSpawnRadius() {
+        return spawnRadius;
+    }
+
+    public void setSpawnRadius(int spawnRadius) {
+        this.spawnRadius = spawnRadius;
     }
 }

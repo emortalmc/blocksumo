@@ -58,6 +58,7 @@ public class BlockSumoGame extends Game {
             MiniMessage.miniMessage().deserialize("<gradient:blue:aqua><bold>Block Sumo</bold></gradient>");
 
     private final @NotNull PlayerManager playerManager;
+    private final @NotNull PlayerRespawnHandler respawnHandler;
     private final @NotNull SpawnProtectionManager spawnProtectionManager;
     private final @NotNull PlayerDisconnectHandler disconnectHandler;
     private final @NotNull EventManager eventManager;
@@ -79,7 +80,7 @@ public class BlockSumoGame extends Game {
         super(creationInfo);
         this.map = map;
 
-        PlayerRespawnHandler respawnHandler = new PlayerRespawnHandler(this, this.map.data().spawnRadius());
+        this.respawnHandler = new PlayerRespawnHandler(this, this.map.data().spawnRadius());
 
         this.playerManager = new PlayerManager(this, respawnHandler, new ScoreboardManager(), 49);
         this.spawnProtectionManager = new SpawnProtectionManager();
@@ -366,5 +367,10 @@ public class BlockSumoGame extends Game {
 
     public boolean hasStarted() {
         return this.started.get();
+    }
+
+
+    public void setRespawnRadius(int respawnRadius) {
+        this.respawnHandler.getRespawnPointSelector().setSpawnRadius(respawnRadius);
     }
 }
