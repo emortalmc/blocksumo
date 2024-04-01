@@ -32,8 +32,6 @@ public final class SmallBorderEvent implements BlockSumoEvent {
         instance.getWorldBorder().setDiameter(12, 15000);
 
         var task = instance.scheduler().buildTask(() -> {
-            instance.sendMessage(Component.text(getBorderSize()));
-
             for (Player player : this.game.getPlayers()) {
                 if (player.getGameMode() != GameMode.SURVIVAL) return;
 
