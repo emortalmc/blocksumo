@@ -40,8 +40,8 @@ public final class MapManager {
             "castle",
 //            "end",
             "icebs",
-            "ruinsbs",
-            "deepdark"
+            "ruinsbs"
+//            "deepdark"
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
