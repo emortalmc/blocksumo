@@ -34,14 +34,17 @@ public final class MapManager {
     private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
             .skylightEnabled(true)
             .build();
+    private static final DimensionType FULLBRIGHT_DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumofb"))
+            .ambientLight(1f)
+            .build();
 
     private static final List<String> ENABLED_MAPS = List.of(
             "blocksumo",
             "castle",
 //            "end",
             "icebs",
-            "ruinsbs"
-//            "deepdark"
+            "ruinsbs",
+            "deepdark"
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
@@ -128,7 +131,12 @@ public final class MapManager {
         }
 
         @NotNull LoadedMap load() {
-            InstanceContainer instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
+            InstanceContainer instance;
+            if (mapData.name().equals("Deep Dark")) {
+                instance = new InstanceContainer(UUID.randomUUID(), FULLBRIGHT_DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
+            } else {
+                instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
+            }
             MinecraftServer.getInstanceManager().registerInstance(instance);
 
             instance.enableAutoChunkLoad(false);
