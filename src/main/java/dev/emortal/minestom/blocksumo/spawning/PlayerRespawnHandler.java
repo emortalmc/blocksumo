@@ -221,4 +221,8 @@ public final class PlayerRespawnHandler {
             this.player.getInventory().setChestplate(chestplate);
         }
     }
+
+    public RespawnPointSelector getRespawnPointSelector() {
+        return respawnPointSelector;
+    }
 }

@@ -9,9 +9,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
-import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.metadata.item.ItemEntityMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.item.PickupItemEvent;
@@ -21,7 +19,6 @@ import net.minestom.server.item.firework.FireworkEffect;
 import net.minestom.server.item.firework.FireworkEffectType;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
-import net.minestom.server.utils.time.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -43,12 +40,12 @@ public final class RandomPowerUpHandler {
 
         instance.scheduler().buildTask(this::spawnRandomCenterPowerUp)
                 .delay(TaskSchedule.seconds(10))
-                .repeat(TaskSchedule.seconds(30))
+                .repeat(TaskSchedule.seconds(25))
                 .schedule();
 
         instance.scheduler().buildTask(this::giveRandomPowerUpToAll)
                 .delay(TaskSchedule.seconds(5))
-                .repeat(TaskSchedule.seconds(45))
+                .repeat(TaskSchedule.seconds(37))
                 .schedule();
     }
 
@@ -73,22 +70,16 @@ public final class RandomPowerUpHandler {
     }
 
     private void spawnRandomCenterPowerUp() {
-        ItemStack powerUp = this.powerUpManager.findRandomPowerUp(SpawnLocation.CENTER).createItemStack();
-        ItemEntity entity = new ItemEntity(powerUp);
+        PowerUp powerUp = this.powerUpManager.findRandomPowerUp(SpawnLocation.CENTER);
+        ItemStack powerUpItem = powerUp.createItemStack();
 
-        ItemEntityMeta meta = entity.getEntityMeta();
-        meta.setItem(powerUp);
-        meta.setCustomName(powerUp.getDisplayName());
-        meta.setCustomNameVisible(true);
+        for (Player player : this.game.getPlayers()) {
+            if (player.getGameMode() != GameMode.SURVIVAL) continue;
+            player.getInventory().addItemStack(powerUpItem);
+        }
 
-        entity.setNoGravity(true);
-        entity.setMergeable(false);
-        entity.setPickupDelay(5, TimeUnit.CLIENT_TICK);
-        entity.setBoundingBox(0.5, 0.25, 0.5);
-        entity.setInstance(this.game.getInstance(), MapData.CENTER);
-
-        this.notifySpawned(powerUp);
-        this.displaySpawnedFirework();
+        this.notifyGiven(powerUp);
+        this.playGivenSound();
     }
 
     private void giveRandomPowerUpToAll() {

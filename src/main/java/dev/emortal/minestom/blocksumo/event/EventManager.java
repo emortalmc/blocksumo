@@ -1,9 +1,6 @@
 package dev.emortal.minestom.blocksumo.event;
 
-import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
-import dev.emortal.minestom.blocksumo.event.events.HotPotatoEvent;
-import dev.emortal.minestom.blocksumo.event.events.MapClearEvent;
-import dev.emortal.minestom.blocksumo.event.events.TntRainEvent;
+import dev.emortal.minestom.blocksumo.event.events.*;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.sound.Sound;
 import net.minestom.server.sound.SoundEvent;
@@ -32,6 +29,8 @@ public final class EventManager {
         this.registry.registerEvent("TNT_RAIN", TntRainEvent::new);
         this.registry.registerEvent("MAP_CLEAR", MapClearEvent::new);
         this.registry.registerEvent("HOT_POTATO", HotPotatoEvent::new);
+        this.registry.registerEvent("BLOCK_RAIN", BlockRainEvent::new);
+        this.registry.registerEvent("SMALL_BORDER", SmallBorderEvent::new);
         // this can't be done for now because of a minestom bug.
         // see https://github.com/Minestom/Minestom/issues/289
 //        this.registry.registerEvent("INSTA_BREAK", InstaBreakEvent::new);
