@@ -25,7 +25,7 @@ dependencies {
 
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    implementation("dev.hollowcube:polar:1.7.2")
+    implementation("dev.hollowcube:polar:1.8.1")
 }
 
 java {
