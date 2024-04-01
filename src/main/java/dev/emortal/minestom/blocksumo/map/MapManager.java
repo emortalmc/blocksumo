@@ -52,6 +52,7 @@ public final class MapManager {
 
     public MapManager() {
         MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
+        MinecraftServer.getDimensionTypeManager().addDimension(FULLBRIGHT_DIMENSION_TYPE);
 
         Map<String, PreLoadedMap> maps = new HashMap<>();
         for (String mapName : ENABLED_MAPS) {
