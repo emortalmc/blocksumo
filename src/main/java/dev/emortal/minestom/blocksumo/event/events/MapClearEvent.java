@@ -19,7 +19,7 @@ public final class MapClearEvent implements BlockSumoEvent {
             .append(Component.text(" the map is being cleared!", NamedTextColor.YELLOW))
             .build();
     private static final int MAP_SIZE = 19;
-    private static final int MAX_CLEAR_HEIGHT = 110;
+    private static final int MAX_CLEAR_HEIGHT = 80;
     private static final int DIAMOND_BLOCK_HEIGHT = 64;
 
     private final @NotNull BlockSumoGame game;
