@@ -7,7 +7,6 @@ import dev.emortal.minestom.blocksumo.powerup.item.HotPotato;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
 import dev.emortal.minestom.gamesdk.game.GameUpdateRequestEvent;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -178,7 +177,7 @@ public final class PlayerDeathHandler {
     }
 
     private void playDeathSound(final @NotNull Player player) {
-        player.playSound(Sound.sound(Key.key("entity.roblox.death"), Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
+        player.playSound(Sound.sound(SoundEvent.ENTITY_VILLAGER_DEATH, Sound.Source.PLAYER, 1, 1), Sound.Emitter.self());
     }
 
     private void playKillSound(final @NotNull Player killer) {
