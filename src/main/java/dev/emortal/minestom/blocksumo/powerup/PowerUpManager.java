@@ -133,8 +133,10 @@ public final class PowerUpManager {
         this.registry.registerPowerUp(new Fireball(this.game));
         this.registry.registerPowerUp(new Switcheroo(this.game));
         this.registry.registerPowerUp(new GrapplingHook(this.game));
-        this.registry.registerPowerUp(new PortAFort(this.game));
-        this.registry.registerPowerUp(new ExtraLife(this.game));
+
+        // April Fools
+//        this.registry.registerPowerUp(new PortAFort(this.game));
+//        this.registry.registerPowerUp(new ExtraLife(this.game));
 
         // Unobtainable
         this.registry.registerPowerUp(new HotPotato(this.game));
