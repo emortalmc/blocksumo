@@ -40,13 +40,13 @@ public final class RandomPowerUpHandler {
         instance.scheduler()
                 .buildTask(() -> this.powerUpManager.spawnPowerUp(this.powerUpManager.findRandomPowerUp(SpawnLocation.CENTER)))
                 .delay(TaskSchedule.seconds(10))
-                .repeat(TaskSchedule.seconds(25))
+                .repeat(TaskSchedule.seconds(30))
                 .schedule();
 
         instance.scheduler()
                 .buildTask(() -> this.powerUpManager.givePowerUpToAll(this.powerUpManager.findRandomPowerUp(SpawnLocation.ANYWHERE)))
                 .delay(TaskSchedule.seconds(5))
-                .repeat(TaskSchedule.seconds(37))
+                .repeat(TaskSchedule.seconds(45))
                 .schedule();
     }
 
