@@ -124,7 +124,7 @@ public final class PlayerBlockHandler {
     }
 
     public boolean withinWorldLimits(@NotNull Point blockPos) {
-        return blockPos.y() <= 100 && blockPos.y() >= 51.5;
+        return blockPos.y() <= 77 && blockPos.y() >= 51.5;
     }
 
     public boolean isAroundCenter(@NotNull Point blockPos) {
