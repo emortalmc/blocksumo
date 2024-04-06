@@ -187,7 +187,7 @@ public final class PowerUpManager {
         ItemStack item = powerUp.createItemStack();
         player.getInventory().addItemStack(item);
 
-        this.notifyGiven(powerUp, player);
+        player.sendMessage(Component.text("You have been given " + powerUp.getName() + "!", NamedTextColor.GREEN));
         this.playGivenSound(player);
     }
 
@@ -199,7 +199,12 @@ public final class PowerUpManager {
             player.getInventory().addItemStack(powerUpItem);
         }
 
-        this.notifyGiven(powerUp, this.game);
+        Component message = Component.text()
+                .append(powerUp.getItemName())
+                .append(Component.text(" has been given to everyone!", NamedTextColor.GRAY))
+                .build();
+        this.game.sendMessage(message);
+
         this.playGivenSound(this.game);
     }
 
@@ -224,14 +229,6 @@ public final class PowerUpManager {
 
     public @NotNull Collection<String> getPowerUpIds() {
         return this.registry.getPowerUpNames();
-    }
-
-    private void notifyGiven(@NotNull PowerUp powerUp, @NotNull Audience audience) {
-        Component message = Component.text()
-                .append(powerUp.getItemName())
-                .append(Component.text(" has been given to everyone!", NamedTextColor.GRAY))
-                .build();
-        audience.sendMessage(message);
     }
 
     private void playGivenSound(@NotNull Audience audience) {
