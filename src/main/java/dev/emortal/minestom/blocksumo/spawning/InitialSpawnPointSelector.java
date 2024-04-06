@@ -40,6 +40,7 @@ public final class InitialSpawnPointSelector {
     }
 
     public @NotNull Pos select() {
+        LOGGER.info("Selecting spawn point (remaining before select: {})", this.spawns.size()); // Bug: spawns exceeded initial spawn point queue size
         Pos spawn = this.spawns.poll();
         if (spawn == null) {
             LOGGER.error("Spawns exceeded initial spawn point queue size");
