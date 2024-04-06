@@ -91,6 +91,7 @@ public class BlockSumoGame extends Game {
 
         this.powerUpManager = new PowerUpManager(this);
         this.powerUpManager.registerDefaultPowerUps();
+        System.out.printf("Current players (%s): %s%n", creationInfo.playerIds().size(), creationInfo.playerIds()); // Bug: players spawning in middle of map
         this.initialSpawnPointSelector = new InitialSpawnPointSelector(creationInfo.playerIds().size(), this.map.data().spawnRadius());
         this.explosionManager = new ExplosionManager(this);
 

@@ -20,6 +20,8 @@ public final class InitialSpawnPointSelector {
     }
 
     private @NotNull Queue<Pos> generateSpawns(int playerCount, int spawnRadius) {
+        LOGGER.info("Generating spawn points for {} players", playerCount); // Bug: players spawning in middle of map
+
         double playerOffset = TWO_PI / Math.max(playerCount, 1); // Fixes 0 player count on local testing
 
         Queue<Pos> spawns = new ArrayDeque<>();
