@@ -41,7 +41,7 @@ public final class MapManager {
     private static final List<String> ENABLED_MAPS = List.of(
             "blocksumo",
             "castle",
-//            "end",
+            "end",
             "icebs",
             "ruinsbs",
             "deepdark"
