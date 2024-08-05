@@ -50,7 +50,9 @@ public final class CreditsCommand extends Command {
         }
 
         TextComponent.Builder message = Component.text();
-        message.append(Component.text("This map was created by:", NamedTextColor.LIGHT_PURPLE));
+        message.append(Component.text("You're currently playing on ", NamedTextColor.LIGHT_PURPLE));
+        message.append(Component.text(game.mapData().name(), NamedTextColor.LIGHT_PURPLE));
+        message.append(Component.text(", created by:", NamedTextColor.LIGHT_PURPLE));
 
         for (String mapUsername : mapUsernames) {
             message.append(Component.newline());

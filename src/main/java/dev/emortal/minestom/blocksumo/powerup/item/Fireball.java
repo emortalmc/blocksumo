@@ -11,6 +11,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.ServerFlag;
+import net.minestom.server.collision.Aerodynamics;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
@@ -90,8 +91,7 @@ public final class Fireball extends PowerUp {
 
             this.shooter = shooter;
 
-            setDrag(false);
-            setGravityDrag(false);
+            setAerodynamics(new Aerodynamics(0.0, 1.0, 1.0));
             setNoGravity(true);
             setBoundingBox(0.6, 0.6, 0.6);
             setTag(PowerUp.NAME, Fireball.super.name);
@@ -132,7 +132,7 @@ public final class Fireball extends PowerUp {
             double posY = fireball.getPosition().y();
             double posZ = fireball.getPosition().z();
 
-            ParticlePacket packet = new ParticlePacket(Particle.LARGE_SMOKE, true, posX, posY, posZ, 0f, 0f, 0f, 1, 1);
+            ParticlePacket packet = new ParticlePacket(Particle.LARGE_SMOKE, true, posX, posY, posZ, 0f, 0f, 0f, 0.1f, 1);
             Fireball.this.game.sendGroupedPacket(packet);
         }
     }

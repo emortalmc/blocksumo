@@ -28,8 +28,8 @@ public final class SmallBorderEvent implements BlockSumoEvent {
 
         startShrink = System.currentTimeMillis();
         this.game.setRespawnRadius(5);
-        instance.getWorldBorder().setDiameter(40, 0);
-        instance.getWorldBorder().setDiameter(12, 15000);
+        instance.setWorldBorder(instance.getWorldBorder().withDiameter(40));
+        instance.setWorldBorder(instance.getWorldBorder().withDiameter(12), 15);
 
         var task = instance.scheduler().buildTask(() -> {
             for (Player player : this.game.getPlayers()) {
@@ -44,7 +44,7 @@ public final class SmallBorderEvent implements BlockSumoEvent {
         instance.scheduler().buildTask(() -> {
             task.cancel();
             this.game.setRespawnRadius(14);
-            instance.getWorldBorder().setDiameter(40000, 1);
+            instance.setWorldBorder(instance.getWorldBorder().withDiameter(40000));
         }).delay(TaskSchedule.tick(20 * 60)).schedule();
     }
 

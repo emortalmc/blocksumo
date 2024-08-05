@@ -3,11 +3,11 @@ package dev.emortal.minestom.blocksumo.map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import dev.emortal.minestom.blocksumo.utils.ChunkCopyingChunkLoader;
 import dev.emortal.minestom.blocksumo.utils.RandomStringGenerator;
 import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.registry.DynamicRegistry;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class MapManager {
@@ -31,10 +30,10 @@ public final class MapManager {
 
     private static final int CHUNK_LOADING_RADIUS = 5;
 
-    private static final DimensionType DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumo"))
-            .skylightEnabled(true)
+    private static final DimensionType DIMENSION_TYPE = DimensionType.builder()
+            .hasSkylight(true)
             .build();
-    private static final DimensionType FULLBRIGHT_DIMENSION_TYPE = DimensionType.builder(NamespaceID.from("emortalmc:blocksumofb"))
+    private static final DimensionType FULLBRIGHT_DIMENSION_TYPE = DimensionType.builder()
             .ambientLight(1f)
             .build();
 
@@ -42,17 +41,17 @@ public final class MapManager {
             "blocksumo",
             "castle",
             "end",
-            "icebs",
-            "ruinsbs",
-            "deepdark"
+            "ice",
+            "ruins"
+//            "deepdark"
     );
     private static final Path MAPS_PATH = Path.of("maps");
 
     private final @NotNull Map<String, PreLoadedMap> preLoadedMaps;
 
     public MapManager() {
-        MinecraftServer.getDimensionTypeManager().addDimension(DIMENSION_TYPE);
-        MinecraftServer.getDimensionTypeManager().addDimension(FULLBRIGHT_DIMENSION_TYPE);
+        MinecraftServer.getDimensionTypeRegistry().register("emortalmc:blocksumo", DIMENSION_TYPE);
+        MinecraftServer.getDimensionTypeRegistry().register("emortalmc:blocksumofb", FULLBRIGHT_DIMENSION_TYPE);
 
         Map<String, PreLoadedMap> maps = new HashMap<>();
         for (String mapName : ENABLED_MAPS) {
@@ -115,39 +114,30 @@ public final class MapManager {
 
     private class PreLoadedMap {
 
-        private final InstanceContainer parentInstance;
+        private final PolarLoader chunkLoader;
         private final MapData mapData;
         public PreLoadedMap(@NotNull PolarLoader chunkLoader, @NotNull MapData mapData) {
-            this.parentInstance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, chunkLoader, generateDimensionId());
-
-            this.parentInstance.enableAutoChunkLoad(false);
-            for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
-                for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-                    this.parentInstance.loadChunk(x, z);
-                }
-            }
-
+            this.chunkLoader = chunkLoader;
             this.mapData = mapData;
-            MinecraftServer.getInstanceManager().registerInstance(this.parentInstance);
         }
 
         @NotNull LoadedMap load() {
-            InstanceContainer instance;
-            if (mapData.name().equals("Deep Dark")) {
-                instance = new InstanceContainer(UUID.randomUUID(), FULLBRIGHT_DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
-            } else {
-                instance = new InstanceContainer(UUID.randomUUID(), DIMENSION_TYPE, new ChunkCopyingChunkLoader(this.parentInstance), generateDimensionId());
-            }
-            MinecraftServer.getInstanceManager().registerInstance(instance);
+            DynamicRegistry<DimensionType> dimRegistry = MinecraftServer.getDimensionTypeRegistry();
+            DynamicRegistry.Key<DimensionType> dimensionType = dimRegistry.getKey(DIMENSION_TYPE);
+            InstanceContainer newInstance = MinecraftServer.getInstanceManager().createInstanceContainer(dimensionType);
 
-            instance.enableAutoChunkLoad(false);
+            newInstance.setChunkLoader(this.chunkLoader);
+            newInstance.enableAutoChunkLoad(false);
+
             for (int x = -CHUNK_LOADING_RADIUS; x < CHUNK_LOADING_RADIUS; x++) {
                 for (int z = -CHUNK_LOADING_RADIUS; z < CHUNK_LOADING_RADIUS; z++) {
-                    instance.loadChunk(x, z);
+                    newInstance.loadChunk(x, z);
                 }
             }
 
-            return new LoadedMap(instance, this.mapData);
+            // Probably won't save any memory by removing chunk loader because PreLoadedMap needs to hold a reference anyway
+
+            return new LoadedMap(newInstance, this.mapData);
         }
 
         public MapData getMapData() {

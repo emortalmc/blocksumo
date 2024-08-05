@@ -6,8 +6,6 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
-
 public final class RandomEventHandler {
 
     private final @NotNull EventManager eventManager;
@@ -46,18 +44,15 @@ public final class RandomEventHandler {
 
     private void setTimeToDusk() {
         this.instance.setTimeRate(400);
-        this.instance.setTimeUpdate(Duration.ofMillis(50));
         this.instance.setTime(8000);
     }
 
     private void resetTimeAdvance() {
         this.instance.setTimeRate(0);
-        this.instance.setTimeUpdate(null);
     }
 
     private void setTimeToNight() {
         this.instance.setTime(16000);
         this.instance.setTimeRate(80);
-        this.instance.setTimeUpdate(Duration.ofMillis(50));
     }
 }

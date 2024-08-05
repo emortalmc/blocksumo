@@ -18,14 +18,14 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal.minestom:game-sdk:fe89a3a")
+    implementation("dev.emortal.minestom:game-sdk:24f5059")
 
     implementation("dev.emortal:rayfast:9ce231a")
 //    implementation("com.github.emortaldev:Particable:f7212f39fb")
 
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    implementation("dev.hollowcube:polar:1.8.1")
+    implementation("dev.hollowcube:polar:1.11.1")
 }
 
 java {

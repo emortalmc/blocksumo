@@ -59,8 +59,6 @@ public final class MotherloadEvent implements BlockSumoEvent {
             super(EntityType.TNT_MINECART);
             this.game = game;
 
-            this.setGravity(0, this.getGravityAcceleration() / 3.5);
-
             MinecraftServer.getSchedulerManager()
                     .buildTask(() -> this.setInstance(game.getInstance(), MOTHERLOAD_SPAWN_POS))
                     .delay(SPAWN_DELAY)

@@ -1,28 +1,16 @@
 package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
-import dev.emortal.minestom.blocksumo.map.MapData;
-import dev.emortal.minestom.blocksumo.utils.FireworkUtil;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.minestom.server.color.Color;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.item.PickupItemEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.firework.FireworkEffect;
-import net.minestom.server.item.firework.FireworkEffectType;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
 
 public final class RandomPowerUpHandler {
 

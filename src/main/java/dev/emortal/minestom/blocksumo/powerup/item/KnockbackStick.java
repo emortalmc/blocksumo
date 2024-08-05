@@ -9,11 +9,15 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.Enchantment;
-import net.minestom.server.item.ItemMeta;
+import net.minestom.server.item.ItemComponent;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.EnchantmentList;
+import net.minestom.server.item.enchant.Enchantment;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 public final class KnockbackStick extends PowerUp {
     private static final Component NAME = Component.text("Zaza Stick", NamedTextColor.RED);
@@ -24,8 +28,8 @@ public final class KnockbackStick extends PowerUp {
     }
 
     @Override
-    public void addExtraMetadata(@NotNull ItemMeta.Builder builder) {
-        builder.enchantment(Enchantment.KNOCKBACK, (short) 1);
+    public void addExtraMetadata(@NotNull ItemStack.Builder builder) {
+        builder.set(ItemComponent.ENCHANTMENTS, new EnchantmentList(Map.of(Enchantment.KNOCKBACK, 1)));
     }
 
     @Override

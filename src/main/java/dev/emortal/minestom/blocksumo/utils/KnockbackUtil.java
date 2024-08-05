@@ -5,11 +5,11 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.Enchantment;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.component.EnchantmentList;
+import net.minestom.server.item.enchant.Enchantment;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Map;
 
 public final class KnockbackUtil {
     private static final int TPS = ServerFlag.SERVER_TICKS_PER_SECOND;
@@ -58,9 +58,11 @@ public final class KnockbackUtil {
 
     private static double getKnockbackLevel(@NotNull Player source) {
         ItemStack mainHand = source.getItemInMainHand();
-        Map<Enchantment, Short> enchantments = mainHand.meta().getEnchantmentMap();
-        Short level = enchantments.get(Enchantment.KNOCKBACK);
-        return level != null ? (double) level : 0.0;
+        EnchantmentList enchantments = mainHand.get(ItemComponent.ENCHANTMENTS);
+        if (enchantments == null) return 0.0;
+        Integer level = enchantments.enchantments().get(Enchantment.KNOCKBACK);
+        if (level == null) return 0.0;
+        return (double) level;
     }
 
     private KnockbackUtil() {

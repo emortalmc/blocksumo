@@ -2,13 +2,14 @@ package dev.emortal.minestom.blocksumo.powerup;
 
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.ItemMeta;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public abstract class PowerUp {
     public static final @NotNull Tag<String> NAME = Tag.String("power_up");
@@ -26,7 +27,7 @@ public abstract class PowerUp {
         this.spawnLocation = spawnLocation;
     }
 
-    public void addExtraMetadata(@NotNull ItemMeta.Builder builder) {
+    public void addExtraMetadata(@NotNull ItemStack.Builder builder) {
         // Do nothing by default
     }
 
@@ -63,15 +64,15 @@ public abstract class PowerUp {
     }
 
     public final @NotNull ItemStack createItemStack() {
-        return ItemStack.builder(this.itemInfo.material())
+        ItemStack.Builder builder = ItemStack.builder(this.itemInfo.material())
                 .amount(this.itemInfo.amount())
-                .meta(builder -> {
-                    builder.displayName(this.itemInfo.name().decoration(TextDecoration.ITALIC, false));
-                    builder.lore(this.itemInfo.rarity().getName().decoration(TextDecoration.ITALIC, false));
-                    this.addExtraMetadata(builder);
-                    builder.setTag(NAME, this.name);
-                })
-                .build();
+                .set(ItemComponent.ITEM_NAME, this.itemInfo.name())
+                .set(ItemComponent.LORE, List.of(this.itemInfo.rarity().getName()))
+                .set(NAME, this.name);
+
+        this.addExtraMetadata(builder);
+
+        return builder.build();
     }
 
     public @NotNull String getName() {

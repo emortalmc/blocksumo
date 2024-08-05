@@ -31,16 +31,16 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import net.minestom.server.item.metadata.LeatherArmorMeta;
+import net.minestom.server.item.component.DyedItemColor;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -187,7 +187,7 @@ public class BlockSumoGame extends Game {
     private void giveColoredChestplate(@NotNull Player player) {
         TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
         ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
-                .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
+                .set(ItemComponent.DYED_COLOR, new DyedItemColor(color.getColor()))
                 .build();
         player.getInventory().setChestplate(chestplate);
     }

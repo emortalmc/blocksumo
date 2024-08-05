@@ -5,11 +5,11 @@ import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
 import dev.emortal.minestom.blocksumo.scoreboard.ScoreboardManager;
 import dev.emortal.minestom.blocksumo.spawning.PlayerRespawnHandler;
 import dev.emortal.minestom.blocksumo.team.PlayerTeamManager;
-import net.minestom.server.attribute.Attribute;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.metadata.other.AreaEffectCloudMeta;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -63,8 +63,8 @@ public final class PlayerManager {
         int lives = player.getTag(PlayerTags.LIVES);
         float health = lives * 2;
 
-        player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
-        player.setHealth(player.getMaxHealth());
+        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
+        player.heal();
     }
 
     private void prepareInitialSpawn(@NotNull Player player, @NotNull Pos pos) {

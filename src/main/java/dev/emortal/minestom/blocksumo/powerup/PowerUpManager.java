@@ -20,9 +20,9 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.firework.FireworkEffect;
-import net.minestom.server.item.firework.FireworkEffectType;
+import net.minestom.server.item.component.FireworkExplosion;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.TagReadable;
 import net.minestom.server.utils.time.TimeUnit;
@@ -214,7 +214,7 @@ public final class PowerUpManager {
 
         ItemEntityMeta meta = entity.getEntityMeta();
         meta.setItem(item);
-        meta.setCustomName(item.getDisplayName());
+        meta.setCustomName(item.get(ItemComponent.ITEM_NAME));
         meta.setCustomNameVisible(true);
 
         entity.setNoGravity(true);
@@ -237,15 +237,20 @@ public final class PowerUpManager {
 
     private void notifySpawned(@NotNull ItemStack powerUp) {
         Component message = Component.text()
-                .append(Objects.requireNonNull(powerUp.getDisplayName()))
+                .append(Objects.requireNonNull(powerUp.get(ItemComponent.ITEM_NAME)))
                 .append(Component.text(" has spawned at the center!", NamedTextColor.GRAY))
                 .build();
         this.game.sendMessage(message);
     }
 
     private void displaySpawnedFirework() {
-        FireworkEffect effect = new FireworkEffect(false, false, FireworkEffectType.SMALL_BALL,
-                List.of(new Color(255, 100, 0)), List.of(new Color(255, 0, 255)));
+        FireworkExplosion effect = new FireworkExplosion(
+                FireworkExplosion.Shape.SMALL_BALL,
+                List.of(new Color(255, 100, 0)),
+                List.of(new Color(255, 0, 255)),
+                false,
+                false
+        );
         FireworkUtil.showFirework(this.game.getPlayers(), this.game.getInstance(), FIREWORK_CENTER, List.of(effect));
     }
 }

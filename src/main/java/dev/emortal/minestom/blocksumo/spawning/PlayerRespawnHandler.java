@@ -12,16 +12,16 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.ServerFlag;
-import net.minestom.server.attribute.Attribute;
-import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import net.minestom.server.item.metadata.LeatherArmorMeta;
+import net.minestom.server.item.component.DyedItemColor;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -161,8 +161,8 @@ public final class PlayerRespawnHandler {
             }
 
             this.player.setArrowCount(0);
-            this.player.setFireForDuration(0);
-            this.player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1F);
+            this.player.setFireTicks(0);
+            this.player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.1F);
             this.player.setCanPickupItem(true);
 
             if (this.player.getOpenInventory() != null) {
@@ -186,8 +186,8 @@ public final class PlayerRespawnHandler {
             int lives = this.player.getTag(PlayerTags.LIVES);
             float health = lives * 2;
 
-            this.player.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
-            this.player.setHealth(this.player.getMaxHealth());
+            this.player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
+            this.player.heal();
         }
 
         private void playRespawnSound() {
@@ -216,7 +216,7 @@ public final class PlayerRespawnHandler {
         private void giveColoredChestplate() {
             TeamColor color = this.player.getTag(PlayerTags.TEAM_COLOR);
             ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
-                    .meta(LeatherArmorMeta.class, meta -> meta.color(new Color(color.getColor())))
+                    .set(ItemComponent.DYED_COLOR, new DyedItemColor(color.getColor()))
                     .build();
             this.player.getInventory().setChestplate(chestplate);
         }

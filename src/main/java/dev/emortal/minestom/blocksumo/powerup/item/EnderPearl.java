@@ -41,13 +41,20 @@ public final class EnderPearl extends PowerUp {
     }
 
     private void playThrowSound(@NotNull Player thrower) {
-        Sound sound = Sound.sound(SoundEvent.ENTITY_ENDER_PEARL_THROW, Sound.Source.BLOCK, 1, 1);
+        Sound sound = Sound.sound(SoundEvent.ENTITY_ENDER_PEARL_THROW, Sound.Source.PLAYER, 1, 1);
+        Pos source = thrower.getPosition();
+        this.game.playSound(sound, source.x(), source.y(), source.z());
+    }
+
+    private void playCollideSound(@NotNull Player thrower) {
+        Sound sound = Sound.sound(SoundEvent.ENTITY_PLAYER_TELEPORT, Sound.Source.PLAYER, 1, 1);
         Pos source = thrower.getPosition();
         this.game.playSound(sound, source.x(), source.y(), source.z());
     }
 
     private void onCollide(@NotNull Player shooter, @NotNull Point collisionPosition) {
         shooter.teleport(Pos.fromPoint(collisionPosition));
+        playCollideSound(shooter);
     }
 
     private final class EnderPearlEntity extends BetterEntityProjectile {
@@ -60,7 +67,7 @@ public final class EnderPearl extends PowerUp {
             setTag(PowerUp.NAME, EnderPearl.super.name);
             setBoundingBox(0.25, 0.25, 0.25);
             setVelocity(shooter.getPosition().direction().mul(35.0));
-            setGravity(0.04, 0.04);
+            setAerodynamics(getAerodynamics().withGravity(0.04));
         }
 
         @Override

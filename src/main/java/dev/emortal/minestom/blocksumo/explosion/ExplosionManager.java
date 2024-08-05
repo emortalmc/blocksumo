@@ -128,7 +128,7 @@ public final class ExplosionManager {
             batch.setBlock(blockPos, Block.AIR);
         }
 
-        batch.apply(this.instance, () -> {});
+        batch.apply(this.instance, null);
     }
 
     private boolean canExplodeBlock(@NotNull Block block) {
