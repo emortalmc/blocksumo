@@ -82,6 +82,7 @@ public final class MapManager {
     }
 
     public @NotNull LoadedMap getMap(@Nullable String id) {
+        LOGGER.info("Getting map {}", id);
         if (id == null) {
             return this.getRandomMap();
         }
@@ -106,6 +107,7 @@ public final class MapManager {
     }
 
     public @NotNull LoadedMap getRandomMap() {
+        LOGGER.info("Getting random map");
         String randomMapId = ENABLED_MAPS.get(ThreadLocalRandom.current().nextInt(ENABLED_MAPS.size()));
 
         PreLoadedMap map = this.preLoadedMaps.get(randomMapId);
@@ -122,6 +124,7 @@ public final class MapManager {
         }
 
         @NotNull LoadedMap load() {
+            LOGGER.info("Creating new instance and loading chunks");
             DynamicRegistry<DimensionType> dimRegistry = MinecraftServer.getDimensionTypeRegistry();
             DynamicRegistry.Key<DimensionType> dimensionType = dimRegistry.getKey(DIMENSION_TYPE);
             InstanceContainer newInstance = MinecraftServer.getInstanceManager().createInstanceContainer(dimensionType);
