@@ -22,7 +22,7 @@ import java.util.Map;
 
 public final class Puncher extends PowerUp {
     private static final PowerUpItemInfo ITEM_INFO =
-            new PowerUpItemInfo(Material.BLAZE_ROD, Component.text("Puncher", NamedTextColor.RED), ItemRarity.RARE);
+            new PowerUpItemInfo(Material.PHANTOM_MEMBRANE, Component.text("Puncher", NamedTextColor.RED), ItemRarity.RARE);
 
     public Puncher(@NotNull BlockSumoGame game) {
         super(game, "puncher", ITEM_INFO, SpawnLocation.CENTER);
@@ -31,6 +31,7 @@ public final class Puncher extends PowerUp {
     @Override
     public void addExtraMetadata(@NotNull ItemStack.Builder builder) {
         builder.set(ItemComponent.ENCHANTMENTS, new EnchantmentList(Map.of(Enchantment.KNOCKBACK, 4)));
+        builder.set(ItemComponent.CUSTOM_MODEL_DATA, 4);
     }
 
     @Override
