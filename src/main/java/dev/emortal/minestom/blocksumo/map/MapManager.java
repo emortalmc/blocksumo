@@ -3,12 +3,12 @@ package dev.emortal.minestom.blocksumo.map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import dev.emortal.minestom.blocksumo.utils.RandomStringGenerator;
+import dev.emortal.minestom.blocksumo.utils.NoSaveyPolar;
 import net.hollowcube.polar.PolarLoader;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.instance.IChunkLoader;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.registry.DynamicRegistry;
-import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +63,7 @@ public final class MapManager {
                 MapData mapData = GSON.fromJson(new JsonReader(new FileReader(dataPath.toFile())), MapData.class);
                 LOGGER.info("Loaded map data for map {}: [{}]", mapName, mapData);
 
-                PolarLoader polarLoader = new PolarLoader(polarPath);
+                PolarLoader polarLoader = new NoSaveyPolar(polarPath);
 //                if (!Files.exists(polarPath)) { // File needs to be converted
 //                    PolarWorld world = AnvilPolar.anvilToPolar(mapPath, ChunkSelector.radius(CHUNK_LOADING_RADIUS));
 //                    Files.write(polarPath, PolarWriter.write(world));
@@ -138,18 +138,13 @@ public final class MapManager {
                 }
             }
 
-            // Probably won't save any memory by removing chunk loader because PreLoadedMap needs to hold a reference anyway
+            newInstance.setChunkLoader(IChunkLoader.noop());
 
             return new LoadedMap(newInstance, this.mapData);
         }
 
         public MapData getMapData() {
             return mapData;
-        }
-
-        private static @NotNull NamespaceID generateDimensionId() {
-            String randomValue = RandomStringGenerator.generate(16);
-            return NamespaceID.from("emortalmc", "dim_" + randomValue);
         }
     }
 }
