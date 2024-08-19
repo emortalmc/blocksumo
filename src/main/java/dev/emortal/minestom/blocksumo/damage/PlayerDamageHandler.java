@@ -73,7 +73,7 @@ public final class PlayerDamageHandler {
     }
 
     private boolean areOnSameTeam(@NotNull Player player1, @NotNull Player player2) {
-        return this.getTeamColor(player1) == this.getTeamColor(player2);
+        return this.getTeamColor(player1).equals(this.getTeamColor(player2));
     }
 
     private boolean withinLegalRange(@NotNull Player attacker, @NotNull Player victim) {

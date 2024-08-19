@@ -185,9 +185,9 @@ public class BlockSumoGame extends Game {
     }
 
     private void giveColoredChestplate(@NotNull Player player) {
-        TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
+        TextColor color = player.getTag(PlayerTags.TEAM_COLOR).getTextColor();
         ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
-                .set(ItemComponent.DYED_COLOR, new DyedItemColor(color.getColor()))
+                .set(ItemComponent.DYED_COLOR, new DyedItemColor(color))
                 .build();
         player.getInventory().setChestplate(chestplate);
     }

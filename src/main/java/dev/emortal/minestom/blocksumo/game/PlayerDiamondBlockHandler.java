@@ -3,7 +3,6 @@ package dev.emortal.minestom.blocksumo.game;
 import dev.emortal.minestom.blocksumo.damage.PlayerDeathHandler;
 import dev.emortal.minestom.blocksumo.entity.BetterEntity;
 import dev.emortal.minestom.blocksumo.map.MapData;
-import dev.emortal.minestom.blocksumo.team.TeamColor;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -101,14 +100,14 @@ public final class PlayerDiamondBlockHandler {
     private final class DiamondBlockTask implements Supplier<TaskSchedule> {
 
         private final @NotNull Player player;
-        private final @NotNull TeamColor teamColor;
+        private final @NotNull TextColor teamColor;
         private final @NotNull BlockSumoGame game = PlayerDiamondBlockHandler.this.game;
 
         private int secondsLeft = DIAMOND_BLOCK_SECONDS;
 
         DiamondBlockTask(@NotNull Player player) {
             this.player = player;
-            this.teamColor = player.getTag(PlayerTags.TEAM_COLOR);
+            this.teamColor = player.getTag(PlayerTags.TEAM_COLOR).getTextColor();
         }
 
         @Override
@@ -164,6 +163,7 @@ public final class PlayerDiamondBlockHandler {
                 meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.VERTICAL);
             });
             textEntity.setTicking(false);
+            textEntity.setHasCollision(false);
             textEntity.setInstance(game.getInstance(), MapData.CENTER.add(0, 5, 0));
 
             countdownEntity = new BetterEntity(EntityType.TEXT_DISPLAY);
@@ -176,6 +176,7 @@ public final class PlayerDiamondBlockHandler {
                 meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.VERTICAL);
             });
             countdownEntity.setTicking(false);
+            countdownEntity.setHasCollision(false);
             countdownEntity.setInstance(game.getInstance(), MapData.CENTER.add(0, 3.5, 0));
         }
 
@@ -183,7 +184,7 @@ public final class PlayerDiamondBlockHandler {
             this.game.sendMessage(Component.text()
                     .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
                     .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(this.player.getUsername(), TextColor.color(this.teamColor.getColor()), TextDecoration.BOLD))
+                    .append(Component.text(this.player.getUsername(), this.teamColor, TextDecoration.BOLD))
                     .append(Component.text(" is standing on the diamond block!\n", NamedTextColor.GRAY))
                     .append(Component.text("!", NamedTextColor.RED, TextDecoration.BOLD))
                     .append(Component.text(" | ", NamedTextColor.DARK_GRAY))

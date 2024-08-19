@@ -7,45 +7,50 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
+import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class PlayerTeamManager {
-    private static final List<TeamColor> COLORS = List.of(TeamColor.values());
-    private static final Random RANDOM = new Random();
 
-    private final List<TeamColor> remainingColors = new ArrayList<>(COLORS);
-    private final Map<TeamColor, SumoTeam> teams = new EnumMap<>(TeamColor.class);
+    private final List<Integer> teamColours = new ArrayList<>();
 
     public void allocateTeam(@NotNull Player player) {
-        TeamColor allocatedColor = this.allocateTeamColor();
-        player.setTag(PlayerTags.TEAM_COLOR, allocatedColor);
+        int randomColour = -1;
+        while (randomColour == -1 || teamColours.contains(randomColour)) { // Stop collisions
+            randomColour = Color.HSBtoRGB(ThreadLocalRandom.current().nextFloat(), 1f, 1f);
+        }
+
+        teamColours.add(randomColour);
+
+        player.setTag(PlayerTags.TEAM_COLOR, new TeamColor(TextColor.color(randomColour)));
     }
 
     public void setTeam(@NotNull Player player) {
         TeamColor allocatedColor = player.getTag(PlayerTags.TEAM_COLOR);
 
-        SumoTeam team = new SumoTeam(allocatedColor.toString().toLowerCase(Locale.ROOT), allocatedColor);
-        this.teams.put(allocatedColor, team);
+        Team minestomTeam = MinecraftServer.getTeamManager().createBuilder(allocatedColor.getTextColor().asHexString())
+                .teamColor(allocatedColor.getNamedTextColor())
+                .collisionRule(TeamsPacket.CollisionRule.NEVER)
+                .updateTeamPacket()
+                .build();
 
-        this.updateTeamLives(team, allocatedColor, player, 5);
+        player.setTeam(minestomTeam);
 
-        player.setTeam(team.getScoreboardTeam());
+        this.updateTeamLives(minestomTeam, 5, allocatedColor);
     }
 
     public void updateTeamLives(@NotNull Player player, int lives) {
-        TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
-
-        SumoTeam team = this.teams.get(color);
-        if (team == null) {
-            throw new IllegalStateException("Team for player " + player.getUsername() + " is null!");
-        }
-
-        this.updateTeamLives(team, color, player, lives);
+        TeamColor allocatedColor = player.getTag(PlayerTags.TEAM_COLOR);
+        updateTeamLives(player.getTeam(), lives, allocatedColor);
     }
 
-    private void updateTeamLives(@NotNull SumoTeam team, @NotNull TeamColor teamColor, @NotNull Player player, int lives) {
+    public void updateTeamLives(@NotNull Team team, int lives, TeamColor color) {
         TextColor livesColor;
         if (lives == 5) {
             livesColor = NamedTextColor.GREEN;
@@ -60,27 +65,14 @@ public final class PlayerTeamManager {
                 .append(Component.text(" • ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build());
-    }
 
-    private @NotNull TeamColor allocateTeamColor() {
-        // We will try to allocate all the colours before we start reusing them.
-        if (this.remainingColors.isEmpty()) return getRandomColor();
-
-        int randomIndex = RANDOM.nextInt(this.remainingColors.size());
-        TeamColor selectedColor = this.remainingColors.get(randomIndex);
-
-        this.remainingColors.remove(randomIndex);
-        return selectedColor;
-    }
-
-    private @NotNull TeamColor getRandomColor() {
-        int randomIndex = RANDOM.nextInt(COLORS.size());
-        return COLORS.get(randomIndex);
-    }
-
-    public void removeAllTeams() {
-        for (SumoTeam team : this.teams.values()) {
-            MinecraftServer.getTeamManager().deleteTeam(team.getScoreboardTeam());
+        for (Player player : team.getPlayers()) {
+            player.setDisplayName(
+                    Component.text()
+                            .append(Component.text(player.getUsername(), color.getTextColor()))
+                            .append(team.getSuffix())
+                            .build()
+            );
         }
     }
 }

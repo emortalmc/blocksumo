@@ -216,7 +216,7 @@ public final class PlayerRespawnHandler {
         private void giveColoredChestplate() {
             TeamColor color = this.player.getTag(PlayerTags.TEAM_COLOR);
             ItemStack chestplate = ItemStack.builder(Material.LEATHER_CHESTPLATE)
-                    .set(ItemComponent.DYED_COLOR, new DyedItemColor(color.getColor()))
+                    .set(ItemComponent.DYED_COLOR, new DyedItemColor(color.getNamedTextColor()))
                     .build();
             this.player.getInventory().setChestplate(chestplate);
         }

@@ -21,6 +21,10 @@ public class BetterEntity extends Entity {
         this.hasPhysics = physics;
     }
 
+    public void setHasCollision(boolean hasCollision) {
+        this.hasCollision = hasCollision;
+    }
+
     public void setTicking(boolean ticking) {
         this.ticking = ticking;
     }

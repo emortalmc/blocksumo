@@ -39,7 +39,6 @@ public final class PlayerDisconnectHandler {
         if (singlePlayerWinner) this.endWithSinglePlayerWinner();
 
         this.respawnHandler.cleanUpPlayer(player);
-        this.spawnProtectionManager.cleanUpPlayer(player);
 
         this.playerManager.cleanUpPlayer(player);
         if (!singlePlayerWinner) this.checkForWinner();
@@ -83,7 +82,7 @@ public final class PlayerDisconnectHandler {
 
         Player firstPlayer = alivePlayers.iterator().next();
         for (Player alive : alivePlayers) {
-            if (alive.getTag(PlayerTags.TEAM_COLOR) != firstPlayer.getTag(PlayerTags.TEAM_COLOR)) return;
+            if (!alive.getTag(PlayerTags.TEAM_COLOR).equals(firstPlayer.getTag(PlayerTags.TEAM_COLOR))) return;
         }
         this.game.victory(alivePlayers);
     }

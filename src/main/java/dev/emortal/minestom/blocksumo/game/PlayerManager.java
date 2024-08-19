@@ -91,7 +91,6 @@ public final class PlayerManager {
     }
 
     public void cleanUp() {
-        this.teamManager.removeAllTeams();
         this.respawnHandler.stopAllScheduledRespawns();
 
         for (Player player : this.game.getPlayers()) {

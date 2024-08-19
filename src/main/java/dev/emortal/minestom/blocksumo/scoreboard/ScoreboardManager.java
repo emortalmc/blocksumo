@@ -21,8 +21,7 @@ import java.util.stream.Collectors;
 public final class ScoreboardManager implements Viewable {
 
     private static final @NotNull Component FOOTER = Component.text()
-            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev "), NamedTextColor.DARK_GRAY))
-            .append(Component.text("       ", NamedTextColor.DARK_GRAY, TextDecoration.STRIKETHROUGH))
+            .append(Component.text(TextUtil.convertToSmallFont("mc.emortal.dev"), NamedTextColor.DARK_GRAY))
             .build();
 
     // max lines is 12 because we take up 3 of our 15 lines with the header and footer
@@ -92,7 +91,7 @@ public final class ScoreboardManager implements Viewable {
         if (!player.hasTag(PlayerTags.TEAM_COLOR)) throw new IllegalStateException("Player " + player.getUsername() + " has no team!");
 
         return Component.text()
-                .append(Component.text(player.getUsername(), player.getTag(PlayerTags.TEAM_COLOR).getColor()))
+                .append(Component.text(player.getUsername(), player.getTag(PlayerTags.TEAM_COLOR).getTextColor()))
                 .append(Component.text(" - ", NamedTextColor.GRAY))
                 .append(Component.text(lives, livesColor, TextDecoration.BOLD))
                 .build();

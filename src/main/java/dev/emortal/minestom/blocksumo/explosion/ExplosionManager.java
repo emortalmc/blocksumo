@@ -82,12 +82,12 @@ public final class ExplosionManager {
 
     private void doExplosionDamage(@NotNull Point position, @NotNull ExplosionData explosion, @Nullable Player source, @NotNull Entity entity) {
         UUID sourceId = source == null ? null : source.getUuid();
-        TeamColor sourceColor = source == null ? null : source.getTag(PlayerTags.TEAM_COLOR);
+        TeamColor sourceTeam = source == null ? null : source.getTag(PlayerTags.TEAM_COLOR);
 
         double forceDistance = explosion.forceDistance() * explosion.forceDistance();
         for (Player player : this.game.getPlayers()) {
             if (player.getGameMode() != GameMode.SURVIVAL) continue;
-            if (!this.canBeHarmedBySource(player, sourceId, sourceColor)) continue;
+            if (!this.canBeHarmedBySource(player, sourceId, sourceTeam)) continue;
 
             double distance = player.getPosition().distanceSquared(position);
             if (distance > forceDistance) continue;
@@ -109,7 +109,7 @@ public final class ExplosionManager {
     private boolean canBeHarmedBySource(@NotNull Player target, @Nullable UUID sourceId, @Nullable TeamColor sourceColor) {
         return target.getUuid().equals(sourceId) ||
                 !this.game.getSpawnProtectionManager().isProtected(target) && // Target does not have spawn protection
-                target.getTag(PlayerTags.TEAM_COLOR) != sourceColor; // Target is not on the same team as source
+                !target.getTag(PlayerTags.TEAM_COLOR).equals(sourceColor); // Target is not on the same team as source
     }
 
     private void explodeBlocks(@NotNull Point origin, @NotNull ExplosionData explosion) {
