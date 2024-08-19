@@ -77,7 +77,7 @@ public final class HotPotato extends PowerUp {
         );
     }
 
-    private final class HotPotatoEntity extends BetterEntityProjectile {
+    public final class HotPotatoEntity extends BetterEntityProjectile {
         private final Player shooter;
         public HotPotatoEntity(@NotNull Player shooter) {
             super(shooter, EntityType.SNOWBALL);

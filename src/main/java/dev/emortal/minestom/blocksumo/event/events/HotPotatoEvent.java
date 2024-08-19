@@ -8,6 +8,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.ServerFlag;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.sound.SoundEvent;
@@ -96,6 +97,10 @@ public final class HotPotatoEvent implements BlockSumoEvent {
             this.game.getPlayerManager().getDeathHandler().kill(hotPotatoHolder, null);
             // harmless explosion
             this.game.getExplosionManager().explode(hotPotatoHolder.getPosition(), new ExplosionData(2, 0.0, 0.0, false), null, hotPotatoHolder);
+        }
+
+        for (Entity entity : this.game.getInstance().getEntities()) {
+            if (entity instanceof HotPotato.HotPotatoEntity) entity.remove();
         }
 
         this.game.hideBossBar(bossBar);
