@@ -164,12 +164,13 @@ public class BlockSumoGame extends Game {
     }
 
     private void showGameStartTitle() {
-        Title title = Title.title(
-                Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
-                Component.empty(),
-                Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ZERO)
-        );
-        this.showTitle(title);
+//        Title title = Title.title(
+//                Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
+//                Component.empty(),
+//                Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ZERO)
+//        );
+//        this.showTitle(title);
+        this.clearTitle();
     }
 
     private void removeLockingEntities() {
@@ -234,6 +235,8 @@ public class BlockSumoGame extends Game {
                 player.playSound(defeatSound);
             }
         }
+
+        getEventManager().getRandomEventHandler().stopRandomEventTask();
 
         this.map.instance().scheduler().buildTask(this::finish).delay(TaskSchedule.seconds(6)).schedule();
     }

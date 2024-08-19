@@ -3,13 +3,16 @@ package dev.emortal.minestom.blocksumo.event;
 import dev.emortal.minestom.blocksumo.event.events.BlockSumoEvent;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class RandomEventHandler {
 
     private final @NotNull EventManager eventManager;
     private final @NotNull Instance instance;
+    private @Nullable Task randomEventTask = null;
 
     public RandomEventHandler(@NotNull BlockSumoGame game, @NotNull EventManager eventManager) {
         this.eventManager = eventManager;
@@ -17,11 +20,18 @@ public final class RandomEventHandler {
     }
 
     public void startRandomEventTask() {
-        this.instance.scheduler()
+        randomEventTask = this.instance.scheduler()
                 .buildTask(this::startRandomEvent)
                 .delay(TaskSchedule.tick(140 * 20)) // 2 minutes, 20 seconds
                 .repeat(TaskSchedule.tick(140 * 20)) // 2 minutes, 20 seconds
                 .schedule();
+    }
+
+    public void stopRandomEventTask() {
+        if (randomEventTask != null) {
+            randomEventTask.cancel();
+            randomEventTask = null;
+        }
     }
 
     private void startRandomEvent() {

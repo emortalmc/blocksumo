@@ -113,6 +113,7 @@ public final class PlayerRespawnHandler {
         }
 
         private void showCountdownTitle(int countdown) {
+            if (game.hasEnded()) return;
             Title title = Title.title(
                     Component.text(countdown, TextColor.lerp(countdown / 3F, NamedTextColor.GREEN, NamedTextColor.RED), TextDecoration.BOLD),
                     Component.empty(),

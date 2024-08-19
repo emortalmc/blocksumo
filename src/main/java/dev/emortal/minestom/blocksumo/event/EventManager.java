@@ -67,4 +67,8 @@ public final class EventManager {
     public @NotNull Collection<String> getEventNames() {
         return this.registry.getEventNames();
     }
+
+    public @NotNull RandomEventHandler getRandomEventHandler() {
+        return randomEventHandler;
+    }
 }
