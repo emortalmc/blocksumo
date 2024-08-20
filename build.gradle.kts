@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.emortal.minestom:game-sdk:24f5059")
+    implementation("dev.emortal.minestom:game-sdk:884345c")
 
     implementation("dev.emortal:rayfast:9ce231a")
 //    implementation("com.github.emortaldev:Particable:f7212f39fb")

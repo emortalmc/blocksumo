@@ -16,7 +16,6 @@ public final class Main {
 
             return GameSdkConfig.builder()
                     .minPlayers(BlockSumoGame.MIN_PLAYERS)
-                    .maxGames(5)
                     .gameCreator(info -> new BlockSumoGame(info, mapManager.getMap(info.mapId())))
                     .build();
         });
