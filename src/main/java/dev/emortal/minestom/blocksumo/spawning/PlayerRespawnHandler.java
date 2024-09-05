@@ -1,5 +1,6 @@
 package dev.emortal.minestom.blocksumo.spawning;
 
+import dev.emortal.api.model.gamedata.V1BlockSumoPlayerData;
 import dev.emortal.minestom.blocksumo.game.BlockSumoGame;
 import dev.emortal.minestom.blocksumo.game.PlayerTags;
 import dev.emortal.minestom.blocksumo.team.TeamColor;
@@ -209,9 +210,11 @@ public final class PlayerRespawnHandler {
         }
 
         private void giveWoolAndShears() {
+            V1BlockSumoPlayerData playerData = PlayerRespawnHandler.this.game.getPlayerDataMap().get(this.player.getUuid());
             TeamColor color = this.player.getTag(PlayerTags.TEAM_COLOR);
-            this.player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-            this.player.getInventory().setItemStack(1, color.getWoolItem());
+
+            this.player.getInventory().setItemStack(playerData.getShearsSlot(), ItemStack.of(Material.SHEARS, 1));
+            this.player.getInventory().setItemStack(playerData.getBlockSlot(), color.getWoolItem());
         }
 
         private void giveColoredChestplate() {

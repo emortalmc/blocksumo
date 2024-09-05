@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.game;
 
 import com.google.protobuf.Message;
+import dev.emortal.api.model.gamedata.V1BlockSumoPlayerData;
 import dev.emortal.api.model.gametracker.BlockSumoFinishData;
 import dev.emortal.api.model.gametracker.BlockSumoScoreboard;
 import dev.emortal.api.model.gametracker.BlockSumoUpdateData;
@@ -66,6 +67,7 @@ public class BlockSumoGame extends Game {
     private final @NotNull InitialSpawnPointSelector initialSpawnPointSelector;
     private final @NotNull ExplosionManager explosionManager;
     private final @NotNull LoadedMap map;
+    private final @NotNull Map<UUID, V1BlockSumoPlayerData> playerDataMap;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final AtomicBoolean ended = new AtomicBoolean(false);
@@ -76,9 +78,10 @@ public class BlockSumoGame extends Game {
     private Set<Player> winners;
     private BlockSumoScoreboard endOfGameScoreboard;
 
-    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map) {
+    public BlockSumoGame(@NotNull GameCreationInfo creationInfo, @NotNull LoadedMap map, Map<UUID, V1BlockSumoPlayerData> playerData) {
         super(creationInfo);
         this.map = map;
+        this.playerDataMap = playerData;
 
         this.respawnHandler = new PlayerRespawnHandler(this, this.map.data().spawnRadius());
 
@@ -145,7 +148,9 @@ public class BlockSumoGame extends Game {
         this.removeLockingEntities();
 
         for (Player player : this.getPlayers()) {
-            this.giveWoolAndShears(player);
+            V1BlockSumoPlayerData playerData = this.playerDataMap.get(player.getUuid());
+
+            this.giveWoolAndShears(player, playerData);
             this.giveColoredChestplate(player);
             this.setSpawnBlockToWool(player);
         }
@@ -179,10 +184,10 @@ public class BlockSumoGame extends Game {
         }
     }
 
-    private void giveWoolAndShears(@NotNull Player player) {
+    private void giveWoolAndShears(@NotNull Player player, @NotNull V1BlockSumoPlayerData playerData) {
         TeamColor color = player.getTag(PlayerTags.TEAM_COLOR);
-        player.getInventory().setItemStack(0, ItemStack.of(Material.SHEARS, 1));
-        player.getInventory().setItemStack(1, color.getWoolItem());
+        player.getInventory().setItemStack(playerData.getShearsSlot(), ItemStack.of(Material.SHEARS, 1));
+        player.getInventory().setItemStack(playerData.getBlockSlot(), color.getWoolItem());
     }
 
     private void giveColoredChestplate(@NotNull Player player) {
@@ -339,6 +344,10 @@ public class BlockSumoGame extends Game {
 
     public @NotNull Instance getInstance() {
         return this.map.instance();
+    }
+
+    public @NotNull Map<UUID, V1BlockSumoPlayerData> getPlayerDataMap() {
+        return this.playerDataMap;
     }
 
     public @NotNull PlayerManager getPlayerManager() {
