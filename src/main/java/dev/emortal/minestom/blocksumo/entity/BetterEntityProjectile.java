@@ -1,6 +1,7 @@
 package dev.emortal.minestom.blocksumo.entity;
 
 import net.minestom.server.collision.CollisionUtils;
+import net.minestom.server.collision.EntityCollisionResult;
 import net.minestom.server.collision.PhysicsResult;
 import net.minestom.server.collision.Shape;
 import net.minestom.server.collision.ShapeImpl;
@@ -14,6 +15,8 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
 
 public class BetterEntityProjectile extends Entity {
 
@@ -46,13 +49,14 @@ public class BetterEntityProjectile extends Entity {
                 null, true
         );
 
-        PhysicsResult collided = CollisionUtils.checkEntityCollisions(super.instance, super.getBoundingBox(), posBefore, diff, 3,
+        Collection<EntityCollisionResult> collisions = CollisionUtils.checkEntityCollisions(super.instance, super.getBoundingBox(), posBefore, diff, 3,
                 entity -> entity instanceof Player player && player != this.shooter && player.getGameMode() != GameMode.SPECTATOR, result);
+        EntityCollisionResult collided = !collisions.isEmpty() ? collisions.iterator().next() : null;
 
-        Shape shape = collided != null ? collided.collisionShapes()[0] : null;
-        if (collided != null && shape != this.shooter) {
-            if (shape instanceof Player player) {
-                this.collidePlayer(collided.newPosition(), player);
+        Entity entity = !collisions.isEmpty() ? collided.entity() : null;
+        if (entity != this.shooter) {
+            if (entity instanceof Player player) {
+                this.collidePlayer(collided.collisionPoint(), player);
                 return;
             }
         }
