@@ -53,7 +53,8 @@ public final class EnderPearl extends PowerUp {
     }
 
     private void onCollide(@NotNull Player shooter, @NotNull Point collisionPosition) {
-        shooter.teleport(Pos.fromPoint(collisionPosition));
+        Pos shooterPos = shooter.getPosition();
+        shooter.teleport(new Pos(collisionPosition, shooterPos.yaw(), shooterPos.pitch()));
         playCollideSound(shooter);
     }
 
